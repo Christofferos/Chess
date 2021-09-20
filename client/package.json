@@ -6,8 +6,7 @@
     "serve": "vue-cli-service serve",
     "build:prod": "vue-cli-service build",
     "build:dev": "vue-cli-service build --mode development --watch",
-    "build": "npm run build:dev",
-    "heroku-postbuild": "yarn build:prod"
+    "build": "npm run build:dev"
   },
   "dependencies": {
     "@chrisoakman/chessboardjs": "^1.0.0",
