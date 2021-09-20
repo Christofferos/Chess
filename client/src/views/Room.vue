@@ -2,9 +2,9 @@
   <div class="container">
     <section
       class="col-md-10 col-md-offset-1"
-      style="display: flex; flex-direction: column; justify-content: center; align-items: center;"
+      style="display: flex; flex-direction: column; justify-content: center; align-items: center"
     >
-      <div class="row" style="text-align: center;">
+      <div class="row" style="text-align: center">
         <h1 v-if="this.opponent === ''">Waiting for an opponent...</h1>
         <h1 v-else>
           {{ this.black ? this.$store.state.cookie.username : this.opponent }}
@@ -42,7 +42,7 @@
         </button>
       </div>
 
-      <div id="board" style="display: inline-block; vertical-align: bottom;">
+      <div id="board" style="display: inline-block; vertical-align: bottom">
         <div
           class="row"
           v-for="row in rows"
@@ -74,7 +74,7 @@
             <img
               v-if="piecePlacement[row][col] !== ''"
               :src="pieces[piecePlacement[row][col]]"
-              style="width: 100px; position: absolute;"
+              style="width: 100px; position: absolute"
             />
             <span
               v-bind:style="{
@@ -99,19 +99,23 @@
         </div>
       </div>
 
-      <div class="row" style="text-align: center;">
+      <div class="row" style="text-align: center">
         <h1>
           {{ this.black ? this.opponent : this.$store.state.cookie.username }}
         </h1>
       </div>
 
       <div
-        style="text-align: center; padding: 20px; border-radius: 10px;
-        background: #41403D; width: 450px; margin: auto auto 25px auto;"
+        style="
+          text-align: center;
+          padding: 20px;
+          border-radius: 10px;
+          background: #41403d;
+          width: 450px;
+          margin: auto auto 25px auto;
+        "
       >
-        <button v-clipboard="() => room" class="well btn btn-default button">
-          🔗 Game Code
-        </button>
+        <button v-clipboard="() => room" class="well btn btn-default button">🔗 Game Code</button>
 
         <h1>Chat</h1>
         <form v-on:submit.prevent="send()">
@@ -119,15 +123,20 @@
             v-model="input"
             class="form-control"
             type="text"
-            style="margin: 10px auto; font-size: 15px;"
+            style="margin: 10px auto; font-size: 15px"
             required
             autofocus
             placeholder="Write to your opponent.."
           />
         </form>
         <div
-          style="border: 2px solid black; width: 350px; margin: auto auto 25px auto;
-           background: #504F4C; border-radius: 5px;"
+          style="
+            border: 2px solid black;
+            width: 350px;
+            margin: auto auto 25px auto;
+            background: #504f4c;
+            border-radius: 5px;
+          "
         >
           <div
             v-for="(entry, index) in entries.slice(0, 10)"
@@ -327,7 +336,6 @@ export default {
       });
 
       this.$root.socket.on('movePieceResponse', (newFen, gameOver, draw1, draw2, draw3, draw4) => {
-        console.log('update piece placement');
         if (gameOver) {
           if (draw1 || draw2 || draw3 || draw4) {
             this.endGameMsg = 'Draw!';
