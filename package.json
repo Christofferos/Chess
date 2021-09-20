@@ -1,11 +1,9 @@
 {
   "name": "chessbattle",
-  "workspaces": {
-    "packages": [
-      "client",
-      "server"
-    ]
-  },
+  "workspaces": [
+    "client",
+    "server"
+  ],
   "version": "1.0.0",
   "private": false,
   "scripts": {
@@ -18,7 +16,8 @@
     "@vue/cli-plugin-babel": "^4.1.0",
     "@vue/cli-plugin-router": "^4.1.0",
     "@vue/cli-plugin-vuex": "^4.1.0",
-    "@vue/cli-service": "^4.1.0"
+    "@vue/cli-service": "^4.1.0",
+    "vue-template-compiler": "^2.6.10"
   },
   "engines": {
     "node": "14.x",
