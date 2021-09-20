@@ -13,7 +13,12 @@
   },
   "dependencies": {
     "concurrently": "^5.3.0",
-    "yarn": "^1.18"
+    "yarn": "^1.18",
+    "vue": "^2.6.10",
+    "@vue/cli-plugin-babel": "^4.1.0",
+    "@vue/cli-plugin-router": "^4.1.0",
+    "@vue/cli-plugin-vuex": "^4.1.0",
+    "@vue/cli-service": "^4.1.0"
   },
   "engines": {
     "node": "14.x",
