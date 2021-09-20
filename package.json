@@ -1,0 +1,22 @@
+{
+  "name": "chessbattle",
+  "workspaces": {
+    "packages": [
+      "client",
+      "server"
+    ]
+  },
+  "version": "1.0.0",
+  "private": false,
+  "scripts": {
+    "heroku-postbuild": "cd client && yarn build:prod"
+  },
+  "dependencies": {
+    "concurrently": "^5.3.0",
+    "yarn": "^1.18"
+  },
+  "engines": {
+    "node": "14.x",
+    "yarn": "1.18.x"
+  }
+}
