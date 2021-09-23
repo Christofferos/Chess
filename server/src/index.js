@@ -23,6 +23,7 @@ import {
   removeLiveGame,
   getMatchHistory,
 } from './model.js';
+import { testAddOccurences } from './firestore.js';
 
 const PORT = process.env.PORT || 8989;
 const EXPRESS_APP = express();
@@ -149,3 +150,5 @@ io.on('connection', socket => {
 httpServer.listen(PORT, () => {
   console.log(`Listening on http://localhost:${PORT}`);
 });
+
+testAddOccurences();

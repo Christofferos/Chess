@@ -5,7 +5,9 @@
     "server"
   ],
   "version": "1.0.0",
-  "private": false,
+  "private": true,
+  "license": "MIT",
+  "type": "module",
   "scripts": {
     "heroku-postbuild": "cd client && yarn build:prod"
   },
