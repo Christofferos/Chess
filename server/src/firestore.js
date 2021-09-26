@@ -17,60 +17,79 @@ const firebaseConfig = {
 export const firebaseApp = firebase.default.initializeApp(firebaseConfig);
 export const firestore = firebaseApp.firestore();
 
-/* const userObj = {
-  username: 'Ada',
-  password: 'Lovelace',
-};
-const test = async () => {
-  await firestore.collection('users').doc(v4()).set(userObj);
-};
-test(); */
+const usersCollection = firestore.collection('users');
+const liveGamesCollection = firestore.collection('liveGames');
+const matchHistoryCollection = firestore.collection('matchHistory');
 
-/* const addUser = async () => {
-  // const docRef = await
-  addDoc(collection(db, 'users'), {
-    username: 'Ada',
-    password: 'Lovelace',
+export const addUserDB = async (username, password) => {
+  const userRef = await usersCollection.add({ username, password });
+  console.log('User document written with ID: ', userRef.id);
+};
+
+export const getUserDB = async username => {
+  const query = await usersCollection.where('username', '==', username).get();
+  if (query.empty) return;
+  const userData = query.docs[0].data();
+  return userData;
+};
+
+export const getUsersDB = async () => {
+  const snapshot = await usersCollection.get();
+  const users = [];
+  snapshot.forEach(doc => {
+    users.push(doc.data());
   });
-  // console.log('User document written with ID: ', docRef.id);
+  return users;
 };
 
-const addMatchHistoryGame = async () => {
-  const docRef = await addDoc(collection(db, 'matchHistory'), {
-    player1: 'Ada',
-    player2: 'Lovelace',
-    winner: '',
-    nrMoves: '',
-    date: new Date().toJSON().slice(0, 10).replace(/-/g, '/'),
+export const addLiveGameDB = async (id, currentGame, player1, player2, timeLeft1, timeLeft2) => {
+  const liveGameRef = await liveGamesCollection.add({
+    id,
+    currentGame,
+    player1,
+    player2,
+    timeLeft1,
+    timeLeft2,
   });
-  console.log('MatchHistory document written with ID: ', docRef.id);
+  console.log('LiveGame document written with ID: ', liveGameRef.id);
 };
 
-const addLiveGame = async () => {
-  const docRef = await addDoc(collection(db, 'liveGames'), {
-    id: 'TEST12345',
-    currentGame: '',
-    player1: 'testPlayer1',
-    player2: 'testPlayer2',
-    timeLeft1: 180,
-    timeLeft2: 180,
+export const setLiveGameStateDB = async (fen, id) => {
+  const liveGameRef = await liveGamesCollection.doc(id);
+  const batch = firestore.batch();
+  batch.update(liveGameRef, { currentGame: fen });
+};
+
+export const deleteLiveGameDB = async id => {
+  const liveGames = await liveGamesCollection.where('id', '==', id).get();
+  const isGameNotFound = !liveGames;
+  if (isGameNotFound) return;
+  const batch = firestore.batch();
+  liveGames.forEach(liveGame => {
+    batch.delete(liveGame.ref);
   });
-  console.log('LiveGame document written with ID: ', docRef.id);
+  await batch.commit();
 };
 
-export const testAddOccurences = () => {
-  try {
-    addUser();
-    // addMatchHistoryGame();
-    // addLiveGame(); 
-  } catch (e) {
-    console.error('Error adding document: ', e);
-  }
-};
-
-export const testSeeTestUsers = () => {
-  const querySnapshot = await getDocs(collection(db, 'users'));
-  querySnapshot.forEach(doc => {
-    console.log(`${doc.id} => ${doc.data()}`);
+export const setPlayer2InLiveGameDB = async (player2, id) => {
+  await liveGamesCollection.doc(id).set({
+    player2,
   });
-};  */
+};
+
+export const getLiveGamesDB = async () => {
+  const snapshot = await liveGamesCollection.get();
+  const liveGames = snapshot.docs.map(doc => doc.data());
+  return liveGames;
+};
+
+export const addMatchHistoryGameDB = async (player1, player2, winner, nMoves, date) => {
+  const matchHistoryRef = await matchHistoryCollection.add({
+    player1,
+    player2,
+    winner,
+    nMoves,
+    date,
+  });
+  console.log('MatchHistory document added with ID: ', matchHistoryRef.id);
+};

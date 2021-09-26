@@ -1,41 +1,20 @@
 <template>
   <div id="app">
     <nav class="navbar navbar-default navbar-inverse navbar-static-top" role="navigation">
-      <div class="container">
-        <div class="navbar-header">
-          <button
-            type="button"
-            class="navbar-toggle"
-            data-toggle="collapse"
-            data-target="#navbar-brand-centered"
-          >
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-        </div>
-
-        <!-- Collect the nav links, forms, and other content for toggling -->
-        <div
-          class="collapse navbar-collapse"
-          id="navbar-brand-centered"
-          style="text-align: center;"
-        >
-          <ul class="nav navbar-nav">
-            <li v-on:click="redirect('/login')">
-              <a style="cursor: pointer; "
-                ><img src="../public/logoNavbar.png" style="height: 27px"
-              /></a>
-            </li>
-            <li v-on:click="redirect('/login')">
-              <a style="cursor: pointer; line-height: 2;">Profile</a>
-            </li>
-            <li v-on:click="redirect('/list')">
-              <a style="cursor: pointer; line-height: 2">Play Chess</a>
-            </li>
-          </ul>
-        </div>
+      <div class="navbar-collapse" id="navbar-brand-centered" style="text-align: center;">
+        <ul class="nav navbar-nav">
+          <li v-on:click="redirect('/login')">
+            <a style="cursor: pointer; "
+              ><img src="../public/logoNavbar.png" style="height: 27px"
+            /></a>
+          </li>
+          <li v-on:click="redirect('/login')">
+            <a style="cursor: pointer; line-height: 2;">Profile</a>
+          </li>
+          <li v-on:click="redirect('/list')">
+            <a style="cursor: pointer; line-height: 2">Play Chess</a>
+          </li>
+        </ul>
       </div>
     </nav>
     <router-view></router-view>
@@ -76,6 +55,11 @@ button:focus {
   width: 100%;
 }
 
+.navbar > .container .navbar-brand-centered,
+.navbar > .container-fluid .navbar-brand-centered {
+  margin-left: -80px;
+}
+
 .navbar-brand-centered {
   position: absolute;
   left: 50%;
@@ -83,11 +67,6 @@ button:focus {
   width: 160px;
   text-align: center;
   background-color: transparent;
-}
-
-.navbar > .container .navbar-brand-centered,
-.navbar > .container-fluid .navbar-brand-centered {
-  margin-left: -80px;
 }
 
 .navbar {

@@ -9,7 +9,7 @@ import {
   addMessage,
   io,
 } from '../model.js';
-import { db } from '../database.js';
+import { setPlayer2InLiveGameDB } from '../firestore.js';
 
 export const chatRouter = express.Router();
 
@@ -28,12 +28,12 @@ chatRouter.get('/userRoomList', (req, res) => {
 });
 
 chatRouter.get('/room/:room/authorizedToJoin', (req, res) => {
-  if (req.session.userID === undefined) {
+  if (!req.session.userID) {
     res.status(401).end();
     return;
   }
   const game = findLiveGame(req.params.room.trim());
-  if (game === undefined) {
+  if (!game) {
     res.status(404).json({
       msg: `No game with ID: ${req.params.room}`,
       href_roomList: '/roomList',
@@ -44,6 +44,17 @@ chatRouter.get('/room/:room/authorizedToJoin', (req, res) => {
   res.json({ success });
 });
 
+const getJoinGameResponseObject = game => {
+  return {
+    game,
+    list: game.messages,
+    msg: `Successfully joined game: ${game.id}`,
+    href_messages: `/room/${game.id}`,
+    href_send_message: `/room/${game.id}/message`,
+    success: true,
+  };
+};
+
 /**
  * Join the specific game.
  * This will allow the user-session to listen to and post messages in the given game.
@@ -52,7 +63,7 @@ chatRouter.get('/room/:room/authorizedToJoin', (req, res) => {
  * @returns {void}
  */
 chatRouter.get('/room/:room/join', (req, res) => {
-  if (req.session.userID === undefined) {
+  if (!req.session.userID) {
     res.status(401).end();
     return;
   }
@@ -62,36 +73,21 @@ chatRouter.get('/room/:room/join', (req, res) => {
     res.status(401).end();
     return;
   }
-
   user.currentRoom = game.id;
   user.socket.join(user.currentRoom);
   addMessage(user.currentRoom, `${user.name} joined the room!`);
-
-  if (game.player2 === '' && game.player1 !== req.session.userID) {
+  const isPlayer1RejoiningGame = game.player2 !== '' || game.player1 === req.session.userID;
+  const isPlayer2JoiningGame = !isPlayer1RejoiningGame;
+  const RESPONSE_OBJ = getJoinGameResponseObject(game);
+  if (isPlayer1RejoiningGame) {
+    res.status(200).json(RESPONSE_OBJ);
+  } else if (isPlayer2JoiningGame) {
     game.player2 = req.session.userID;
-    db.serialize(async () => {
-      const statement = db.prepare('UPDATE liveGames SET player2 = (?) WHERE id = (?)');
-      statement.run(req.session.userID, game.id);
-    });
-    // model.io
+    setPlayer2InLiveGameDB(game.player2, game.id);
     io.emit('getGamePlayers', { player1: game.player1, player2: game.player2 });
-    res.status(200).json({
-      game,
-      list: game.messages,
-      msg: `Successfully joined game: ${game.id}`,
-      href_messages: `/room/${game.id}`,
-      href_send_message: `/room/${game.id}/message`,
-      success: true,
-    });
+    res.status(200).json(RESPONSE_OBJ);
   } else {
-    res.status(200).json({
-      game,
-      list: game.messages,
-      msg: `Successfully joined game: ${game.id}`,
-      href_messages: `/room/${game.id}`,
-      href_send_message: `/room/${game.id}/message`,
-      success: true,
-    });
+    res.statusStatus(404);
   }
 });
 

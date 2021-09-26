@@ -8,8 +8,8 @@ import helmet from 'helmet';
 import connectSqlite3 from 'connect-sqlite3';
 import betterLogging, { Theme } from 'better-logging';
 import crypto from 'crypto';
-import { InMemorySessionStore } from './sessionStore.js';
 
+import { InMemorySessionStore } from './sessionStore.js';
 import { userRouter } from './controllers/user.controller.js';
 import { gameRouter } from './controllers/game.controller.js';
 import { authRouter, requireAuth } from './controllers/auth.controller.js';
@@ -23,7 +23,6 @@ import {
   removeLiveGame,
   getMatchHistory,
 } from './model.js';
-import { testAddOccurences } from './firestore.js';
 
 const PORT = process.env.PORT || 8989;
 const EXPRESS_APP = express();
@@ -150,5 +149,3 @@ io.on('connection', socket => {
 httpServer.listen(PORT, () => {
   console.log(`Listening on http://localhost:${PORT}`);
 });
-
-testAddOccurences();

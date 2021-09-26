@@ -1,7 +1,14 @@
 import { User } from './models/user.model.js';
 import { LiveGame } from './models/liveGame.model.js';
 import { MatchHistory } from './models/matchHistory.model.js';
-import { db } from './database.js';
+import {
+  addMatchHistoryGameDB,
+  deleteLiveGameDB,
+  getLiveGamesDB,
+  getUsersDB,
+  setLiveGameStateDB,
+} from './firestore.js';
+import { currentDate } from './utils/getCurrentDate.js';
 
 /**
  * games & users are effectively hash maps with the name of the entry serving as a unique key.
@@ -50,57 +57,39 @@ const assignUnregisteredSocket = socketID => {
   return socket;
 };
 
-const gamesInit = () => {
-  // Fill games with db data
-  db.serialize(() => {
-    games = {};
-    db.each('SELECT * FROM liveGames', (err, row) => {
-      if (err) throw new Error(err.message);
-      games[row.id] = new LiveGame(
-        row.id,
-        row.currentGame,
-        row.player1,
-        row.player2,
-        row.timeLeft1,
-        row.timeLeft2,
-      );
-    });
+// Fill local liveGames model with db data
+const gamesInit = async () => {
+  games = {};
+  const liveGames = await getLiveGamesDB();
+  liveGames.forEach(({ id, currentGame, player1, player2, timeLeft1, timeLeft2 }) => {
+    games[id] = new LiveGame(id, currentGame, player1, player2, timeLeft1, timeLeft2);
   });
 };
 gamesInit();
 
-const matchHistoryInit = () => {
-  // Fill matchHistory with db data
-  db.serialize(() => {
-    matchHistory = {};
-    db.each('SELECT * FROM matchHistory', (err, row) => {
-      if (err) throw new Error(err.message);
-      if (!matchHistory[row.player1]) {
-        matchHistory[row.player1] = [];
-      }
-      if (!matchHistory[row.player2]) {
-        matchHistory[row.player2] = [];
-      }
-      matchHistory[row.player1].push(
-        new MatchHistory(row.player2, row.winner, row.nrMoves, row.date),
-      );
-      matchHistory[row.player2].push(
-        new MatchHistory(row.player1, row.winner, row.nrMoves, row.date),
-      );
-    });
+const initMatchHistoryArrays = (player1, player2) => {
+  const isPlayer1MatchHistoryEmpty = !matchHistory[player1];
+  const isPlayer2MatchHistoryEmpty = !matchHistory[player2];
+  if (isPlayer1MatchHistoryEmpty) matchHistory[player1] = [];
+  if (isPlayer2MatchHistoryEmpty) matchHistory[player2] = [];
+};
+
+// Fill local matchHistory model with db data
+const matchHistoryInit = async () => {
+  matchHistory = {};
+  const liveGames = await getLiveGamesDB();
+  liveGames.forEach(({ player1, player2, nrMoves, winner, date }) => {
+    initMatchHistoryArrays(player1, player2);
+    matchHistory[player1].push(new MatchHistory(player2, winner, nrMoves, date));
+    matchHistory[player2].push(new MatchHistory(player1, winner, nrMoves, date));
   });
 };
 matchHistoryInit();
 
+// Fill local users model with db data
 const usersInit = async () => {
-  // Fill users with db data
-  db.serialize(() => {
-    users = {};
-    db.each('SELECT * FROM users', (err, row) => {
-      if (err) throw new Error(err.message);
-      users[row.username] = new User(row.username);
-    });
-  });
+  const usersFromDB = await getUsersDB();
+  usersFromDB.forEach(user => (users[user.username] = new User(user.username)));
 };
 usersInit();
 
@@ -124,8 +113,7 @@ export const addMessage = (roomName, message) => {
  */
 export const addUser = (name, socketID = undefined) => {
   if (users[name] !== undefined) {
-    // Username taken.
-    return false;
+    return false; // Username taken.
   }
   users[name] = new User(name);
   if (socketID !== undefined) {
@@ -163,13 +151,9 @@ export const removeUser = name => {
 };
 
 export const authorizedToJoinGame = (userId, gameId) => {
-  if (
-    games[gameId].player2 === '' ||
-    userId === games[gameId].player1 ||
-    userId === games[gameId].player2
-  ) {
-    return true;
-  }
+  const isFirstPlayerJoining = games[gameId].player1 === userId;
+  const isSecondPlayerJoining = games[gameId].player2 === '' || games[gameId].player2 === userId;
+  if (isFirstPlayerJoining || isSecondPlayerJoining) return true;
   return false;
 };
 
@@ -201,7 +185,8 @@ export const getLiveGames = () => Object.values(games);
  */
 export const getUserLiveGames = userID =>
   Object.values(games).filter(game => {
-    return game.player1 === userID || game.player2 === userID;
+    const isUserParticipantInGame = game.player1 === userID || game.player2 === userID;
+    return isUserParticipantInGame;
   });
 
 /**
@@ -209,11 +194,13 @@ export const getUserLiveGames = userID =>
  * @param {String} id - The id of the liveGame.
  * @returns {void}
  */
-export const removeLiveGame = id => {
+export const removeLiveGame = async id => {
+  const initialValue = {};
   games = Object.values(games)
     .filter(game => game.id !== id)
-    .reduce((res, game) => ({ ...res, [game.id]: game }), {});
+    .reduce((previousValue, game) => ({ ...previousValue, [game.id]: game }), initialValue);
   io.emit('remainingRooms', games);
+  await deleteLiveGameDB(id);
 };
 
 /**
@@ -225,84 +212,8 @@ export const findLiveGame = id => {
   return games[id];
 };
 
-/**
- * Updates the piece placement
- */
-export const movePiece = (gameId, startPos, endPos, username) => {
-  console.log('username: ', username);
-  if (username !== games[gameId].player1 && username !== games[gameId].player2) {
-    console.log(
-      'return. Username: ',
-      username,
-      ' player1: ',
-      games[gameId].player1,
-      ' player2: ',
-      games[gameId].player2,
-    );
-    return;
-  }
-
-  const game = games[gameId];
-  game.gameState.move({ from: startPos, to: endPos });
-
-  game.fen = game.gameState.fen();
-
-  db.serialize(async () => {
-    // Update gameState in db
-    const statement = db.prepare('UPDATE liveGames SET currentGame = (?) WHERE id = (?)');
-    statement.run(game.fen, gameId);
-  });
-
-  if (game.gameState.game_over()) {
-    // Update matchHistory in db
-    db.serialize(async () => {
-      let winner;
-      if (
-        game.gameState.in_draw() ||
-        game.gameState.in_stalemate() ||
-        game.gameState.in_threefold_repetition() ||
-        game.gameState.insufficient_material()
-      ) {
-        winner = '';
-      } else {
-        winner = game.fen.split(' ')[1] === 'w' ? game.player2 : game.player1;
-      }
-
-      if (!matchHistory[game.player1]) {
-        matchHistory[game.player1] = [];
-      }
-      if (!matchHistory[game.player2]) {
-        matchHistory[game.player2] = [];
-      }
-      matchHistory[game.player1].push(
-        new MatchHistory(
-          game.player2,
-          winner,
-          game.gameState.history().length,
-          new Date().toJSON().slice(0, 10).replace(/-/g, '/'),
-        ),
-      );
-      matchHistory[game.player2].push(
-        new MatchHistory(
-          game.player1,
-          winner,
-          game.gameState.history().length,
-          new Date().toJSON().slice(0, 10).replace(/-/g, '/'),
-        ),
-      );
-
-      const statement = db.prepare('INSERT INTO matchHistory VALUES (?, ?, ?, ?, ?)');
-      statement.run(
-        game.player1,
-        game.player2,
-        winner,
-        game.gameState.history().length,
-        new Date().toJSON().slice(0, 10).replace(/-/g, '/'),
-      );
-    });
-  }
-
-  io.in(gameId).emit(
+const emitMovePiece = game => {
+  io.in(game.id).emit(
     'movePieceResponse',
     game.fen,
     game.gameState.game_over(),
@@ -313,11 +224,45 @@ export const movePiece = (gameId, startPos, endPos, username) => {
   );
 };
 
+const isGameDraw = game => {
+  return (
+    game.gameState.in_draw() ||
+    game.gameState.in_stalemate() ||
+    game.gameState.in_threefold_repetition() ||
+    game.gameState.insufficient_material()
+  );
+};
+
+/**
+ * Updates the piece placement
+ */
+export const movePiece = async (gameId, startPos, endPos, username) => {
+  const isUserAllowedToMove =
+    username === games[gameId].player1 || username === games[gameId].player2;
+  if (!isUserAllowedToMove) return;
+  const game = games[gameId];
+  game.gameState.move({ from: startPos, to: endPos });
+  game.fen = game.gameState.fen();
+  await setLiveGameStateDB(game.fen, gameId);
+
+  const isGameOver = game.gameState.game_over();
+  if (isGameOver) {
+    let winner;
+    const isDraw = isGameDraw(game);
+    const isPlayer2Winner = game.fen.split(' ')[1] === 'w';
+    if (isDraw) winner = '';
+    else winner = isPlayer2Winner ? game.player2 : game.player1;
+    initMatchHistoryArrays(game.player1, game.player2);
+    const date = currentDate();
+    const nMoves = game.gameState.history().length;
+    matchHistory[game.player1].push(new MatchHistory(game.player2, winner, nMoves, date));
+    matchHistory[game.player2].push(new MatchHistory(game.player1, winner, nMoves, date));
+    await addMatchHistoryGameDB(game.player1, game.player2, winner, nMoves, date);
+  }
+  emitMovePiece(game);
+};
+
 export const backToMenu = gameId => {
-  db.serialize(async () => {
-    const statement = db.prepare('DELETE FROM liveGames WHERE id = (?)');
-    statement.run(gameId);
-  });
   io.in(gameId).emit('backToMenuResponse');
 };
 
@@ -327,12 +272,11 @@ export const updateTimers = (gameId, timer1, timer2) => {
   const game = games[gameId];
   game.timeLeft1 = timer1;
   game.timeLeft2 = timer2;
-
-  db.serialize(async () => {
+  /* db.serialize(async () => {
     // Update timers in db
     const statement = db.prepare(
       'UPDATE liveGames SET timeLeft1 = (?), timeLeft2 = (?) WHERE id = (?)',
     );
     statement.run(timer1, timer2, gameId);
-  });
+  }); */
 };

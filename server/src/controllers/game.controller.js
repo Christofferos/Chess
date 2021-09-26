@@ -1,7 +1,7 @@
 import express from 'express';
 
 import { addLiveGame, movePiece, getLiveGame, removeLiveGame } from '../model.js';
-import { db } from '../database.js';
+import { addLiveGameDB, deleteLiveGameDB } from '../firestore.js';
 
 export const gameRouter = express.Router();
 
@@ -22,21 +22,18 @@ gameRouter.post('/newGame', (req, res) => {
   }
   const gameId = makeId(8);
   addLiveGame(gameId, req.session.userID);
-  db.serialize(async () => {
-    const statement = db.prepare('INSERT INTO liveGames VALUES (?, ?, ?, ?, ?, ?)');
-    statement.run(gameId, '', req.session.userID, '', 180, 180);
-  });
+  addLiveGameDB(gameId, '', req.session.userID, '', 180, 180);
   res.json({ gameId });
 });
 
-gameRouter.post('/movePiece', (req, res) => {
+gameRouter.post('/movePiece', async (req, res) => {
   if (req.session.userID) {
     movePiece(req.body.gameId, req.body.startPos, req.body.endPos, req.session.userID);
   }
   res.status(200).end();
 });
 
-gameRouter.delete('/removeGame', (req, res) => {
+gameRouter.delete('/removeGame', async (req, res) => {
   if (getLiveGame(req.body.id) === undefined || req.session.userID === undefined) {
     res.status(401).end();
     return;
@@ -49,10 +46,5 @@ gameRouter.delete('/removeGame', (req, res) => {
     return;
   }
   removeLiveGame(req.body.id);
-
-  db.serialize(async () => {
-    const statement = db.prepare('DELETE FROM liveGames WHERE id = (?)');
-    statement.run(req.body.id);
-  });
   res.status(200).end();
 });

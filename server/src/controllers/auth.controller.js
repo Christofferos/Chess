@@ -2,7 +2,7 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 
 import { findUser } from '../model.js';
-import { db } from '../database.js';
+import { getUserDB } from '../firestore.js';
 
 export const authRouter = express.Router();
 
@@ -16,8 +16,8 @@ export const authRouter = express.Router();
  * @returns {void}
  */
 export const requireAuth = (req, res, next) => {
-  const maybeUser = findUser(req.session.userID);
-  if (maybeUser === undefined) {
+  const isUserFound = findUser(req.session.userID);
+  if (!isUserFound) {
     res
       .status(401)
       .send(
@@ -34,10 +34,10 @@ export const requireAuth = (req, res, next) => {
  * @returns {void}
  */
 authRouter.get('/isAuthenticated', (req, res) => {
-  const maybeUser = findUser(req.session.userID);
+  const isUserFound = findUser(req.session.userID);
   res.status(200).json({
-    isAuthenticated: maybeUser !== undefined,
-    username: maybeUser !== undefined ? maybeUser.name : 'N/A',
+    isAuthenticated: isUserFound !== undefined,
+    username: isUserFound !== undefined ? isUserFound.name : 'N/A',
   });
 });
 
@@ -47,36 +47,18 @@ authRouter.get('/isAuthenticated', (req, res) => {
  * @param {String} req.session.userID - A string that uniquely identifies the given user.
  * @returns {void}
  */
-authRouter.post('/authenticate', (req, res) => {
+authRouter.post('/authenticate', async (req, res) => {
   const { username, password } = req.body;
-
-  db.serialize(() => {
-    const statement = db.prepare('SELECT username, password FROM users WHERE username = (?)');
-    statement.get(username, async (err, row) => {
-      if (err) {
-        throw new Error(err);
-      }
-      if (typeof row !== 'undefined') {
-        const match = await bcrypt.compare(password, row.password);
-        if (match) {
-          statement.finalize();
-          req.session.userID = row.username;
-          req.session.save(error => {
-            if (error) {
-              res.sendStatus(401);
-            } else {
-              console.debug('Saved session');
-            }
-          });
-          res.sendStatus(200);
-        } else if (!match) {
-          statement.finalize();
-          res.sendStatus(404);
-        }
-      } else {
-        statement.finalize();
-        res.sendStatus(404);
-      }
-    });
-  });
+  const user = await getUserDB(username);
+  if (!user) {
+    res.sendStatus(404);
+    return;
+  }
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) {
+    res.sendStatus(404);
+    return;
+  }
+  req.session.userID = user.username;
+  req.session.save(error => (error ? res.sendStatus(401) : res.sendStatus(200)));
 });
