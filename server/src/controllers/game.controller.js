@@ -28,7 +28,13 @@ gameRouter.post('/newGame', (req, res) => {
 
 gameRouter.post('/movePiece', async (req, res) => {
   if (req.session.userID) {
-    movePiece(req.body.gameId, req.body.startPos, req.body.endPos, req.session.userID);
+    movePiece(
+      req.body.gameId,
+      req.body.startPos,
+      req.body.endPos,
+      req.session.userID,
+      req.body.promotion,
+    );
   }
   res.status(200).end();
 });

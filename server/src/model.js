@@ -236,12 +236,12 @@ const isGameDraw = game => {
 /**
  * Updates the piece placement
  */
-export const movePiece = async (gameId, startPos, endPos, username) => {
+export const movePiece = async (gameId, startPos, endPos, username, promotionPiece) => {
   const isUserAllowedToMove =
     username === games[gameId].player1 || username === games[gameId].player2;
   if (!isUserAllowedToMove) return;
   const game = games[gameId];
-  game.gameState.move({ from: startPos, to: endPos });
+  game.gameState.move({ from: startPos, to: endPos, promotion: promotionPiece?.toLowerCase() });
   game.fen = game.gameState.fen();
   await setLiveGameStateDB(game.fen, gameId);
 

@@ -4,15 +4,15 @@ Play online via this link: https://chessbattle.herokuapp.com
 
 TODO:
 
-1. Fix pawn final advance transformation into new piece UI and logic.
-2. Add field in database to show who is online and display in UI.
-3. Redo Create Game process. Have a modal with options how to invite opposing player (code or
-   http-link)
-4. Add a leaderboard - experience in amount of games.
-5. Add scaling of board to device size
-6. Add timer logic - with subscription to firebase to see live updates
+1. Fix pawn promotion for UI and logic ✔️
+2. Add user online field in database & display in UI
+3. Add a create game modal with invite options (code or http-link)
+4. Add a leaderboard - experience in amount of games
+5. Add device scaling of the board
+6. Add timer logic - with subscription to firebase for live updates
 7. (Fix re-routing to correct https-link when loss of connection)
 8. (Fix bug that cause no live updates to happen in game)
+9. Add a new game mode - Crazy Chess (Squares fall off the board)
 
 ![bild](https://user-images.githubusercontent.com/42782387/134075059-34b31eac-2c56-4468-8585-f90f7980e200.png)
 

@@ -13,6 +13,47 @@
 
       <div
         v-bind:style="{
+          display: this.isPawnPromotionTime ? 'block' : 'none',
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          width: '300px',
+          height: '300px',
+          marginLeft: '-150px',
+          marginTop: '-300px',
+          overflow: 'auto',
+          backgroundColor: 'rgba(205, 133, 63, 0.6)',
+          padding: '30px auto',
+          textAlign: 'center',
+          borderRadius: '5px',
+          color: 'black',
+          fontSize: '30px',
+          zIndex: '11',
+        }"
+        type="text"
+      >
+        <div v-if="isPromotionColorWhite">
+          <img
+            v-for="(pieceSrc, piece) in promotionPiecesWhite"
+            :key="piece"
+            v-on:click="promotePawn(piece)"
+            :src="pieceSrc"
+            style="width: 150px; cursor: pointer"
+          />
+        </div>
+        <div v-if="!isPromotionColorWhite">
+          <img
+            v-for="(pieceSrc, piece) in promotionPiecesBlack"
+            :key="piece"
+            v-on:click="promotePawn(piece)"
+            :src="pieceSrc"
+            style="width: 150px; cursor: pointer"
+          />
+        </div>
+      </div>
+
+      <div
+        v-bind:style="{
           display: this.endGameMsg === '' ? 'none' : 'block',
           width: '300px',
           height: '150px',
@@ -178,6 +219,8 @@ export default {
       input: '',
       opponent: '',
       black: false,
+      startPos: '',
+      endPos: '',
       selectedPiece: '',
       rows: [0, 1, 2, 3, 4, 5, 6, 7],
       columns: [0, 1, 2, 3, 4, 5, 6, 7],
@@ -208,9 +251,26 @@ export default {
         ['', '', '', '', '', '', '', ''],
         ['', '', '', '', '', '', '', ''],
       ],
+      isPawnPromotionTime: false,
+      isPromotionColorWhite: true,
+      promotionPiecesWhite: {
+        R,
+        N,
+        B,
+        Q,
+      },
+      promotionPiecesBlack: {
+        r,
+        n,
+        b,
+        q,
+      },
     };
   },
   methods: {
+    debug() {
+      console.log('Debug');
+    },
     redirect(name) {
       this.$router.push(`/${name}`);
     },
@@ -263,35 +323,63 @@ export default {
       return file.toString() + rank.toString();
     },
     checkSelectedPiece(row, col) {
-      if (this.opponent !== '') {
-        if (this.piecePlacement[row][col].match('[rnbqkp]') && this.black) {
-          this.selectedPiece = row.toString() + col.toString();
-        } else if (this.piecePlacement[row][col].match('[RNBQKP]') && this.black === false) {
-          this.selectedPiece = row.toString() + col.toString();
-        } else if (this.selectedPiece !== '') {
-          fetch('/api/movePiece', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              gameId: this.game.id,
-              startPos: this.translateSelectedPiece(
-                this.selectedPiece.charAt(0),
-                this.selectedPiece.charAt(1),
-              ),
-              endPos: this.translateSelectedPiece(row.toString(), col.toString()),
-            }),
-          })
-            .then((resp) => {
-              if (!resp.ok) {
-                throw new Error(`Unexpected failure when joining room: ${this.room}`);
-              }
-              return resp;
-            })
-            .catch(console.error);
-        }
+      if (this.opponent === '') return;
+      if (this.piecePlacement[row][col].match('[rnbqkp]') && this.black) {
+        this.selectedPiece = row.toString() + col.toString();
+      } else if (this.piecePlacement[row][col].match('[RNBQKP]') && this.black === false) {
+        this.selectedPiece = row.toString() + col.toString();
+      } else if (this.selectedPiece !== '') {
+        const y0 = this.selectedPiece.charAt(0);
+        const x0 = this.selectedPiece.charAt(1);
+        const y1 = row.toString();
+        const x1 = col.toString();
+        this.startPos = this.translateSelectedPiece(y0, x0);
+        this.endPos = this.translateSelectedPiece(y1, x1);
+        const piece = this.piecePlacement[y0][x0];
+        const isPromoteSelection = this.checkPawnPromotion(piece, y1);
+        if (isPromoteSelection) return;
+        this.movePiece();
       }
+    },
+    movePiece(piece = undefined) {
+      fetch('/api/movePiece', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: this.game.id,
+          startPos: this.startPos,
+          endPos: this.endPos,
+          ...(piece && { promotion: piece }),
+        }),
+      })
+        .then((resp) => {
+          if (!resp.ok) {
+            throw new Error(`Unexpected failure when joining room: ${this.room}`);
+          }
+          return resp;
+        })
+        .catch(console.error);
+    },
+    checkPawnPromotion(piece, y1) {
+      const isPawn = piece === 'p' || piece === 'P';
+      if (!isPawn) return;
+      const isBlackPawnAdvanced = piece === 'p' && Number(y1) === 7;
+      const isWhitePawnAdvanced = piece === 'P' && Number(y1) === 0;
+      if (isWhitePawnAdvanced) {
+        this.isPromotionColorWhite = true;
+      } else if (isBlackPawnAdvanced) {
+        this.isPromotionColorWhite = false;
+      }
+      if (isWhitePawnAdvanced || isBlackPawnAdvanced) {
+        this.isPawnPromotionTime = true;
+        return true;
+      }
+    },
+    promotePawn(piece) {
+      this.isPawnPromotionTime = false;
+      this.movePiece(piece);
     },
     backToMenu() {
       this.$root.socket.emit('backToMenu', this.room);
