@@ -5,7 +5,7 @@ Play online via this link: https://chessbattle.herokuapp.com
 TODO:
 
 1. Fix pawn promotion for UI and logic ✔️
-2. Add user online field in database & display in UI
+2. Add user online field in database & display in UI (WIP)
 3. Add a create game modal with invite options (code or http-link)
 4. Add a leaderboard - experience in amount of games
 5. Add device scaling of the board
