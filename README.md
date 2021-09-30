@@ -11,7 +11,7 @@ TODO:
 5. Add device scaling of the board
 6. Add timer logic - with subscription to firebase for live updates
 7. (Fix re-routing to correct https-link when loss of connection)
-8. (Fix bug that cause no live updates to happen in game)
+8. (Fix bug that cause no live updates to happen in game) (WIP)
 9. Add a new game mode - Crazy Chess (Squares fall off the board)
 
 ![bild](https://user-images.githubusercontent.com/42782387/134075059-34b31eac-2c56-4468-8585-f90f7980e200.png)
