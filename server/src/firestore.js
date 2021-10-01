@@ -20,6 +20,7 @@ export const firestore = firebaseApp.firestore();
 const usersCollection = firestore.collection('users');
 const liveGamesCollection = firestore.collection('liveGames');
 const matchHistoryCollection = firestore.collection('matchHistory');
+const usersOnlineCollection = firestore.collection('usersOnline');
 
 export const addUserDB = async (username, password) => {
   const userRef = await usersCollection.add({ username, password });
@@ -92,4 +93,33 @@ export const addMatchHistoryGameDB = async (player1, player2, winner, nMoves, da
     date,
   });
   console.log('MatchHistory document added with ID: ', matchHistoryRef.id);
+};
+
+export const addUserOnlineDB = async userId => {
+  const query = await usersOnlineCollection.where('userId', '==', userId).get();
+  if (!query.empty) return;
+  const userOnlineRef = await usersOnlineCollection.add({
+    userId,
+  });
+  console.log('UserOnline document added with ID: ', userOnlineRef.id);
+};
+
+export const getUsersOnlineDB = async () => {
+  const snapshot = await usersOnlineCollection.get();
+  const usersOnline = [];
+  snapshot.forEach(doc => {
+    usersOnline.push(doc.data());
+  });
+  return usersOnline;
+};
+
+export const deleteUsersOnlineDB = async userId => {
+  const usersOnline = await usersOnlineCollection.where('userId', '==', userId).get();
+  const isUserFound = !usersOnline;
+  if (!isUserFound) return;
+  const batch = firestore.batch();
+  usersOnline.forEach(userOnline => {
+    batch.delete(userOnline.ref);
+  });
+  await batch.commit();
 };

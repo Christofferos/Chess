@@ -382,7 +382,7 @@ export default {
       this.movePiece(piece);
     },
     backToMenu() {
-      this.$root.socket.emit('backToMenu', this.room);
+      this.$store.state.socket.emit('backToMenu', this.room);
     },
     reconnectionEvents() {
       fetch(`/api/room/${this.room}/join`)
@@ -406,15 +406,15 @@ export default {
           throw new Error(`Error in join room ${err}`);
         });
 
-      this.$root.socket.on('msg', (msg) => {
+      this.$store.state.socket.on('msg', (msg) => {
         this.entries = [msg, ...this.entries];
       });
 
-      this.$root.socket.on('backToMenuResponse', () => {
+      this.$store.state.socket.on('backToMenuResponse', () => {
         this.redirect('list');
       });
 
-      this.$root.socket.on('getGamePlayers', (players) => {
+      this.$store.state.socket.on('getGamePlayers', (players) => {
         if (this.$store.state.cookie.username !== players.player1) {
           this.opponent = players.player1;
           this.black = true;
@@ -423,36 +423,38 @@ export default {
         }
       });
 
-      this.$root.socket.on('movePieceResponse', (newFen, gameOver, draw1, draw2, draw3, draw4) => {
-        if (gameOver) {
-          if (draw1 || draw2 || draw3 || draw4) {
-            this.endGameMsg = 'Draw!';
-          } else if (newFen.split(' ')[1] === 'w' && this.black) {
-            this.endGameMsg = 'Check Mate!\n You win';
-          } else if (newFen.split(' ')[1] === 'w' && this.black === false) {
-            this.endGameMsg = 'Check Mate!\n You lose';
-          } else if (newFen.split(' ')[1] === 'b' && this.black) {
-            this.endGameMsg = 'Check Mate!\n You lose';
-          } else if (newFen.split(' ')[1] === 'b' && this.black === false) {
-            this.endGameMsg = 'Check Mate!\n You win';
+      this.$store.state.socket.on(
+        'movePieceResponse',
+        (newFen, gameOver, draw1, draw2, draw3, draw4) => {
+          if (gameOver) {
+            if (draw1 || draw2 || draw3 || draw4) {
+              this.endGameMsg = 'Draw!';
+            } else if (newFen.split(' ')[1] === 'w' && this.black) {
+              this.endGameMsg = 'Check Mate!\n You win';
+            } else if (newFen.split(' ')[1] === 'w' && this.black === false) {
+              this.endGameMsg = 'Check Mate!\n You lose';
+            } else if (newFen.split(' ')[1] === 'b' && this.black) {
+              this.endGameMsg = 'Check Mate!\n You lose';
+            } else if (newFen.split(' ')[1] === 'b' && this.black === false) {
+              this.endGameMsg = 'Check Mate!\n You win';
+            }
           }
-        }
-        this.selectedPiece = '';
-        this.game.fen = newFen;
-        this.updatePiecePlacement();
-      });
+          this.selectedPiece = '';
+          this.game.fen = newFen;
+          this.updatePiecePlacement();
+        },
+      );
     },
   },
   created() {
     this.reconnectionEvents();
-
-    this.$root.socket.on('connect', () => {
+    this.$store.state.socket.on('connect', () => {
       this.reconnectionEvents();
     });
-    this.$root.socket.on('disconnect', () => {
-      this.$root.socket.off('connect_error');
+    this.$store.state.socket.on('disconnect', () => {
+      this.$store.state.socket.off('connect_error');
     });
-    this.$root.socket.on('connect_error', (err) => {
+    this.$store.state.socket.on('connect_error', (err) => {
       console.log(`Connection error: ${err}`);
     });
   },

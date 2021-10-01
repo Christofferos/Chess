@@ -35,7 +35,12 @@
 </template>
 
 <script>
-import { setIsAuthenticatedKey, setUsernameKey } from '../store/index';
+import store, {
+  addOnlineUser,
+  removeOnlineUser,
+  setIsAuthenticatedKey,
+  setUsernameKey,
+} from '../store/index';
 
 export default {
   name: 'Login',

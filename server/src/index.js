@@ -23,6 +23,7 @@ import {
   removeLiveGame,
   getMatchHistory,
 } from './model.js';
+import { addUserOnlineDB, deleteUsersOnlineDB } from './firestore.js';
 
 const PORT = process.env.PORT || 8989;
 const EXPRESS_APP = express();
@@ -99,19 +100,30 @@ io.use((socket, next) => {
 // Handle connected socket.io sockets
 io.on('connection', socket => {
   // Client connected to server
-  console.log('Connection ... ');
+  console.log('Connection ... ', socket.handshake.session.userID);
+  if (socket.handshake.session.userID) {
+    addUserOnlineDB(socket.handshake.session.userID);
+    io.emit('userOnlineUpdate', socket.handshake.session.userID, true);
+  }
   sessionStore.saveSession(socket.sessionID, {
     connected: true,
   });
   socket.on('disconnect', async () => {
-    const matchingSockets = await io.allSockets();
+    const userId = socket.handshake.session.userID;
+    console.log('Disconnect ... ', userId);
+    if (userId) {
+      deleteUsersOnlineDB(userId);
+      io.emit('userOnlineUpdate', userId, false);
+    }
+    /* const matchingSockets = await io.sockets; // clients or sockets
+    console.log('HERE:', JSON.stringify(matchingSockets, null, '\t'));
     const isDisconnected = matchingSockets.size === 0;
     if (isDisconnected) {
       // update the connection status of the session
       sessionStore.saveSession(socket.sessionID, {
         connected: false,
       });
-    }
+    } */
   });
 
   // This function serves to bind socket.io connections to user models

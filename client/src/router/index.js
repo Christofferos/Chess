@@ -6,7 +6,8 @@ import RoomView from '../views/Room.vue';
 import LoginView from '../views/Login.vue';
 import ProfileView from '../views/Profile.vue';
 import SignUp from '../views/SignUp.vue';
-import store, { setIsAuthenticatedKey } from '../store';
+import store, { setIsAuthenticatedKey, setSocket } from '../store';
+import { preFetchSocket } from '../utils/preFetchSocket.js';
 
 Vue.use(VueRouter);
 
@@ -35,6 +36,7 @@ router.beforeEach(async (to, from, next) => {
     .catch((err) => {
       throw new Error(`Authentication Middleware Error: ${err}`);
     });
+  store.commit(setSocket, preFetchSocket(isAuthenticated));
   store.commit(setIsAuthenticatedKey, isAuthenticated);
   const isUserAuthenticated = store.state.isAuthenticated;
   if (!isUserAuthenticated && to.path !== '/login' && to.path !== '/signUp') {

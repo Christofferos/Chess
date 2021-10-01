@@ -1,15 +1,15 @@
 <template>
   <div id="app">
     <nav class="navbar navbar-default navbar-inverse navbar-static-top" role="navigation">
-      <div class="navbar-collapse" id="navbar-brand-centered" style="text-align: center;">
+      <div class="navbar-collapse" id="navbar-brand-centered" style="text-align: center">
         <ul class="nav navbar-nav">
           <li v-on:click="redirect('/login')">
-            <a style="cursor: pointer; "
+            <a style="cursor: pointer"
               ><img src="../public/logoNavbar.png" style="height: 27px"
             /></a>
           </li>
           <li v-on:click="redirect('/login')">
-            <a style="cursor: pointer; line-height: 2;">Profile</a>
+            <a style="cursor: pointer; line-height: 2">Profile</a>
           </li>
           <li v-on:click="redirect('/list')">
             <a style="cursor: pointer; line-height: 2">Play Chess</a>

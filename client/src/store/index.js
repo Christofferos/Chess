@@ -9,6 +9,9 @@ Vue.use(VueHead);
 
 export const setIsAuthenticatedKey = 'setIsAuthenticated';
 export const setUsernameKey = 'setUsername';
+export const setSocket = 'setSocket';
+export const addOnlineUser = 'addOnlineUser';
+export const removeOnlineUser = 'removeOnlineUser';
 
 export default new Vuex.Store({
   state: {
@@ -16,6 +19,8 @@ export default new Vuex.Store({
     cookie: {
       username: '',
     },
+    socket: null,
+    usersOnline: [],
   },
   mutations: {
     setIsAuthenticated(store, isAuthenticated) {
@@ -23,6 +28,19 @@ export default new Vuex.Store({
     },
     setUsername(store, username) {
       store.cookie.username = username;
+    },
+    setSocket(store, socket) {
+      store.socket = socket;
+    },
+    addOnlineUser(store, userId) {
+      const isNewOnlineUser = store.usersOnline.indexOf(userId) === -1;
+      if (isNewOnlineUser) store.usersOnline.push(userId);
+    },
+    removeOnlineUser(store, userId) {
+      const index = store.usersOnline.indexOf(userId);
+      const isUserFound = index > -1;
+      if (isUserFound) store.usersOnline.splice(index, 1);
+      userId;
     },
   },
   actions: {},

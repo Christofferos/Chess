@@ -49,15 +49,6 @@
 </template>
 
 <script>
-import io from 'socket.io-client';
-
-import {
-  IO_RECONNECTION_URL,
-  IS_RECONNECTION_ENABLED,
-  RECONNECT_DELAY_MIN,
-  RECONNECT_DELAY_MAX,
-} from '../constants';
-
 export default {
   name: 'Profile',
   components: {},
@@ -66,21 +57,11 @@ export default {
       currentlyLoggedIn: '',
       success: true,
       matches: [],
-      socket: null,
+      onlineUsers: [],
     };
   },
   created() {
     this.currentlyLoggedIn = this.$store.state.cookie.username;
-    this.$root.socket = this.$store.state.isAuthenticated
-      ? io().connect(IO_RECONNECTION_URL, {
-          reconnection: IS_RECONNECTION_ENABLED,
-          reconnectionDelay: RECONNECT_DELAY_MIN,
-          reconnectionDelayMax: RECONNECT_DELAY_MAX,
-          reconnectionAttempts: Infinity,
-        })
-      : '';
-    this.socket = this.$root.socket;
-
     fetch(`/api/matchHistory/${this.currentlyLoggedIn}`, {
       method: 'GET',
       headers: {

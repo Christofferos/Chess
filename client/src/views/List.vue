@@ -14,6 +14,10 @@
             value="Create Game"
           />
         </div>
+        <!-- Find Opponent, Invite Opponent, Play Locally, Crazy Chess -->
+        <!-- <div class="row" style="text-align: center; ">
+            <input class="well btn btn-default button" type="button" value="Find Opponent" />
+          </div> -->
         <h3 style="text-align: center; color: white">OR</h3>
 
         <form v-on:submit.prevent="join()">
@@ -35,10 +39,19 @@
         </form>
 
         <div class="row" style="text-align: center; margin-top: 10px;">
-          <h3 style="color: white">Players Online: 0</h3>
-
-          <div class="row" style="text-align: center; ">
-            <input class="well btn btn-default button" type="button" value="Find Opponent" />
+          <h3 style="color: white">Players Online: {{ usersOnline.length }}</h3>
+          <div
+            class="row well button"
+            v-for="userOnline in usersOnline"
+            @click="() => {}"
+            :key="userOnline"
+            style="margin: auto auto 5px auto"
+          >
+            <div class="row" style="text-align: center;">
+              <h4>
+                <span>{{ userOnline }}</span>
+              </h4>
+            </div>
           </div>
         </div>
 
@@ -69,6 +82,8 @@
 </template>
 
 <script>
+import { mapState } from 'vuex';
+import { addOnlineUser, removeOnlineUser } from '../store';
 export default {
   name: 'List',
   components: {},
@@ -76,8 +91,13 @@ export default {
     rooms: [],
     gameCode: '',
   }),
+  computed: {
+    ...mapState({
+      usersOnline: 'usersOnline',
+    }),
+  },
   created() {
-    this.$root.socket.on('newRoom', (newRoom) => {
+    this.$store.state.socket.on('newRoom', (newRoom) => {
       const isUserPartOfNewRoom =
         newRoom.player1 === this.$store.state.cookie.username ||
         newRoom.player2 === this.$store.state.cookie.username;
@@ -85,13 +105,21 @@ export default {
         this.rooms = [...Object.values(this.rooms), newRoom];
       }
     });
-    this.$root.socket.on('remainingRooms', (remainingRooms) => {
+    this.$store.state.socket.on('remainingRooms', (remainingRooms) => {
       this.rooms = Object.values(remainingRooms).filter((room) => {
         const isUserPartOfRoom =
           room.player1 === this.$store.state.cookie.username ||
           room.player2 === this.$store.state.cookie.username;
         return isUserPartOfRoom;
       });
+    });
+    this.$store.state.socket.on('userOnlineUpdate', (userId, isNewUser) => {
+      const isClientUsername = this.$store.state.cookie.username === userId;
+      if (isNewUser && !isClientUsername) {
+        this.$store.commit(addOnlineUser, userId);
+        return;
+      }
+      this.$store.commit(removeOnlineUser, userId);
     });
     fetch('/api/userRoomList')
       .then((res) => res.json())
