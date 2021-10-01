@@ -81,7 +81,7 @@ EXPRESS_APP.use('/api', requireAuth, chatRouter);
 init(io);
 
 const randomId = () => crypto.randomBytes(8).toString('hex');
-const sessionStore = new InMemorySessionStore();
+export const sessionStore = new InMemorySessionStore();
 io.use((socket, next) => {
   const sessionID = socket.handshake.sessionID;
   if (sessionID) {

@@ -2,7 +2,8 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 
 import { addUser, getMatchHistory } from '../model.js';
-import { addUserDB } from '../firestore.js';
+import { addUserDB, getUsersOnlineDB } from '../firestore.js';
+import { sessionStore } from '../index.js';
 
 export const userRouter = express.Router();
 const SALT_ROUNDS = 10;
@@ -25,4 +26,9 @@ userRouter.put('/signOut', (req, res) => {
 userRouter.get('/matchHistory/:userId', (req, res) => {
   const userId = req.params.userId.trim();
   res.status(200).json({ matchHistory: getMatchHistory(userId) });
+});
+
+userRouter.get('/userOnlineInitialize', async (req, res) => {
+  const onlineUsers = await getUsersOnlineDB();
+  res.status(200).json({ onlineUsers });
 });
