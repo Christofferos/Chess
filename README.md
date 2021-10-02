@@ -15,6 +15,7 @@ TODO:
 9. Add a new game mode - Crazy Chess (Squares fall off the board)
 10. Points you have during a match ✔️
 11. Make web app a Progressive Web App (WIP)
+12. Add surrender button, add equal win button
 
 ![bild](https://user-images.githubusercontent.com/42782387/134075059-34b31eac-2c56-4468-8585-f90f7980e200.png)
 
