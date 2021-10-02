@@ -104,24 +104,24 @@
                   : (col + row) % 2 === 0
                   ? '#E2E5BE'
                   : '#58793B',
-
               display: 'flex',
               justifyContent: 'space-between',
-              height: '100px',
-              width: '100px',
+              height: `${deviceScale}px`,
+              width: `${deviceScale}px`,
               cursor: 'pointer',
             }"
           >
             <img
               v-if="piecePlacement[row][col] !== ''"
               :src="pieces[piecePlacement[row][col]]"
-              style="width: 100px; position: absolute"
+              v-bind:style="{ width: `${deviceScale}px`, position: 'absolute' }"
             />
             <span
               v-bind:style="{
                 opacity: col === 0 ? 1 : 0,
                 color: row % 2 === 0 ? '#58793B' : '#E2E5BE',
                 fontWeight: 800,
+                zIndex: 10,
               }"
               >{{ 8 - row }}
             </span>
@@ -146,18 +146,10 @@
         </h1>
       </div>
 
-      <div
-        style="
-          text-align: center;
-          padding: 20px;
-          border-radius: 10px;
-          background: #41403d;
-          width: 450px;
-          margin: auto auto 25px auto;
-        "
-      >
-        <button v-clipboard="() => room" class="well btn btn-default button">🔗 Game Code</button>
-
+      <div class="gameCodeSection">
+        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
+          🔗 Game Code
+        </button>
         <h1>Chat</h1>
         <form v-on:submit.prevent="send()">
           <input
@@ -170,15 +162,7 @@
             placeholder="Write to your opponent.."
           />
         </form>
-        <div
-          style="
-            border: 2px solid black;
-            width: 350px;
-            margin: auto auto 25px auto;
-            background: #504f4c;
-            border-radius: 5px;
-          "
-        >
+        <div class="chatBox">
           <div
             v-for="(entry, index) in entries.slice(0, 10)"
             :key="index"
@@ -212,6 +196,8 @@ export default {
   components: {},
   data() {
     return {
+      windowWidth: window.innerWidth,
+      deviceScale: window.innerWidth < 800 ? 46 : 100,
       room: this.$route.params.roomName,
       game: null,
       entries: [],
@@ -266,6 +252,11 @@ export default {
         q,
       },
     };
+  },
+  watch: {
+    windowHeight(newHeight, oldHeight) {
+      console.log(`it changed to ${newHeight} from ${oldHeight}`);
+    },
   },
   methods: {
     debug() {
@@ -445,6 +436,11 @@ export default {
         },
       );
     },
+    onResize() {
+      this.windowWidth = window.innerWidth;
+      if (this.windowWidth < 800) this.deviceScale = 50;
+      else this.deviceScale = 100;
+    },
   },
   created() {
     this.reconnectionEvents();
@@ -458,7 +454,13 @@ export default {
       console.log(`Connection error: ${err}`);
     });
   },
+  mounted() {
+    this.$nextTick(() => {
+      window.addEventListener('resize', this.onResize);
+    });
+  },
   beforeDestroy() {
+    window.removeEventListener('resize', this.onResize);
     if (this.opponent === '') {
       fetch('/api/removeGame', {
         method: 'DELETE',
@@ -499,5 +501,34 @@ h2 {
 .button:hover {
   background: #32322f;
   color: white;
+}
+
+.gameCodeSection {
+  text-align: center;
+  padding: 20px;
+  border-radius: 10px;
+  background: #41403d;
+  width: 450px;
+  margin: auto auto 25px auto;
+}
+
+.chatBox {
+  border: 2px solid black;
+  width: 350px;
+  margin: auto auto 25px auto;
+  background: #504f4c;
+  border-radius: 5px;
+}
+
+@media screen and (max-width: 600px) {
+  .gameCodeSection {
+    width: 325px;
+  }
+  .gameCodeBtn {
+    width: 280px;
+  }
+  .chatBox {
+    width: 275px;
+  }
 }
 </style>

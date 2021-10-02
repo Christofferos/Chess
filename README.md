@@ -8,9 +8,9 @@ TODO:
 2. Add user-online field in database & display in UI ✔️
 3. Add a create game modal with invite options (code or http-link)
 4. Add a leaderboard - experience in amount of games ✔️
-5. Add device scaling of the board
+5. Add device scaling of the board ✔️
 6. Add timer logic - with subscription to firebase for live updates
-7. (Fix re-routing to correct https-link when loss of connection)
+7. (Fix re-routing to correct https-link when loss of connection) ✔️
 8. (Fix bug that cause no live updates to happen in game) ✔️
 9. Add a new game mode - Crazy Chess (Squares fall off the board)
 10. Points you have during a match
