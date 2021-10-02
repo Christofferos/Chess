@@ -197,7 +197,7 @@ export default {
   data() {
     return {
       windowWidth: window.innerWidth,
-      deviceScale: window.innerWidth < 800 ? 46 : 100,
+      deviceScale: window.innerWidth < 800 ? 44 : 100,
       room: this.$route.params.roomName,
       game: null,
       entries: [],
