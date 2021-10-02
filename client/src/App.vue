@@ -1,5 +1,8 @@
 <template>
   <div id="app">
+    <button class="add-button" v-if="showInstallBtn" v-on:click="installPWA()">
+      Add to home screen
+    </button>
     <nav class="navbar navbar-default navbar-inverse navbar-static-top" role="navigation">
       <div class="navbar-collapse" id="navbar-brand-centered" style="text-align: center">
         <ul class="nav navbar-nav">
@@ -26,15 +29,52 @@
 
 <script>
 export default {
+  data() {
+    return {
+      deferredPrompt: null,
+      showInstallBtn: false,
+    };
+  },
+  created() {
+    this.showInstallBtn = false;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      console.log('beforeinstallprompt');
+      e.preventDefault();
+      this.deferredPrompt = e;
+      this.showInstallBtn = true;
+    });
+  },
   methods: {
     redirect(target) {
       this.$router.push(target);
+    },
+    installPWA() {
+      this.showInstallBtn = false;
+      if (!this.deferredPrompt) return;
+      console.log('deferredPrompt not null', deferredPrompt);
+      // Show the prompt
+      this.deferredPrompt.prompt();
+      // Wait for the user to respond to the prompt
+      this.deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted the A2HS prompt');
+        } else {
+          console.log('User dismissed the A2HS prompt');
+        }
+        this.deferredPrompt = null;
+      });
     },
   },
 };
 </script>
 
 <style>
+.add-button {
+  position: absolute;
+  bottom: 1px;
+  left: 1px;
+}
+
 .html,
 body {
   margin: 0;

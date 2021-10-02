@@ -4,14 +4,15 @@
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
-    "build:prod": "vue-cli-service build --mode production",
+    "build": "npm run build:dev",
     "build:dev": "vue-cli-service build --mode development --watch",
-    "build": "npm run build:dev"
+    "build:prod": "vue-cli-service build --mode production"
   },
   "dependencies": {
     "@chrisoakman/chessboardjs": "^1.0.0",
     "aws-sdk": "^2.858.0",
     "core-js": "^3.4.3",
+    "register-service-worker": "^1.7.1",
     "socket.io-client": "^2.3.0",
     "v-clipboard": "^2.2.3",
     "vue": "^2.6.10",
@@ -22,6 +23,7 @@
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^4.1.0",
+    "@vue/cli-plugin-pwa": "~4.5.0",
     "@vue/cli-plugin-router": "^4.1.0",
     "@vue/cli-plugin-vuex": "^4.1.0",
     "@vue/cli-service": "^4.1.0",
