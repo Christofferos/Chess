@@ -2,7 +2,7 @@ import express from 'express';
 import bcrypt from 'bcrypt';
 
 import { addUser, getMatchHistory } from '../model.js';
-import { addUserDB, getUsersOnlineDB } from '../firestore.js';
+import { addUserDB, getAllMatchHistoryDB, getUsersDB, getUsersOnlineDB } from '../firestore.js';
 import { sessionStore } from '../index.js';
 
 export const userRouter = express.Router();
@@ -31,4 +31,11 @@ userRouter.get('/matchHistory/:userId', (req, res) => {
 userRouter.get('/userOnlineInitialize', async (req, res) => {
   const onlineUsers = await getUsersOnlineDB();
   res.status(200).json({ onlineUsers });
+});
+
+userRouter.get('/leaderboard', async (req, res) => {
+  const users = await getUsersDB();
+  const userToExperienceScore = users.map(user => [user.username, user.experience]);
+  const sortedLeaderboard = userToExperienceScore.sort(([, a], [, b]) => b - a);
+  res.status(200).json({ sortedLeaderboard });
 });

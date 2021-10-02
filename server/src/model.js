@@ -3,6 +3,7 @@ import { LiveGame } from './models/liveGame.model.js';
 import { MatchHistory } from './models/matchHistory.model.js';
 import {
   addMatchHistoryGameDB,
+  addUserExperiencePointDB,
   deleteLiveGameDB,
   getLiveGamesDB,
   getUsersDB,
@@ -258,6 +259,7 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
     matchHistory[game.player1].push(new MatchHistory(game.player2, winner, nMoves, date));
     matchHistory[game.player2].push(new MatchHistory(game.player1, winner, nMoves, date));
     await addMatchHistoryGameDB(game.player1, game.player2, winner, nMoves, date);
+    await addUserExperiencePointDB(winner);
   }
   emitMovePiece(game);
 };

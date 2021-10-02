@@ -23,7 +23,11 @@ const matchHistoryCollection = firestore.collection('matchHistory');
 const usersOnlineCollection = firestore.collection('usersOnline');
 
 export const addUserDB = async (username, password) => {
-  const userRef = await usersCollection.add({ username, password });
+  const userRef = await usersCollection.add({
+    username,
+    password,
+    experience: 0,
+  });
   console.log('User document written with ID: ', userRef.id);
 };
 
@@ -41,6 +45,14 @@ export const getUsersDB = async () => {
     users.push(doc.data());
   });
   return users;
+};
+
+export const addUserExperiencePointDB = async userId => {
+  const users = await usersCollection.where('username', '==', userId).get();
+  users.forEach(user => {
+    const userData = user.data();
+    user.ref.update({ experience: userData.experience + 1 });
+  });
 };
 
 export const addLiveGameDB = async (id, currentGame, player1, player2, timeLeft1, timeLeft2) => {
@@ -93,6 +105,12 @@ export const addMatchHistoryGameDB = async (player1, player2, winner, nMoves, da
     date,
   });
   console.log('MatchHistory document added with ID: ', matchHistoryRef.id);
+};
+
+export const getAllMatchHistoryDB = async () => {
+  const snapshot = await matchHistoryCollection.get();
+  const allMatchHistory = snapshot.docs.map(doc => doc.data());
+  return allMatchHistory;
 };
 
 export const addUserOnlineDB = async userId => {
