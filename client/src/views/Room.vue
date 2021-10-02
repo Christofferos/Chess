@@ -1,7 +1,6 @@
 <template>
-  <div class="container">
-    <section
-      class="col-md-10 col-md-offset-1"
+  <div style="display: flex; align-content: center; justify-content: center;">
+    <div
       style="display: flex; flex-direction: column; justify-content: center; align-items: center"
     >
       <div class="row" style="text-align: center">
@@ -83,7 +82,7 @@
         </button>
       </div>
 
-      <div id="board" style="display: inline-block; vertical-align: bottom">
+      <div id="board" style="display: flex, flex-direction: column">
         <div
           class="row"
           v-for="row in rows"
@@ -173,7 +172,7 @@
           </div>
         </div>
       </div>
-    </section>
+    </div>
   </div>
 </template>
 
@@ -191,13 +190,16 @@ import b from '../assets/bb.png';
 import q from '../assets/bq.png';
 import k from '../assets/bk.png';
 
+const W_BREAKPOINT = 800;
+const CELL_SIZE_SMALL = 46;
+const CELL_SIZE_NORMAL = 100;
 export default {
   name: 'Room',
   components: {},
   data() {
     return {
       windowWidth: window.innerWidth,
-      deviceScale: window.innerWidth < 800 ? 44 : 100,
+      deviceScale: window.innerWidth < W_BREAKPOINT ? CELL_SIZE_SMALL : CELL_SIZE_NORMAL,
       room: this.$route.params.roomName,
       game: null,
       entries: [],
@@ -438,8 +440,8 @@ export default {
     },
     onResize() {
       this.windowWidth = window.innerWidth;
-      if (this.windowWidth < 800) this.deviceScale = 50;
-      else this.deviceScale = 100;
+      if (this.windowWidth < W_BREAKPOINT) this.deviceScale = CELL_SIZE_SMALL;
+      else this.deviceScale = CELL_SIZE_NORMAL;
     },
   },
   created() {
