@@ -522,6 +522,10 @@ h2 {
   border-radius: 5px;
 }
 
+#board {
+  touch-action: pan-y;
+}
+
 @media screen and (max-width: 600px) {
   .gameCodeSection {
     width: 325px;
