@@ -6,7 +6,8 @@
       <div class="row" style="text-align: center">
         <h1 v-if="this.opponent === ''">Waiting for an opponent...</h1>
         <h1 v-else>
-          {{ this.black ? this.$store.state.cookie.username : this.opponent }}
+          {{ this.black ? this.$store.state.cookie.username : this.opponent }} |
+          {{ piecePointsBlack > 0 ? `+${piecePointsBlack}` : piecePointsBlack }}
         </h1>
       </div>
 
@@ -141,7 +142,8 @@
 
       <div class="row" style="text-align: center">
         <h1>
-          {{ this.black ? this.opponent : this.$store.state.cookie.username }}
+          {{ this.black ? this.opponent : this.$store.state.cookie.username }} |
+          {{ piecePointsWhite > 0 ? `+${piecePointsWhite}` : piecePointsWhite }}
         </h1>
       </div>
 
@@ -253,6 +255,8 @@ export default {
         b,
         q,
       },
+      piecePointsWhite: 0,
+      piecePointsBlack: 0,
     };
   },
   watch: {
@@ -278,6 +282,25 @@ export default {
         }),
       }).catch(console.error);
       this.input = '';
+    },
+    updateScores() {
+      let whitePieces = 0;
+      let blackPieces = 0;
+      const piecesFEN = this.game.fen.split(' ')[0];
+      piecesFEN.split('').forEach((fenChar) => {
+        if (fenChar === 'p') blackPieces += 1;
+        else if (fenChar === 'n') blackPieces += 3;
+        else if (fenChar === 'b') blackPieces += 3;
+        else if (fenChar === 'r') blackPieces += 5;
+        else if (fenChar === 'q') blackPieces += 9;
+        else if (fenChar === 'P') whitePieces += 1;
+        else if (fenChar === 'N') whitePieces += 3;
+        else if (fenChar === 'B') whitePieces += 3;
+        else if (fenChar === 'R') whitePieces += 5;
+        else if (fenChar === 'Q') whitePieces += 9;
+      });
+      this.piecePointsWhite = whitePieces - blackPieces;
+      this.piecePointsBlack = blackPieces - whitePieces;
     },
     updatePiecePlacement() {
       if (this.game !== null) {
@@ -309,6 +332,7 @@ export default {
           }
         }
       }
+      this.updateScores();
     },
     translateSelectedPiece(row, col) {
       const rank = 8 - Number(row);
