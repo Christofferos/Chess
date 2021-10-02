@@ -11,6 +11,9 @@
           <li v-on:click="redirect('/login')">
             <a style="cursor: pointer; line-height: 2">Profile</a>
           </li>
+          <li v-on:click="redirect('/leaderboard')">
+            <a style="cursor: pointer; line-height: 2">Leaderboard</a>
+          </li>
           <li v-on:click="redirect('/list')">
             <a style="cursor: pointer; line-height: 2">Play Chess</a>
           </li>

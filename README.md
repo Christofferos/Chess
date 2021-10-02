@@ -7,7 +7,7 @@ TODO:
 1. Fix pawn promotion for UI and logic ✔️
 2. Add user-online field in database & display in UI ✔️
 3. Add a create game modal with invite options (code or http-link)
-4. Add a leaderboard - experience in amount of games
+4. Add a leaderboard - experience in amount of games ✔️
 5. Add device scaling of the board
 6. Add timer logic - with subscription to firebase for live updates
 7. (Fix re-routing to correct https-link when loss of connection)

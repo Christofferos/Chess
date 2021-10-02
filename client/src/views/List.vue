@@ -32,7 +32,6 @@
               v-model="gameCode"
             />
           </div>
-
           <div class="row" style="text-align: center;">
             <input class="well btn btn-default button" type="submit" value="Join Game" />
           </div>
@@ -121,6 +120,15 @@ export default {
       }
       this.$store.commit(removeOnlineUser, userId);
     });
+    fetch('/api/userOnlineInitialize')
+      .then((res) => res.json())
+      .then(({ onlineUsers }) => {
+        onlineUsers.forEach(({ userId }) => {
+          const isClientUsername = this.$store.state.cookie.username === userId;
+          if (!isClientUsername) this.$store.commit(addOnlineUser, userId);
+        });
+      })
+      .catch(console.error);
     fetch('/api/userRoomList')
       .then((res) => res.json())
       .then((data) => {

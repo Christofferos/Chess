@@ -5,6 +5,7 @@ import ListView from '../views/List.vue';
 import RoomView from '../views/Room.vue';
 import LoginView from '../views/Login.vue';
 import ProfileView from '../views/Profile.vue';
+import LeaderboardView from '../views/Leaderboard.vue';
 import SignUp from '../views/SignUp.vue';
 import store, { setIsAuthenticatedKey, setSocket } from '../store';
 import { preFetchSocket } from '../utils/preFetchSocket.js';
@@ -18,6 +19,7 @@ const routes = [
   { path: '/login', component: LoginView },
   { path: '/profile', component: ProfileView },
   { path: '/signUp', component: SignUp },
+  { path: '/leaderboard', component: LeaderboardView },
 ];
 
 const router = new VueRouter({
