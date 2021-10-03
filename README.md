@@ -6,7 +6,7 @@ TODO:
 
 1. Fix pawn promotion for UI and logic ✔️
 2. Add user-online field in database & display in UI ✔️
-3. Add a create game modal with invite options (code or http-link)
+3. Add a create game modal with invite options (WIP)
 4. Add a leaderboard - experience in amount of games ✔️
 5. Add device scaling of the board ✔️
 6. Add timers in game ✔️
@@ -15,7 +15,7 @@ TODO:
 9. Add a new game mode - Crazy Chess (Squares fall off the board)
 10. Points you have during a match ✔️
 11. Make web app a Progressive Web App (WIP)
-12. Add surrender button, add equal win button
+12. Add surrender button
 
 ![bild](https://user-images.githubusercontent.com/42782387/134075059-34b31eac-2c56-4468-8585-f90f7980e200.png)
 

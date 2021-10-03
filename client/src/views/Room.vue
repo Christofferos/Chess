@@ -8,7 +8,7 @@
         <h1 v-else>
           {{ this.getBlackTime() }} |
           {{ this.black ? this.$store.state.cookie.username : this.opponent }} |
-          {{ piecePointsBlack > 0 ? `+${piecePointsBlack}` : piecePointsBlack }}
+          {{ piecePointsBlack > 0 ? `+${piecePointsBlack}` : piecePointsBlack }} 🏳️
         </h1>
       </div>
 
@@ -145,7 +145,7 @@
         <h1>
           {{ this.getWhiteTime() }} |
           {{ this.black ? this.opponent : this.$store.state.cookie.username }} |
-          {{ piecePointsWhite > 0 ? `+${piecePointsWhite}` : piecePointsWhite }}
+          {{ piecePointsWhite > 0 ? `+${piecePointsWhite}` : piecePointsWhite }} 🏳️
         </h1>
       </div>
 
@@ -444,30 +444,29 @@ export default {
         }
       });
 
+      this.$store.state.socket.on('timerGameOver', (fen, isGameWonWithPieces) => {
+        this.gameOverWinLose(fen, isGameWonWithPieces);
+      });
+
       this.$store.state.socket.on(
         'movePieceResponse',
-        (newFen, timeLeft1, timeLeft2, gameOver, draw1, draw2, draw3, draw4) => {
-          const isWhiteTurn = newFen.split(' ')[1] === 'w';
-          const isBlackTurn = newFen.split(' ')[1] === 'b';
-          if (gameOver) {
+        (newFen, timeLeft1, timeLeft2, isGameOver, draw1, draw2, draw3, draw4) => {
+          if (isGameOver) {
+            this.stopPlayerTimes();
             if (draw1 || draw2 || draw3 || draw4) {
               this.endGameMsg = 'Draw!';
-            } else if (isWhiteTurn && this.black) {
-              this.endGameMsg = 'Check Mate!\n You win';
-            } else if (isWhiteTurn && this.black === false) {
-              this.endGameMsg = 'Check Mate!\n You lose';
-            } else if (isBlackTurn && this.black) {
-              this.endGameMsg = 'Check Mate!\n You lose';
-            } else if (isBlackTurn && this.black === false) {
-              this.endGameMsg = 'Check Mate!\n You win';
+            } else {
+              this.gameOverWinLose(newFen);
             }
           }
           this.selectedPiece = '';
           this.game.timeLeft1 = timeLeft1;
           this.game.timeLeft2 = timeLeft2;
+          const isLegalMove = this.game.fen !== newFen;
           this.game.fen = newFen;
           this.updatePiecePlacement();
-          this.startOpposingTimer(isWhiteTurn);
+          const isWhiteTurn = newFen.split(' ')[1] === 'w';
+          if (!isGameOver && isLegalMove) this.startOpposingTimer(isWhiteTurn);
         },
       );
     },
@@ -487,7 +486,7 @@ export default {
           if (!this.game) return;
           this.game.timeLeft2 -= 1;
           const isOutOfTime = this.game.timeLeft2 <= 0;
-          if (isOutOfTime) stopPlayerTimes();
+          if (isOutOfTime) this.stopPlayerTimes();
         }, 1000);
         if (!isWhiteTimerDefined) return;
         clearInterval(this.timer1);
@@ -497,7 +496,7 @@ export default {
           if (!this.game) return;
           this.game.timeLeft1 -= 1;
           const isOutOfTime = this.game.timeLeft1 <= 0;
-          if (isOutOfTime) stopPlayerTimes();
+          if (isOutOfTime) this.stopPlayerTimes();
         }, 1000);
         if (!isBlackTimerDefined) return;
         clearInterval(this.timer2);
@@ -509,6 +508,20 @@ export default {
       this.timer1 = null;
       clearInterval(this.timer2);
       this.timer2 = null;
+    },
+    gameOverWinLose(fen, isGameWonWithPieces = true) {
+      const isWhiteTurn = fen.split(' ')[1] === 'w';
+      const isBlackTurn = fen.split(' ')[1] === 'b';
+      const gameOverMsg = isGameWonWithPieces ? 'Check Mate!\n' : 'Time is out!\n';
+      if (isWhiteTurn && this.black) {
+        this.endGameMsg = `${gameOverMsg} You win`;
+      } else if (isWhiteTurn && this.black === false) {
+        this.endGameMsg = `${gameOverMsg} You lose`;
+      } else if (isBlackTurn && this.black) {
+        this.endGameMsg = `${gameOverMsg} You lose`;
+      } else if (isBlackTurn && this.black === false) {
+        this.endGameMsg = `${gameOverMsg} You win`;
+      }
     },
     getWhiteTime() {
       const isGameDefined = this.game;

@@ -164,7 +164,7 @@ export const authorizedToJoinGame = (userId, gameId) => {
  * @returns {void}
  */
 export const addLiveGame = (id, player1) => {
-  games[id] = new LiveGame(id, undefined, player1, undefined, undefined, undefined);
+  games[id] = new LiveGame(id, undefined, player1, undefined, 10, 10); // Last two undefiend
   io.emit('newRoom', games[id]);
 };
 
@@ -213,13 +213,18 @@ export const findLiveGame = id => {
   return games[id];
 };
 
+const emitTimerGameOver = game => {
+  io.in(game.id).emit('timerGameOver', game.fen, game.gameState.game_over());
+};
+
 const emitMovePiece = game => {
+  const isGameOver = game.gameState.game_over() || game.timeLeft1 <= 0 || game.timeLeft2 <= 0;
   io.in(game.id).emit(
     'movePieceResponse',
     game.fen,
     game.timeLeft1,
     game.timeLeft2,
-    game.gameState.game_over(),
+    isGameOver,
     game.gameState.in_draw(),
     game.gameState.in_stalemate(),
     game.gameState.in_threefold_repetition(),
@@ -248,7 +253,11 @@ const startOpposingTimer = game => {
       if (!isGameDefined) return;
       games[game.id].timeLeft2 -= 1;
       const isOutOfTime = games[game.id].timeLeft2 <= 0;
-      if (isOutOfTime) stopPlayerTimes(game);
+      if (isOutOfTime) {
+        stopPlayerTimes(game);
+        emitTimerGameOver(game);
+        gameOver(game);
+      }
     }, 1000);
     if (!whiteTimer) return;
     clearInterval(games[game.id].timer1);
@@ -258,7 +267,11 @@ const startOpposingTimer = game => {
       if (!isGameDefined) return;
       games[game.id].timeLeft1 -= 1;
       const isOutOfTime = games[game.id].timeLeft1 <= 0;
-      if (isOutOfTime) stopPlayerTimes(game);
+      if (isOutOfTime) {
+        stopPlayerTimes(game);
+        emitTimerGameOver(game);
+        gameOver(game);
+      }
     }, 1000);
     if (!blackTimer) return;
     clearInterval(games[game.id].timer2);
@@ -274,6 +287,22 @@ const stopPlayerTimes = game => {
   games[game.id].timer2 = null;
 };
 
+const gameOver = async game => {
+  let winner;
+  stopPlayerTimes(game);
+  const isDraw = isGameDraw(game);
+  const isPlayer2Winner = game.fen.split(' ')[1] === 'w';
+  if (isDraw) winner = '';
+  else winner = isPlayer2Winner ? game.player2 : game.player1;
+  initMatchHistoryArrays(game.player1, game.player2);
+  const date = currentDate();
+  const nMoves = game.gameState.history().length;
+  matchHistory[game.player1].push(new MatchHistory(game.player2, winner, nMoves, date));
+  matchHistory[game.player2].push(new MatchHistory(game.player1, winner, nMoves, date));
+  await addMatchHistoryGameDB(game.player1, game.player2, winner, nMoves, date);
+  await addUserExperiencePointDB(winner);
+};
+
 /**
  * Updates the piece placement
  */
@@ -282,26 +311,18 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
     username === games[gameId].player1 || username === games[gameId].player2;
   if (!isUserAllowedToMove) return;
   const game = games[gameId];
-  game.gameState.move({ from: startPos, to: endPos, promotion: promotionPiece?.toLowerCase() });
-  startOpposingTimer(game);
+  const isLegalMove = game.gameState.move({
+    from: startPos,
+    to: endPos,
+    promotion: promotionPiece?.toLowerCase(),
+  });
+  if (isLegalMove) startOpposingTimer(game);
   game.fen = game.gameState.fen();
   setLiveGameStateDB(gameId, game.fen, game.timeLeft1, game.timeLeft2);
 
   const isGameOver = game.gameState.game_over();
   if (isGameOver) {
-    let winner;
-    stopPlayerTimes(game);
-    const isDraw = isGameDraw(game);
-    const isPlayer2Winner = game.fen.split(' ')[1] === 'w';
-    if (isDraw) winner = '';
-    else winner = isPlayer2Winner ? game.player2 : game.player1;
-    initMatchHistoryArrays(game.player1, game.player2);
-    const date = currentDate();
-    const nMoves = game.gameState.history().length;
-    matchHistory[game.player1].push(new MatchHistory(game.player2, winner, nMoves, date));
-    matchHistory[game.player2].push(new MatchHistory(game.player1, winner, nMoves, date));
-    await addMatchHistoryGameDB(game.player1, game.player2, winner, nMoves, date);
-    await addUserExperiencePointDB(winner);
+    gameOver(game);
   }
   emitMovePiece(game);
 };

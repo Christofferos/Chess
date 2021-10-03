@@ -14,6 +14,7 @@
             value="Create Game"
           />
         </div>
+
         <!-- Find Opponent, Invite Opponent, Play Locally, Crazy Chess -->
         <!-- <div class="row" style="text-align: center; ">
             <input class="well btn btn-default button" type="button" value="Find Opponent" />
@@ -40,11 +41,16 @@
         <div class="row" style="text-align: center; margin-top: 10px;">
           <h3 style="color: white">Players Online: {{ usersOnline.length }}</h3>
           <div
-            class="row well button"
             v-for="userOnline in usersOnline"
-            @click="() => {}"
+            @click="
+              () => {
+                isInviteModalUp = true;
+                selectedOpponent = userOnline;
+              }
+            "
             :key="userOnline"
-            style="margin: auto auto 5px auto"
+            class="row well button"
+            style="margin: auto auto 5px auto; cursor: pointer"
           >
             <div class="row" style="text-align: center;">
               <h4>
@@ -59,7 +65,7 @@
         </div>
         <div
           class="row well button"
-          v-for="room in rooms"
+          v-for="room in roomsList"
           @click="
             () => {
               gameCode = room.id;
@@ -67,7 +73,7 @@
             }
           "
           :key="room.id"
-          style="margin: auto auto 5px auto"
+          style="margin: auto auto 5px auto; cursor: pointer"
         >
           <div class="row" style="text-align: center;">
             <h4>
@@ -75,6 +81,45 @@
             </h4>
           </div>
         </div>
+      </div>
+
+      <div
+        v-bind:style="{
+          display: this.isInviteModalUp ? 'flex' : 'none',
+          position: 'absolute',
+          flexDirection: 'column',
+          top: '0%',
+          right: '0%',
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(205, 133, 63, 0.6)',
+          zIndex: '11',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }"
+        type="text"
+      >
+        <input
+          class="well btn btn-default button"
+          @click="
+            () => {
+              selectedOpponent = null;
+            }
+          "
+          type="button"
+          v-bind:value="'Challenge ' + selectedOpponent"
+        />
+        <input
+          class="well btn btn-default button"
+          @click="
+            () => {
+              isInviteModalUp = false;
+              selectedOpponent = null;
+            }
+          "
+          type="button"
+          value="Cancel"
+        />
       </div>
     </section>
   </div>
@@ -89,8 +134,14 @@ export default {
   data: () => ({
     rooms: [],
     gameCode: '',
+    isInviteModalUp: false,
+    selectedOpponent: null,
+    windowWidth: window.innerWidth,
   }),
   computed: {
+    roomsList: function() {
+      return this.rooms.filter((room, index) => index < 3);
+    },
     ...mapState({
       usersOnline: 'usersOnline',
     }),
