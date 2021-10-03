@@ -6,6 +6,7 @@
       <div class="row" style="text-align: center">
         <h1 v-if="this.opponent === ''">Waiting for an opponent...</h1>
         <h1 v-else>
+          {{ this.getBlackTime() }} |
           {{ this.black ? this.$store.state.cookie.username : this.opponent }} |
           {{ piecePointsBlack > 0 ? `+${piecePointsBlack}` : piecePointsBlack }}
         </h1>
@@ -142,6 +143,7 @@
 
       <div class="row" style="text-align: center">
         <h1>
+          {{ this.getWhiteTime() }} |
           {{ this.black ? this.opponent : this.$store.state.cookie.username }} |
           {{ piecePointsWhite > 0 ? `+${piecePointsWhite}` : piecePointsWhite }}
         </h1>
@@ -257,6 +259,8 @@ export default {
       },
       piecePointsWhite: 0,
       piecePointsBlack: 0,
+      timer1: null,
+      timer2: null,
     };
   },
   watch: {
@@ -442,23 +446,28 @@ export default {
 
       this.$store.state.socket.on(
         'movePieceResponse',
-        (newFen, gameOver, draw1, draw2, draw3, draw4) => {
+        (newFen, timeLeft1, timeLeft2, gameOver, draw1, draw2, draw3, draw4) => {
+          const isWhiteTurn = newFen.split(' ')[1] === 'w';
+          const isBlackTurn = newFen.split(' ')[1] === 'b';
           if (gameOver) {
             if (draw1 || draw2 || draw3 || draw4) {
               this.endGameMsg = 'Draw!';
-            } else if (newFen.split(' ')[1] === 'w' && this.black) {
+            } else if (isWhiteTurn && this.black) {
               this.endGameMsg = 'Check Mate!\n You win';
-            } else if (newFen.split(' ')[1] === 'w' && this.black === false) {
+            } else if (isWhiteTurn && this.black === false) {
               this.endGameMsg = 'Check Mate!\n You lose';
-            } else if (newFen.split(' ')[1] === 'b' && this.black) {
+            } else if (isBlackTurn && this.black) {
               this.endGameMsg = 'Check Mate!\n You lose';
-            } else if (newFen.split(' ')[1] === 'b' && this.black === false) {
+            } else if (isBlackTurn && this.black === false) {
               this.endGameMsg = 'Check Mate!\n You win';
             }
           }
           this.selectedPiece = '';
+          this.game.timeLeft1 = timeLeft1;
+          this.game.timeLeft2 = timeLeft2;
           this.game.fen = newFen;
           this.updatePiecePlacement();
+          this.startOpposingTimer(isWhiteTurn);
         },
       );
     },
@@ -467,12 +476,60 @@ export default {
       if (this.windowWidth < W_BREAKPOINT) this.deviceScale = CELL_SIZE_SMALL;
       else this.deviceScale = CELL_SIZE_NORMAL;
     },
+
+    startOpposingTimer(isWhiteTurn) {
+      const isGameDefined = this.game;
+      if (!isGameDefined) return;
+      const isWhiteTimerDefined = this.timer1;
+      const isBlackTimerDefined = this.timer2;
+      if (!isWhiteTurn) {
+        this.timer2 = setInterval(() => {
+          if (!this.game) return;
+          this.game.timeLeft2 -= 1;
+          const isOutOfTime = this.game.timeLeft2 <= 0;
+          if (isOutOfTime) stopPlayerTimes();
+        }, 1000);
+        if (!isWhiteTimerDefined) return;
+        clearInterval(this.timer1);
+        this.timer1 = null;
+      } else {
+        this.timer1 = setInterval(() => {
+          if (!this.game) return;
+          this.game.timeLeft1 -= 1;
+          const isOutOfTime = this.game.timeLeft1 <= 0;
+          if (isOutOfTime) stopPlayerTimes();
+        }, 1000);
+        if (!isBlackTimerDefined) return;
+        clearInterval(this.timer2);
+        this.timer2 = null;
+      }
+    },
+    stopPlayerTimes() {
+      clearInterval(this.timer1);
+      this.timer1 = null;
+      clearInterval(this.timer2);
+      this.timer2 = null;
+    },
+    getWhiteTime() {
+      const isGameDefined = this.game;
+      if (!isGameDefined) return '-';
+      const time = this.game.timeLeft1;
+      if (time < 0) return '0:00';
+      return `${Math.floor(time / 60)}:${time % 60}`;
+    },
+    getBlackTime() {
+      const isGameDefined = this.game;
+      if (!isGameDefined) return '-';
+      const time = this.game.timeLeft2;
+      if (time < 0) return '0:00';
+      return `${Math.floor(time / 60)}:${time % 60}`;
+    },
   },
   created() {
     this.reconnectionEvents();
-    this.$store.state.socket.on('connect', () => {
+    /* this.$store.state.socket.on('connect', () => {
       this.reconnectionEvents();
-    });
+    }); */
     this.$store.state.socket.on('disconnect', () => {
       this.$store.state.socket.off('connect_error');
     });

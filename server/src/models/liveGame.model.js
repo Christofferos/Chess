@@ -40,6 +40,8 @@ export class LiveGame {
     } else {
       this.timeLeft2 = timeLeft2;
     }
+    this.timer1 = null;
+    this.timer2 = null;
     // Not persistant
     this.messages = [];
   }

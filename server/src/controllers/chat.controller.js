@@ -45,8 +45,9 @@ chatRouter.get('/room/:room/authorizedToJoin', (req, res) => {
 });
 
 const getJoinGameResponseObject = game => {
+  const { timer1, timer2, ...gameWithoutTimers } = game;
   return {
-    game,
+    game: gameWithoutTimers,
     list: game.messages,
     msg: `Successfully joined game: ${game.id}`,
     href_messages: `/room/${game.id}`,

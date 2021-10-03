@@ -217,6 +217,8 @@ const emitMovePiece = game => {
   io.in(game.id).emit(
     'movePieceResponse',
     game.fen,
+    game.timeLeft1,
+    game.timeLeft2,
     game.gameState.game_over(),
     game.gameState.in_draw(),
     game.gameState.in_stalemate(),
@@ -234,6 +236,44 @@ const isGameDraw = game => {
   );
 };
 
+const startOpposingTimer = game => {
+  const isGameDefined = games[game.id];
+  if (!isGameDefined) return;
+  const whiteTimer = games[game.id].timer1;
+  const blackTimer = games[game.id].timer2;
+  const playerTurn = game.gameState.turn();
+  const isBlacksTurn = playerTurn === 'b';
+  if (isBlacksTurn) {
+    games[game.id].timer2 = setInterval(() => {
+      if (!isGameDefined) return;
+      games[game.id].timeLeft2 -= 1;
+      const isOutOfTime = games[game.id].timeLeft2 <= 0;
+      if (isOutOfTime) stopPlayerTimes(game);
+    }, 1000);
+    if (!whiteTimer) return;
+    clearInterval(games[game.id].timer1);
+    games[game.id].timer1 = null;
+  } else {
+    games[game.id].timer1 = setInterval(() => {
+      if (!isGameDefined) return;
+      games[game.id].timeLeft1 -= 1;
+      const isOutOfTime = games[game.id].timeLeft1 <= 0;
+      if (isOutOfTime) stopPlayerTimes(game);
+    }, 1000);
+    if (!blackTimer) return;
+    clearInterval(games[game.id].timer2);
+    games[game.id].timer2 = null;
+  }
+  // console.log('WHITE TIME: ', games[game.id].timeLeft1, 'BLACK TIME: ', games[game.id].timeLeft2);
+};
+
+const stopPlayerTimes = game => {
+  clearInterval(games[game.id].timer1);
+  games[game.id].timer1 = null;
+  clearInterval(games[game.id].timer2);
+  games[game.id].timer2 = null;
+};
+
 /**
  * Updates the piece placement
  */
@@ -243,12 +283,14 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
   if (!isUserAllowedToMove) return;
   const game = games[gameId];
   game.gameState.move({ from: startPos, to: endPos, promotion: promotionPiece?.toLowerCase() });
+  startOpposingTimer(game);
   game.fen = game.gameState.fen();
-  await setLiveGameStateDB(game.fen, gameId);
+  setLiveGameStateDB(gameId, game.fen, game.timeLeft1, game.timeLeft2);
 
   const isGameOver = game.gameState.game_over();
   if (isGameOver) {
     let winner;
+    stopPlayerTimes(game);
     const isDraw = isGameDraw(game);
     const isPlayer2Winner = game.fen.split(' ')[1] === 'w';
     if (isDraw) winner = '';
