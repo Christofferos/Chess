@@ -8,7 +8,8 @@
         <h1 v-else>
           {{ this.getBlackTime() }} |
           {{ this.black ? this.$store.state.cookie.username : this.opponent }} |
-          {{ piecePointsBlack > 0 ? `+${piecePointsBlack}` : piecePointsBlack }} 🏳️
+          {{ piecePointsBlack > 0 ? `+${piecePointsBlack}` : piecePointsBlack }}
+          {{ black ? '🏳️' : null }}
         </h1>
       </div>
 
@@ -142,10 +143,11 @@
       </div>
 
       <div class="row" style="text-align: center">
-        <h1>
+        <h1 style="margin-top: 10px">
           {{ this.getWhiteTime() }} |
           {{ this.black ? this.opponent : this.$store.state.cookie.username }} |
-          {{ piecePointsWhite > 0 ? `+${piecePointsWhite}` : piecePointsWhite }} 🏳️
+          {{ piecePointsWhite > 0 ? `+${piecePointsWhite}` : piecePointsWhite }}
+          {{ !black ? '🏳️' : null }}
         </h1>
       </div>
 
@@ -193,17 +195,14 @@ import n from '../assets/bn.png';
 import b from '../assets/bb.png';
 import q from '../assets/bq.png';
 import k from '../assets/bk.png';
+import { getBoardSize } from '../utils/getBoardSize';
 
-const W_BREAKPOINT = 800;
-const CELL_SIZE_SMALL = 46;
-const CELL_SIZE_NORMAL = 100;
 export default {
   name: 'Room',
   components: {},
   data() {
     return {
-      windowWidth: window.innerWidth,
-      deviceScale: window.innerWidth < W_BREAKPOINT ? CELL_SIZE_SMALL : CELL_SIZE_NORMAL,
+      deviceScale: getBoardSize(),
       room: this.$route.params.roomName,
       game: null,
       entries: [],
@@ -471,9 +470,7 @@ export default {
       );
     },
     onResize() {
-      this.windowWidth = window.innerWidth;
-      if (this.windowWidth < W_BREAKPOINT) this.deviceScale = CELL_SIZE_SMALL;
-      else this.deviceScale = CELL_SIZE_NORMAL;
+      this.deviceScale = getBoardSize();
     },
 
     startOpposingTimer(isWhiteTurn) {
@@ -528,14 +525,20 @@ export default {
       if (!isGameDefined) return '-';
       const time = this.game.timeLeft1;
       if (time < 0) return '0:00';
-      return `${Math.floor(time / 60)}:${time % 60}`;
+      const unformattedSec = time % 60;
+      const seconds = unformattedSec < 10 ? `0${unformattedSec}` : unformattedSec;
+      const minutes = Math.floor(time / 60);
+      return `${minutes}:${seconds}`;
     },
     getBlackTime() {
       const isGameDefined = this.game;
       if (!isGameDefined) return '-';
       const time = this.game.timeLeft2;
       if (time < 0) return '0:00';
-      return `${Math.floor(time / 60)}:${time % 60}`;
+      const unformattedSec = time % 60;
+      const seconds = unformattedSec < 10 ? `0${unformattedSec}` : unformattedSec;
+      const minutes = Math.floor(time / 60);
+      return `${minutes}:${seconds}`;
     },
   },
   created() {

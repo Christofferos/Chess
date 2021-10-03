@@ -84,18 +84,9 @@
       </div>
 
       <div
+        class="modal"
         v-bind:style="{
           display: this.isInviteModalUp ? 'flex' : 'none',
-          position: 'absolute',
-          flexDirection: 'column',
-          top: '0%',
-          right: '0%',
-          width: '100%',
-          height: '100%',
-          backgroundColor: 'rgba(205, 133, 63, 0.6)',
-          zIndex: '11',
-          alignItems: 'center',
-          justifyContent: 'center',
         }"
         type="text"
       >
@@ -103,17 +94,38 @@
           class="well btn btn-default button"
           @click="
             () => {
-              selectedOpponent = null;
+              isGameSettingsModal = true;
             }
           "
           type="button"
           v-bind:value="'Challenge ' + selectedOpponent"
+          v-if="!isGameSettingsModal"
         />
+        <div v-if="isGameSettingsModal">
+          <div
+            v-for="timeOption in minuteOptions"
+            :key="timeOption"
+            @click="
+              () => {
+                isGameSettingsModal = false;
+                isInviteModalUp = false;
+                newGame(timeOption);
+              }
+            "
+          >
+            <input
+              class="well btn btn-default button"
+              type="button"
+              v-bind:value="timeOption + ' minutes'"
+            />
+          </div>
+        </div>
         <input
           class="well btn btn-default button"
           @click="
             () => {
               isInviteModalUp = false;
+              isGameSettingsModal = false;
               selectedOpponent = null;
             }
           "
@@ -135,8 +147,9 @@ export default {
     rooms: [],
     gameCode: '',
     isInviteModalUp: false,
+    isGameSettingsModal: false,
     selectedOpponent: null,
-    windowWidth: window.innerWidth,
+    minuteOptions: [10, 5, 3, 1],
   }),
   computed: {
     roomsList: function() {
@@ -191,7 +204,7 @@ export default {
     redirect(roomName) {
       this.$router.push(`/room/${roomName}`);
     },
-    newGame() {
+    newGame(minuteTimeLimit = undefined) {
       fetch('/api/newGame', {
         method: 'POST',
         headers: {
@@ -199,6 +212,7 @@ export default {
         },
         body: JSON.stringify({
           username: this.username,
+          minuteTimeLimit,
         }),
       })
         .then((resp) => {
@@ -242,5 +256,17 @@ export default {
 .button:hover {
   background: #95bb4a;
   color: white;
+}
+.modal {
+  position: absolute;
+  flex-direction: column;
+  top: 0%;
+  right: 0%;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(205, 133, 63, 0.6);
+  z-index: 11;
+  align-items: center;
+  justify-content: center;
 }
 </style>

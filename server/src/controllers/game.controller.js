@@ -2,6 +2,7 @@ import express from 'express';
 
 import { addLiveGame, movePiece, getLiveGame, removeLiveGame } from '../model.js';
 import { addLiveGameDB, deleteLiveGameDB } from '../firestore.js';
+import { sessionStore } from '../index.js';
 
 export const gameRouter = express.Router();
 
@@ -21,8 +22,10 @@ gameRouter.post('/newGame', (req, res) => {
     return;
   }
   const gameId = makeId(8);
-  addLiveGame(gameId, req.session.userID);
-  addLiveGameDB(gameId, '', req.session.userID, '', 180, 180);
+  const minutes = req.body.minuteTimeLimit ? req.body.minuteTimeLimit : 5;
+  const timeLimitSecs = minutes * 60;
+  addLiveGame(gameId, req.session.userID, timeLimitSecs);
+  addLiveGameDB(gameId, '', req.session.userID, '', timeLimitSecs, timeLimitSecs);
   res.json({ gameId });
 });
 

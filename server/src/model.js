@@ -163,8 +163,8 @@ export const authorizedToJoinGame = (userId, gameId) => {
  * @param {String} id - The id of the game.
  * @returns {void}
  */
-export const addLiveGame = (id, player1) => {
-  games[id] = new LiveGame(id, undefined, player1, undefined, 10, 10); // Last two undefiend
+export const addLiveGame = (id, player1, timeLimit) => {
+  games[id] = new LiveGame(id, undefined, player1, undefined, timeLimit, timeLimit);
   io.emit('newRoom', games[id]);
 };
 
