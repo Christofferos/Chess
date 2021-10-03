@@ -6,7 +6,7 @@ TODO:
 
 1. Fix pawn promotion for UI and logic ✔️
 2. Add user-online field in database & display in UI ✔️
-3. Add a create game modal with invite options (WIP)
+3. Add a create game modal with invite options ✔️
 4. Add a leaderboard - experience in amount of games ✔️
 5. Add device scaling of the board ✔️
 6. Add timers in game ✔️
@@ -15,7 +15,9 @@ TODO:
 9. Add a new game mode - Crazy Chess (Squares fall off the board)
 10. Points you have during a match ✔️
 11. Make web app a Progressive Web App (WIP)
-12. Add surrender button
+12. Add surrender button ✔️
+13. Sort out all the confusion about multiple sessions/sockets from same user (BUG)
+14. Signing out should result in being removed from the Online Users list
 
 ![bild](https://user-images.githubusercontent.com/42782387/134075059-34b31eac-2c56-4468-8585-f90f7980e200.png)
 

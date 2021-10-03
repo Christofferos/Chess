@@ -213,6 +213,10 @@ export const findLiveGame = id => {
   return games[id];
 };
 
+const emitSurrenderGameOver = (gameId, surrenderUser) => {
+  io.in(gameId).emit('surrenderGameOver', surrenderUser);
+};
+
 const emitTimerGameOver = game => {
   io.in(game.id).emit('timerGameOver', game.fen, game.gameState.game_over());
 };
@@ -254,7 +258,6 @@ const startOpposingTimer = game => {
       games[game.id].timeLeft2 -= 1;
       const isOutOfTime = games[game.id].timeLeft2 <= 0;
       if (isOutOfTime) {
-        stopPlayerTimes(game);
         emitTimerGameOver(game);
         gameOver(game);
       }
@@ -268,7 +271,6 @@ const startOpposingTimer = game => {
       games[game.id].timeLeft1 -= 1;
       const isOutOfTime = games[game.id].timeLeft1 <= 0;
       if (isOutOfTime) {
-        stopPlayerTimes(game);
         emitTimerGameOver(game);
         gameOver(game);
       }
@@ -285,6 +287,12 @@ const stopPlayerTimes = game => {
   games[game.id].timer1 = null;
   clearInterval(games[game.id].timer2);
   games[game.id].timer2 = null;
+};
+
+export const surrender = (gameId, surrenderUser) => {
+  const game = games[gameId];
+  stopPlayerTimes(game);
+  emitSurrenderGameOver(game.id, surrenderUser);
 };
 
 const gameOver = async game => {
@@ -332,16 +340,3 @@ export const backToMenu = gameId => {
 };
 
 export const getMatchHistory = userId => matchHistory[userId];
-
-export const updateTimers = (gameId, timer1, timer2) => {
-  const game = games[gameId];
-  game.timeLeft1 = timer1;
-  game.timeLeft2 = timer2;
-  /* db.serialize(async () => {
-    // Update timers in db
-    const statement = db.prepare(
-      'UPDATE liveGames SET timeLeft1 = (?), timeLeft2 = (?) WHERE id = (?)',
-    );
-    statement.run(timer1, timer2, gameId);
-  }); */
-};

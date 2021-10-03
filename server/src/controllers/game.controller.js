@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { addLiveGame, movePiece, getLiveGame, removeLiveGame } from '../model.js';
+import { addLiveGame, movePiece, getLiveGame, removeLiveGame, io, surrender } from '../model.js';
 import { addLiveGameDB, deleteLiveGameDB } from '../firestore.js';
 import { sessionStore } from '../index.js';
 
@@ -22,6 +22,8 @@ gameRouter.post('/newGame', (req, res) => {
     return;
   }
   const gameId = makeId(8);
+  console.log(req.session.userID);
+  io.emit('inviteToGame', req.body.userToInvite, gameId, req.session.userID);
   const minutes = req.body.minuteTimeLimit ? req.body.minuteTimeLimit : 5;
   const timeLimitSecs = minutes * 60;
   addLiveGame(gameId, req.session.userID, timeLimitSecs);
@@ -55,5 +57,21 @@ gameRouter.delete('/removeGame', async (req, res) => {
     return;
   }
   removeLiveGame(req.body.id);
+  res.status(200).end();
+});
+
+gameRouter.post('/surrender', async (req, res) => {
+  if (getLiveGame(req.body.id) === undefined || req.session.userID === undefined) {
+    res.status(401).end();
+    return;
+  }
+  if (
+    getLiveGame(req.body.id)[0].player1 !== req.session.userID &&
+    getLiveGame(req.body.id)[0].player2 !== req.session.userID
+  ) {
+    res.status(401).end();
+    return;
+  }
+  surrender(req.body.id, req.session.userID);
   res.status(200).end();
 });

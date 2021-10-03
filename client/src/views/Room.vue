@@ -9,7 +9,7 @@
           {{ this.getBlackTime() }} |
           {{ this.black ? this.$store.state.cookie.username : this.opponent }} |
           {{ piecePointsBlack > 0 ? `+${piecePointsBlack}` : piecePointsBlack }}
-          {{ black ? '🏳️' : null }}
+          <span v-if="black" v-on:click="surrender()">🏳️</span>
         </h1>
       </div>
 
@@ -147,7 +147,7 @@
           {{ this.getWhiteTime() }} |
           {{ this.black ? this.opponent : this.$store.state.cookie.username }} |
           {{ piecePointsWhite > 0 ? `+${piecePointsWhite}` : piecePointsWhite }}
-          {{ !black ? '🏳️' : null }}
+          <span v-if="!black" v-on:click="surrender()">🏳️</span>
         </h1>
       </div>
 
@@ -447,6 +447,10 @@ export default {
         this.gameOverWinLose(fen, isGameWonWithPieces);
       });
 
+      this.$store.state.socket.on('surrenderGameOver', (surrenderUser) => {
+        this.surrenderGameOver(surrenderUser);
+      });
+
       this.$store.state.socket.on(
         'movePieceResponse',
         (newFen, timeLeft1, timeLeft2, isGameOver, draw1, draw2, draw3, draw4) => {
@@ -520,6 +524,9 @@ export default {
         this.endGameMsg = `${gameOverMsg} You win`;
       }
     },
+    surrenderGameOver(surrenderUser) {
+      this.endGameMsg = `${surrenderUser} surrendered!`;
+    },
     getWhiteTime() {
       const isGameDefined = this.game;
       if (!isGameDefined) return '-';
@@ -539,6 +546,24 @@ export default {
       const seconds = unformattedSec < 10 ? `0${unformattedSec}` : unformattedSec;
       const minutes = Math.floor(time / 60);
       return `${minutes}:${seconds}`;
+    },
+    surrender() {
+      this.stopPlayerTimes();
+      fetch(`/api/surrender`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: this.room,
+        }),
+      })
+        .then((resp) => {
+          if (!resp.ok)
+            throw new Error(`Unexpected failure when surrendering in room: ${this.room}`);
+          return resp;
+        })
+        .catch(console.error);
     },
   },
   created() {

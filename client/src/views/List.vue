@@ -45,6 +45,7 @@
             @click="
               () => {
                 isInviteModalUp = true;
+                isChallengeBtnVisible = true;
                 selectedOpponent = userOnline;
               }
             "
@@ -91,15 +92,16 @@
         type="text"
       >
         <input
+          v-if="isChallengeBtnVisible"
+          v-bind:value="'Challenge ' + selectedOpponent"
           class="well btn btn-default button"
           @click="
             () => {
               isGameSettingsModal = true;
+              isChallengeBtnVisible = false;
             }
           "
           type="button"
-          v-bind:value="'Challenge ' + selectedOpponent"
-          v-if="!isGameSettingsModal"
         />
         <div v-if="isGameSettingsModal">
           <div
@@ -109,7 +111,7 @@
               () => {
                 isGameSettingsModal = false;
                 isInviteModalUp = false;
-                newGame(timeOption);
+                newGame(timeOption, selectedOpponent);
               }
             "
           >
@@ -120,12 +122,30 @@
             />
           </div>
         </div>
+        <h2 v-if="isJoinGameModalVisible">{{ selectedOpponent }}</h2>
+        <h2 v-if="isJoinGameModalVisible">has invited you</h2>
+        <input
+          v-if="isJoinGameModalVisible"
+          v-bind:value="'Join Game'"
+          class="well btn btn-default button"
+          @click="
+            () => {
+              isJoinGameModalVisible = false;
+              isInviteModalUp = false;
+              join();
+            }
+          "
+          type="button"
+        />
         <input
           class="well btn btn-default button"
           @click="
             () => {
               isInviteModalUp = false;
+              isChallengeBtnVisible = false;
               isGameSettingsModal = false;
+              isJoinGameModalVisible = false;
+              gameCode = '';
               selectedOpponent = null;
             }
           "
@@ -147,9 +167,11 @@ export default {
     rooms: [],
     gameCode: '',
     isInviteModalUp: false,
+    isChallengeBtnVisible: false,
     isGameSettingsModal: false,
     selectedOpponent: null,
     minuteOptions: [10, 5, 3, 1],
+    isJoinGameModalVisible: false,
   }),
   computed: {
     roomsList: function() {
@@ -184,6 +206,15 @@ export default {
       }
       this.$store.commit(removeOnlineUser, userId);
     });
+    this.$store.state.socket.on('inviteToGame', (userToInvite, gameCode, opponentName) => {
+      const isInvitedUser = userToInvite === this.$store.state.cookie.username;
+      if (isInvitedUser) {
+        this.selectedOpponent = opponentName;
+        this.gameCode = gameCode;
+        this.isJoinGameModalVisible = true;
+        this.isInviteModalUp = true;
+      }
+    });
     fetch('/api/userOnlineInitialize')
       .then((res) => res.json())
       .then(({ onlineUsers }) => {
@@ -204,7 +235,7 @@ export default {
     redirect(roomName) {
       this.$router.push(`/room/${roomName}`);
     },
-    newGame(minuteTimeLimit = undefined) {
+    newGame(minuteTimeLimit = undefined, userToInvite = undefined) {
       fetch('/api/newGame', {
         method: 'POST',
         headers: {
@@ -213,6 +244,7 @@ export default {
         body: JSON.stringify({
           username: this.username,
           minuteTimeLimit,
+          userToInvite,
         }),
       })
         .then((resp) => {

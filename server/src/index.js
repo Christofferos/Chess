@@ -84,7 +84,6 @@ const randomId = () => crypto.randomBytes(8).toString('hex');
 export const sessionStore = new InMemorySessionStore();
 io.use((socket, next) => {
   const sessionID = socket.handshake.sessionID;
-  // console.log('HANDSHAKE: ', socket.handshake.sessionID);
   if (sessionID) {
     // find existing session
     const session = sessionStore.findSession(sessionID);
@@ -95,7 +94,6 @@ io.use((socket, next) => {
   }
   // create new session
   socket.sessionID = randomId();
-  // console.log('socket sesssionID: ', socket.sessionID);
   next();
 });
 
@@ -152,11 +150,6 @@ io.on('connection', socket => {
   });
 
   socket.on('getMatchHistory', userId => getMatchHistory(userId));
-
-  socket.on('updateTimers', (gameId, timer1, timer2) => {
-    console.log('UPDATE TIMERS HIT');
-    model.updateTimers(gameId, timer1, timer2);
-  });
 });
 
 // Start server
