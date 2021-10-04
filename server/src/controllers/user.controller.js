@@ -1,9 +1,8 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 
-import { addUser, getMatchHistory } from '../model.js';
-import { addUserDB, getAllMatchHistoryDB, getUsersDB, getUsersOnlineDB } from '../firestore.js';
-import { sessionStore } from '../index.js';
+import { addUser, findUser, getMatchHistory, io } from '../model.js';
+import { addUserDB, deleteUsersOnlineDB, getUsersDB, getUsersOnlineDB } from '../firestore.js';
 
 export const userRouter = express.Router();
 const SALT_ROUNDS = 10;
@@ -19,6 +18,12 @@ userRouter.post('/signUp', (req, res) => {
 });
 
 userRouter.put('/signOut', (req, res) => {
+  const userSigningOut = findUser(req.session.userID);
+  if (userSigningOut) {
+    userSigningOut.socket.conn.close();
+    deleteUsersOnlineDB(userSigningOut.name);
+    io.emit('userOnlineUpdate', userSigningOut.name, false);
+  }
   req.session.destroy();
   res.status(200).end();
 });

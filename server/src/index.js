@@ -20,7 +20,6 @@ import {
   updateUserSocket,
   addUnregisteredSocket,
   backToMenu,
-  removeLiveGame,
   getMatchHistory,
 } from './model.js';
 import { addUserOnlineDB, deleteUsersOnlineDB } from './firestore.js';
@@ -67,7 +66,7 @@ EXPRESS_APP.use(
   }),
 );
 
-// Serve client
+// Serve client static files
 const publicPath = path.join(path.resolve(), '..', 'client', 'dist');
 EXPRESS_APP.use(express.static(publicPath));
 
@@ -82,73 +81,68 @@ init(io);
 
 const randomId = () => crypto.randomBytes(8).toString('hex');
 export const sessionStore = new InMemorySessionStore();
+
 io.use((socket, next) => {
   const sessionID = socket.handshake.sessionID;
-  if (sessionID) {
-    // find existing session
+  const isSessionActive = sessionID;
+  if (isSessionActive) {
     const session = sessionStore.findSession(sessionID);
     if (session) {
       socket.sessionID = sessionID;
       return next();
     }
   }
-  // create new session
-  socket.sessionID = randomId();
+  socket.sessionID = randomId(); // create new session
   next();
 });
 
-// Handle connected socket.io sockets
-io.on('connection', socket => {
-  // Client connected to server
-  console.log('Connection ... ', socket.handshake.session.userID);
+const addUserOnline = socket => {
   if (socket.handshake.session.userID) {
     addUserOnlineDB(socket.handshake.session.userID);
     io.emit('userOnlineUpdate', socket.handshake.session.userID, true);
   }
+};
+
+const saveSocketSessionInMemory = socket => {
   sessionStore.saveSession(socket.sessionID, {
     connected: true,
   });
-  socket.on('disconnect', async () => {
-    const userId = socket.handshake.session.userID;
-    console.log('Disconnect ... ', userId);
-    if (userId) {
-      deleteUsersOnlineDB(userId);
-      io.emit('userOnlineUpdate', userId, false);
-    }
-    /* const matchingSockets = await io.sockets; // clients or sockets
-    console.log('HERE:', JSON.stringify(matchingSockets, null, '\t'));
-    const isDisconnected = matchingSockets.size === 0;
-    if (isDisconnected) {
-      // update the connection status of the session
-      sessionStore.saveSession(socket.sessionID, {
-        connected: false,
-      });
-    } */
-  });
+};
 
-  // This function serves to bind socket.io connections to user models
-  if (socket.handshake.session.userID && findUser(socket.handshake.session.userID) !== undefined) {
-    // If the current user already logged in and then reloaded the page
+/**
+ * Bind socket.io connections to user models.
+ * NOTE: UpdateUserSocket is fired in case user is signed in and reloads page.
+ */
+const bindSocketToUserInMemoryModel = socket => {
+  const isUserSessionActive =
+    socket.handshake.session.userID && findUser(socket.handshake.session.userID) !== undefined;
+  if (isUserSessionActive) {
     updateUserSocket(socket.handshake.session.userID, socket);
   } else {
     socket.handshake.session.socketID = addUnregisteredSocket(socket);
     socket.handshake.session.save(err => {
-      if (err) {
-        console.log('Connection error in index.js');
-        // console.error(err);
-      } else {
-        console.log('Saved SocketID');
-        // console.debug(`Saved socketID: ${socket.handshake.session.socketID}`);
-      }
+      if (err) console.log('Connection error in index.js', err);
+      else console.log(`Saved SocketID: ${socket.handshake.session.socketID}`);
     });
   }
+};
 
-  // ### Client listeners: ###
+// Handle connected sockets (socket.io)
+io.on('connection', socket => {
+  console.log('Connection ... ', socket.handshake.session.userID);
+  saveSocketSessionInMemory(socket);
+  bindSocketToUserInMemoryModel(socket);
+  addUserOnline(socket);
+  socket.on('disconnect', () => {
+    const userId = socket.handshake.session.userID;
+    console.log('Disconnect ... ', userId);
+    if (!userId) return;
+    deleteUsersOnlineDB(userId);
+    io.emit('userOnlineUpdate', userId, false);
+  });
   socket.on('backToMenu', gameId => {
     backToMenu(gameId);
-    removeLiveGame(gameId);
   });
-
   socket.on('getMatchHistory', userId => getMatchHistory(userId));
 });
 

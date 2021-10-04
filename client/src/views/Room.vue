@@ -9,7 +9,7 @@
           {{ this.getBlackTime() }} |
           {{ this.black ? this.$store.state.cookie.username : this.opponent }} |
           {{ piecePointsBlack > 0 ? `+${piecePointsBlack}` : piecePointsBlack }}
-          <span v-if="black" v-on:click="surrender()">🏳️</span>
+          <span v-if="black" v-on:click="surrender()" style="cursor: pointer">🏳️</span>
         </h1>
       </div>
 
@@ -56,23 +56,26 @@
 
       <div
         v-bind:style="{
-          display: this.endGameMsg === '' ? 'none' : 'block',
+          display: this.endGameMsg === '' ? 'none' : 'flex',
+          position: 'absolute',
+          top: '33%',
+          margin: '0 auto',
           width: '300px',
           height: '150px',
-          position: 'absolute',
-          backgroundColor: 'rgba(205, 133, 63, 0.6)',
-          top: '33%',
-          left: '33%',
-          padding: '30px auto',
-          textAlign: 'center',
-          borderRadius: '5px',
-          color: 'black',
           fontSize: '30px',
+          justifyContent: 'center',
+          alignItems: 'center',
+          textAlign: 'center',
+          flexDirection: 'column',
+          color: 'black',
+          backgroundColor: 'rgba(205, 133, 63, 0.6)',
+          padding: '30px auto',
+          borderRadius: '5px',
           zIndex: '11',
         }"
         type="text"
       >
-        <div v-bind:style="{ marignBottom: '10px' }">{{ this.endGameMsg }}</div>
+        {{ this.endGameMsg }}
         <button
           v-on:click="() => backToMenu()"
           v-bind:style="{
@@ -147,7 +150,7 @@
           {{ this.getWhiteTime() }} |
           {{ this.black ? this.opponent : this.$store.state.cookie.username }} |
           {{ piecePointsWhite > 0 ? `+${piecePointsWhite}` : piecePointsWhite }}
-          <span v-if="!black" v-on:click="surrender()">🏳️</span>
+          <span v-if="!black" v-on:click="surrender()" style="cursor: pointer">🏳️</span>
         </h1>
       </div>
 
@@ -262,17 +265,12 @@ export default {
       timer2: null,
     };
   },
-  watch: {
-    windowHeight(newHeight, oldHeight) {
-      console.log(`it changed to ${newHeight} from ${oldHeight}`);
-    },
-  },
   methods: {
     debug() {
       console.log('Debug');
     },
     redirect(name) {
-      this.$router.push(`/${name}`);
+      this.$router.push(`/${name}`).catch(() => {});
     },
     send() {
       fetch(`/api/room/${this.room}/message`, {
@@ -376,7 +374,7 @@ export default {
       })
         .then((resp) => {
           if (!resp.ok) {
-            throw new Error(`Unexpected failure when joining room: ${this.room}`);
+            throw new Error(`Unexpected failure when moving piece in room: ${this.room}`);
           }
           return resp;
         })
@@ -408,7 +406,7 @@ export default {
       fetch(`/api/room/${this.room}/join`)
         .then((resp) => {
           if (!resp.ok) {
-            throw new Error(`Unexpected failure when joining room: ${this.room}`);
+            this.redirect('list');
           }
           return resp.json();
         })
@@ -423,7 +421,7 @@ export default {
           this.updatePiecePlacement();
         })
         .catch((err) => {
-          throw new Error(`Error in join room ${err}`);
+          return;
         });
 
       this.$store.state.socket.on('msg', (msg) => {
@@ -568,9 +566,6 @@ export default {
   },
   created() {
     this.reconnectionEvents();
-    /* this.$store.state.socket.on('connect', () => {
-      this.reconnectionEvents();
-    }); */
     this.$store.state.socket.on('disconnect', () => {
       this.$store.state.socket.off('connect_error');
     });
@@ -585,7 +580,8 @@ export default {
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.onResize);
-    if (this.opponent === '') {
+    const isUserLeavingEmptyRoom = this.opponent === '';
+    if (isUserLeavingEmptyRoom) {
       fetch('/api/removeGame', {
         method: 'DELETE',
         headers: {
@@ -596,9 +592,7 @@ export default {
         }),
       })
         .then((resp) => {
-          if (!resp.ok) {
-            throw new Error(`Unexpected failure when joining room: ${this.room}`);
-          }
+          if (!resp.ok) return;
           return resp;
         })
         .catch(console.error);

@@ -16,8 +16,10 @@ TODO:
 10. Points you have during a match ✔️
 11. Make web app a Progressive Web App (WIP)
 12. Add surrender button ✔️
-13. Sort out all the confusion about multiple sessions/sockets from same user (BUG)
-14. Signing out should result in being removed from the Online Users list
+13. Sort out all the confusion about multiple sessions/sockets from same user (BUG - might be
+    linked to having to unsubscribe from socket listeners in FE)
+    https://dev.to/bravemaster619/how-to-prevent-multiple-socket-connections-and-events-in-react-531d
+14. Signing out should result in being removed from the Online Users list ✔️
 
 ![bild](https://user-images.githubusercontent.com/42782387/134075059-34b31eac-2c56-4468-8585-f90f7980e200.png)
 

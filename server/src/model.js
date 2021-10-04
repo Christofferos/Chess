@@ -45,7 +45,6 @@ export const init = ioParam => {
 export const addUnregisteredSocket = socket => {
   const socketID = nextUnregisteredSocketID;
   nextUnregisteredSocketID += 1;
-
   unregisteredSockets[socketID] = socket;
   return socketID;
 };
@@ -279,7 +278,6 @@ const startOpposingTimer = game => {
     clearInterval(games[game.id].timer2);
     games[game.id].timer2 = null;
   }
-  // console.log('WHITE TIME: ', games[game.id].timeLeft1, 'BLACK TIME: ', games[game.id].timeLeft2);
 };
 
 const stopPlayerTimes = game => {
@@ -293,6 +291,7 @@ export const surrender = (gameId, surrenderUser) => {
   const game = games[gameId];
   stopPlayerTimes(game);
   emitSurrenderGameOver(game.id, surrenderUser);
+  removeLiveGame(game.id);
 };
 
 const gameOver = async game => {
@@ -309,6 +308,7 @@ const gameOver = async game => {
   matchHistory[game.player2].push(new MatchHistory(game.player1, winner, nMoves, date));
   await addMatchHistoryGameDB(game.player1, game.player2, winner, nMoves, date);
   await addUserExperiencePointDB(winner);
+  removeLiveGame(game.id);
 };
 
 /**

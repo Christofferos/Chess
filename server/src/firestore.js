@@ -56,7 +56,7 @@ export const addUserExperiencePointDB = async userId => {
 };
 
 export const addLiveGameDB = async (id, currentGame, player1, player2, timeLeft1, timeLeft2) => {
-  const liveGameRef = await liveGamesCollection.doc(id).set({
+  await liveGamesCollection.doc(id).set({
     id,
     currentGame,
     player1,
@@ -64,7 +64,6 @@ export const addLiveGameDB = async (id, currentGame, player1, player2, timeLeft1
     timeLeft1,
     timeLeft2,
   });
-  // console.log('LiveGame document written with ID: ', liveGameRef.id);
 };
 
 export const setLiveGameStateDB = async (id, fen, timeLeft1, timeLeft2) => {
@@ -129,8 +128,7 @@ export const getUsersOnlineDB = async () => {
 
 export const deleteUsersOnlineDB = async userId => {
   const usersOnline = await usersOnlineCollection.where('userId', '==', userId).get();
-  const isUserFound = !usersOnline;
-  if (!isUserFound) return;
+  if (usersOnline.empty) return;
   const batch = firestore.batch();
   usersOnline.forEach(userOnline => {
     batch.delete(userOnline.ref);

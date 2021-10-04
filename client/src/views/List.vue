@@ -263,7 +263,8 @@ export default {
     join() {
       fetch(`/api/room/${this.gameCode}/authorizedToJoin`)
         .then((resp) => {
-          if (!resp.ok) throw new Error(`Unexpected failure when joining room: ${this.gameCode}`);
+          if (!resp.ok)
+            throw new Error(`Unexpected failure when authorizing joining room: ${this.gameCode}`);
           return resp.json();
         })
         .then((data) => {

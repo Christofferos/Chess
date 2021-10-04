@@ -1,8 +1,7 @@
 import express from 'express';
 
 import { addLiveGame, movePiece, getLiveGame, removeLiveGame, io, surrender } from '../model.js';
-import { addLiveGameDB, deleteLiveGameDB } from '../firestore.js';
-import { sessionStore } from '../index.js';
+import { addLiveGameDB } from '../firestore.js';
 
 export const gameRouter = express.Router();
 
@@ -45,11 +44,10 @@ gameRouter.post('/movePiece', async (req, res) => {
 });
 
 gameRouter.delete('/removeGame', async (req, res) => {
-  if (getLiveGame(req.body.id) === undefined || req.session.userID === undefined) {
+  if (getLiveGame(req.body.id)[0] === undefined || req.session.userID === undefined) {
     res.status(401).end();
     return;
-  }
-  if (
+  } else if (
     getLiveGame(req.body.id)[0].player1 !== req.session.userID &&
     getLiveGame(req.body.id)[0].player2 !== req.session.userID
   ) {
