@@ -21,6 +21,16 @@ TODO:
     https://dev.to/bravemaster619/how-to-prevent-multiple-socket-connections-and-events-in-react-531d
 14. Signing out should result in being removed from the Online Users list ✔️
 
+15. Add a create game time limit selection & a unlimited time option.
+16. Delete liveGames older than 1 day
+17. Add a pause / resume button for chess timer - in case one player leaves
+18. Add sound effect if player sends a message in chat
+19. Match analysis after game?
+
+20. Throttle audio - Guide:
+    https://stackoverflow.com/questions/54141738/how-can-i-use-throttling-with-getting-an-event-target
+    ✔️
+
 ![bild](https://user-images.githubusercontent.com/42782387/134075059-34b31eac-2c56-4468-8585-f90f7980e200.png)
 
 <p float="left">
