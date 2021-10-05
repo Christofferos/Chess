@@ -18,24 +18,31 @@
     />
 
     <div
-      style="border: 2px solid black; width: 350px; margin: 75px auto 25px auto;
+      style="border: 2px solid black; width: 350px; margin: 50px auto 25px auto;
            background: #504F4C; border-radius: 5px; padding-bottom: 20px;"
     >
       <h1 style="color: white">Match History:</h1>
       <table style="width:95%; margin: auto; text-align: center">
-        <!-- Map over history with table rows -->
         <tr>
-          <th>Result</th>
-          <th>Opponent</th>
-          <th>Nr of Moves</th>
-          <th>Date</th>
+          <th style="text-align: center;">Result</th>
+          <th style="text-align: center">Opponent</th>
+          <th style="text-align: center">Nr of Moves</th>
+          <th style="text-align: center">Date</th>
         </tr>
         <template v-for="(match, id) in matches">
           <tr
             :key="id"
-            v-bind:style="{ color: match.winner === currentlyLoggedIn ? 'green' : 'red' }"
+            v-bind:style="{
+              color: '#AFAEA7',
+              backgroundColor: id % 2 === 0 ? '#444340' : '#54534F',
+            }"
           >
-            <td>
+            <td
+              v-bind:style="{
+                fontWeight: 800,
+                color: match.winner === currentlyLoggedIn ? '#20bf11' : '#FF262D',
+              }"
+            >
               {{ match.winner === currentlyLoggedIn ? 'Win' : 'Loss' }}
             </td>
             <td>{{ match.opponent }}</td>

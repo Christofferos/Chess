@@ -5,6 +5,7 @@ import {
   addMatchHistoryGameDB,
   addUserExperiencePointDB,
   deleteLiveGameDB,
+  getAllMatchHistoryDB,
   getLiveGamesDB,
   getUsersDB,
   setLiveGameStateDB,
@@ -77,11 +78,11 @@ const initMatchHistoryArrays = (player1, player2) => {
 // Fill local matchHistory model with db data
 const matchHistoryInit = async () => {
   matchHistory = {};
-  const liveGames = await getLiveGamesDB();
-  liveGames.forEach(({ player1, player2, nrMoves, winner, date }) => {
+  const finishedGames = await getAllMatchHistoryDB();
+  finishedGames.forEach(({ player1, player2, nMoves, winner, date }) => {
     initMatchHistoryArrays(player1, player2);
-    matchHistory[player1].push(new MatchHistory(player2, winner, nrMoves, date));
-    matchHistory[player2].push(new MatchHistory(player1, winner, nrMoves, date));
+    matchHistory[player1].push(new MatchHistory(player2, winner, nMoves, date));
+    matchHistory[player2].push(new MatchHistory(player1, winner, nMoves, date));
   });
 };
 matchHistoryInit();

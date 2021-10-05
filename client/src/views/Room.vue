@@ -6,7 +6,7 @@
       <div class="row" style="text-align: center">
         <h1 v-if="this.opponent === ''">Waiting for an opponent...</h1>
         <h1 v-else>
-          {{ this.getBlackTime() }} |
+          {{ this.blackTime }} |
           {{ this.black ? this.$store.state.cookie.username : this.opponent }} |
           {{ piecePointsBlack > 0 ? `+${piecePointsBlack}` : piecePointsBlack }}
           <span v-if="black" v-on:click="surrender()" style="cursor: pointer">🏳️</span>
@@ -88,7 +88,21 @@
         </button>
       </div>
 
-      <div id="board" style="display: flex, flex-direction: column">
+      <div
+        :class="isTimeAboutToRunOutBlack ? 'blinking' : null"
+        v-bind:style="{
+          borderBottom: isTimeAboutToRunOutBlack ? '3px solid red' : '',
+          width: '375px',
+          height: '3px',
+        }"
+      />
+      <div
+        id="board"
+        v-bind:style="{
+          display: 'flex',
+          flexDirection: 'column',
+        }"
+      >
         <div
           class="row"
           v-for="row in rows"
@@ -144,10 +158,18 @@
           </span>
         </div>
       </div>
+      <div
+        :class="isTimeAboutToRunOutWhite ? 'blinking' : null"
+        v-bind:style="{
+          borderBottom: isTimeAboutToRunOutWhite ? '3px solid red' : '',
+          width: '375px',
+          height: '3px',
+        }"
+      />
 
       <div class="row" style="text-align: center">
         <h1 style="margin-top: 10px">
-          {{ this.getWhiteTime() }} |
+          {{ this.whiteTime }} |
           {{ this.black ? this.opponent : this.$store.state.cookie.username }} |
           {{ piecePointsWhite > 0 ? `+${piecePointsWhite}` : piecePointsWhite }}
           <span v-if="!black" v-on:click="surrender()" style="cursor: pointer">🏳️</span>
@@ -199,6 +221,8 @@ import b from '../assets/bb.png';
 import q from '../assets/bq.png';
 import k from '../assets/bk.png';
 import { getBoardSize } from '../utils/getBoardSize';
+
+const TWENTY_PERCENT = 0.2;
 
 export default {
   name: 'Room',
@@ -263,6 +287,12 @@ export default {
       piecePointsBlack: 0,
       timer1: null,
       timer2: null,
+      msgAudio: new Audio(require('../assets/messageNotification.mp3')),
+      timeConstraintForGame: 0,
+      whiteTime: '-',
+      blackTime: '-',
+      isTimeAboutToRunOutBlack: false,
+      isTimeAboutToRunOutWhite: false,
     };
   },
   methods: {
@@ -402,6 +432,26 @@ export default {
     backToMenu() {
       this.$store.state.socket.emit('backToMenu', this.room);
     },
+    throttle(delay, fn) {
+      let lastCall = 0;
+      const saveMsg = (msg) => {
+        this.entries = [msg, ...this.entries];
+      };
+      return function wrapper(...args) {
+        const msg = String(...args);
+        saveMsg(msg);
+        const now = new Date().getTime();
+        if (now - lastCall < delay) {
+          return;
+        }
+        lastCall = now;
+        return fn(...args);
+      };
+    },
+    handleRecieveMessageEvent(msg) {
+      if (msg.includes(this.$store.state.cookie.username)) return;
+      this.msgAudio.play();
+    },
     reconnectionEvents() {
       fetch(`/api/room/${this.room}/join`)
         .then((resp) => {
@@ -412,6 +462,9 @@ export default {
         })
         .then((data) => {
           this.game = data.game;
+          this.timeConstraintForGame = this.game.timeLeft1;
+          this.whiteTime = this.getWhiteTime();
+          this.blackTime = this.getBlackTime();
           if (data.game.player1 === this.$store.state.cookie.username) {
             this.opponent = data.game.player2;
           } else if (data.game.player2 === this.$store.state.cookie.username) {
@@ -424,9 +477,11 @@ export default {
           return;
         });
 
-      this.$store.state.socket.on('msg', (msg) => {
-        this.entries = [msg, ...this.entries];
-      });
+      const THROTTLE_DELAY = 5000;
+      this.$store.state.socket.on(
+        'msg',
+        this.throttle(THROTTLE_DELAY, this.handleRecieveMessageEvent),
+      );
 
       this.$store.state.socket.on('backToMenuResponse', () => {
         this.redirect('list');
@@ -454,6 +509,7 @@ export default {
         (newFen, timeLeft1, timeLeft2, isGameOver, draw1, draw2, draw3, draw4) => {
           if (isGameOver) {
             this.stopPlayerTimes();
+            this.stopFlashingTimeLights();
             if (draw1 || draw2 || draw3 || draw4) {
               this.endGameMsg = 'Draw!';
             } else {
@@ -484,8 +540,12 @@ export default {
         this.timer2 = setInterval(() => {
           if (!this.game) return;
           this.game.timeLeft2 -= 1;
+          this.blackTime = this.getBlackTime();
           const isOutOfTime = this.game.timeLeft2 <= 0;
-          if (isOutOfTime) this.stopPlayerTimes();
+          if (isOutOfTime) {
+            this.stopPlayerTimes();
+            this.stopFlashingTimeLights();
+          }
         }, 1000);
         if (!isWhiteTimerDefined) return;
         clearInterval(this.timer1);
@@ -494,8 +554,12 @@ export default {
         this.timer1 = setInterval(() => {
           if (!this.game) return;
           this.game.timeLeft1 -= 1;
+          this.whiteTime = this.getWhiteTime();
           const isOutOfTime = this.game.timeLeft1 <= 0;
-          if (isOutOfTime) this.stopPlayerTimes();
+          if (isOutOfTime) {
+            this.stopPlayerTimes();
+            this.stopFlashingTimeLights();
+          }
         }, 1000);
         if (!isBlackTimerDefined) return;
         clearInterval(this.timer2);
@@ -530,6 +594,8 @@ export default {
       if (!isGameDefined) return '-';
       const time = this.game.timeLeft1;
       if (time < 0) return '0:00';
+      const percentageTimeLeft = time / this.timeConstraintForGame;
+      this.isTimeAboutToRunOutWhite = percentageTimeLeft < TWENTY_PERCENT;
       const unformattedSec = time % 60;
       const seconds = unformattedSec < 10 ? `0${unformattedSec}` : unformattedSec;
       const minutes = Math.floor(time / 60);
@@ -540,13 +606,20 @@ export default {
       if (!isGameDefined) return '-';
       const time = this.game.timeLeft2;
       if (time < 0) return '0:00';
+      const percentageTimeLeft = time / this.timeConstraintForGame;
+      this.isTimeAboutToRunOutBlack = percentageTimeLeft < TWENTY_PERCENT;
       const unformattedSec = time % 60;
       const seconds = unformattedSec < 10 ? `0${unformattedSec}` : unformattedSec;
       const minutes = Math.floor(time / 60);
       return `${minutes}:${seconds}`;
     },
+    stopFlashingTimeLights() {
+      this.isTimeAboutToRunOutWhite = false;
+      this.isTimeAboutToRunOutBlack = false;
+    },
     surrender() {
       this.stopPlayerTimes();
+      this.stopFlashingTimeLights();
       fetch(`/api/surrender`, {
         method: 'POST',
         headers: {
@@ -651,6 +724,64 @@ h2 {
   }
   .chatBox {
     width: 275px;
+  }
+}
+
+.blinking {
+  -webkit-animation: 1s blink ease infinite;
+  -moz-animation: 1s blink ease infinite;
+  -ms-animation: 1s blink ease infinite;
+  -o-animation: 1s blink ease infinite;
+  animation: 1s blink ease infinite;
+}
+
+@keyframes blink {
+  from,
+  to {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@-moz-keyframes blink {
+  from,
+  to {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@-webkit-keyframes blink {
+  from,
+  to {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@-ms-keyframes blink {
+  from,
+  to {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@-o-keyframes blink {
+  from,
+  to {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
   }
 }
 </style>
