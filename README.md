@@ -32,6 +32,8 @@ TODO:
 19. Match analysis after game?
 20. Flashing red light when near loss due to lack of time (<20% time) ✔️
 
+🕹️▶️⏸️🔙
+
 ![bild](https://user-images.githubusercontent.com/42782387/134075059-34b31eac-2c56-4468-8585-f90f7980e200.png)
 
 <p float="left">
