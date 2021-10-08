@@ -2,7 +2,16 @@
 
 Play online via this link: https://chessbattle.herokuapp.com
 
-TODO:
+![bild](https://user-images.githubusercontent.com/42782387/134075059-34b31eac-2c56-4468-8585-f90f7980e200.png)
+
+<p float="left">
+<img src="https://user-images.githubusercontent.com/42782387/134075012-e344be22-49fc-4d95-aed9-8b064a79909a.png" width="342" />
+  <img src="https://user-images.githubusercontent.com/42782387/134074848-bc23ccf3-c178-4333-b256-6e02fc0b4898.png" width="390" />
+  <img src="https://user-images.githubusercontent.com/42782387/134074992-e7e3917c-96cf-4ef8-8fd6-145501b22711.png" width="365" /> 
+  <img src="https://user-images.githubusercontent.com/42782387/134975449-b8f8cd94-a71d-4b41-8454-29e3197b6ab7.png" width="460" /> 
+</p>
+
+TODO LIST:
 
 1. Fix pawn promotion for UI and logic ✔️
 2. Add user-online field in database & display in UI ✔️
@@ -33,12 +42,3 @@ TODO:
 20. Flashing red light when near loss due to lack of time (<20% time) ✔️
 
 🕹️▶️⏸️🔙
-
-![bild](https://user-images.githubusercontent.com/42782387/134075059-34b31eac-2c56-4468-8585-f90f7980e200.png)
-
-<p float="left">
-<img src="https://user-images.githubusercontent.com/42782387/134075012-e344be22-49fc-4d95-aed9-8b064a79909a.png" width="342" />
-  <img src="https://user-images.githubusercontent.com/42782387/134074848-bc23ccf3-c178-4333-b256-6e02fc0b4898.png" width="390" />
-  <img src="https://user-images.githubusercontent.com/42782387/134074992-e7e3917c-96cf-4ef8-8fd6-145501b22711.png" width="365" /> 
-  <img src="https://user-images.githubusercontent.com/42782387/134975449-b8f8cd94-a71d-4b41-8454-29e3197b6ab7.png" width="460" /> 
-</p>
