@@ -1,6 +1,7 @@
 # Chess
 
-Play online via this link: https://chessbattle.herokuapp.com
+Game is available online here:
+https://chessbattle.herokuapp.com
 
 ![bild](https://user-images.githubusercontent.com/42782387/134075059-34b31eac-2c56-4468-8585-f90f7980e200.png)
 
