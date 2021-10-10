@@ -29,7 +29,7 @@ TODO LIST:
 11. Make web app a Progressive Web App (WIP)
 12. Add surrender button ✔️
 13. Sort out all the confusion about multiple sessions/sockets from same user (BUG - might be
-    linked to having to **unsubscribe from socket listeners** in FE)
+    linked to having to **unsubscribe from socket listeners** in FE) - Getting close (WIP)
     https://dev.to/bravemaster619/how-to-prevent-multiple-socket-connections-and-events-in-react-531d
 14. Signing out should result in being removed from the Online Users list ✔️
 
