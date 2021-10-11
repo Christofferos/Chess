@@ -293,6 +293,11 @@ export default {
       blackTime: '-',
       isTimeAboutToRunOutBlack: false,
       isTimeAboutToRunOutWhite: false,
+      eventListener: () => {
+        console.log('CONNECT/RECONNECT!!!');
+        this.reconnectionEvents();
+      },
+      socket: '',
     };
   },
   methods: {
@@ -530,7 +535,10 @@ export default {
     onResize() {
       this.deviceScale = getBoardSize();
     },
-
+    startTimerWarningSound() {
+      const audio = new Audio(require('../assets/timerRunningOut1.mp3'));
+      audio.play();
+    },
     startOpposingTimer(isWhiteTurn) {
       const isGameDefined = this.game;
       if (!isGameDefined) return;
@@ -547,6 +555,7 @@ export default {
             this.stopFlashingTimeLights();
           }
         }, 1000);
+        if (this.isTimeAboutToRunOutBlack && this.black) this.startTimerWarningSound();
         if (!isWhiteTimerDefined) return;
         clearInterval(this.timer1);
         this.timer1 = null;
@@ -561,6 +570,7 @@ export default {
             this.stopFlashingTimeLights();
           }
         }, 1000);
+        if (this.isTimeAboutToRunOutWhite && !this.black) this.startTimerWarningSound();
         if (!isBlackTimerDefined) return;
         clearInterval(this.timer2);
         this.timer2 = null;
@@ -639,12 +649,8 @@ export default {
   },
   created() {
     this.reconnectionEvents();
-    this.$store.state.socket.on('disconnect', () => {
-      this.$store.state.socket.off('connect_error');
-    });
-    this.$store.state.socket.on('connect_error', (err) => {
-      console.log(`Connection error: ${err}`);
-    });
+    this.$store.state.socket.on('connect', this.eventListener);
+    this.socket = this.$store.state.socket;
   },
   mounted() {
     this.$nextTick(() => {
@@ -653,6 +659,7 @@ export default {
   },
   beforeDestroy() {
     window.removeEventListener('resize', this.onResize);
+    this.socket.off('connect', this.eventListener);
     const isUserLeavingEmptyRoom = this.opponent === '';
     if (isUserLeavingEmptyRoom) {
       fetch('/api/removeGame', {

@@ -257,12 +257,17 @@ export default {
         })
         .catch((error) => {
           alert('Failed to create game. Please try to sign out, sign in and try again.');
+          this.$router.go();
           throw new Error(`Failed to create game ${error}.`);
         });
     },
     join() {
       fetch(`/api/room/${this.gameCode}/authorizedToJoin`)
         .then((resp) => {
+          if (resp.status === 401) {
+            alert('Your session is expired. Log in again');
+            this.$router.go();
+          }
           if (!resp.ok)
             throw new Error(`Unexpected failure when authorizing joining room: ${this.gameCode}`);
           return resp.json();
@@ -270,7 +275,9 @@ export default {
         .then((data) => {
           if (data.success) this.redirect(this.gameCode);
         })
-        .catch(console.error);
+        .catch((error) => {
+          console.log(error);
+        });
     },
   },
 };

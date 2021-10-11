@@ -42,6 +42,7 @@ router.beforeEach(async (to, from, next) => {
   store.commit(setIsAuthenticatedKey, isAuthenticated);
   const isUserAuthenticated = store.state.isAuthenticated;
   if (!isUserAuthenticated && to.path !== '/login' && to.path !== '/signUp') {
+    preFetchSocket(true).emit('closeClientSocket');
     next('/login');
   } else if (isUserAuthenticated && to.path === '/login') {
     next('/profile');

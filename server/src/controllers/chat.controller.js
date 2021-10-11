@@ -71,8 +71,12 @@ chatRouter.get('/room/:room/join', (req, res) => {
   const game = findLiveGame(req.params.room.trim());
   const user = findUser(req.session.userID);
   if (!game || !user) {
+    console.log('User or Game was null');
     res.status(401).end();
     return;
+  }
+  if (!user.socket) {
+    console.log('User socket was null ');
   }
   user.currentRoom = game.id;
   user.socket.join(user.currentRoom);
@@ -107,9 +111,7 @@ chatRouter.post('/room/:room/message', (req, res) => {
     });
     return;
   }
-
   const room = findLiveGame(req.params.room);
   addMessage(room.id, `${user.name}: ${req.body.message}`);
-
   res.sendStatus(200);
 });

@@ -33,6 +33,7 @@
 
 <script>
 import { setIsAuthenticatedKey, setUsernameKey } from '../store/index';
+import { preFetchSocket } from '../utils/preFetchSocket';
 
 export default {
   name: 'SignUp',
@@ -41,6 +42,7 @@ export default {
     username: '',
     password: '',
     success: true,
+    socket: preFetchSocket(true),
   }),
   methods: {
     signUp() {
@@ -69,6 +71,7 @@ export default {
             this.success = false;
             return;
           }
+          this.socket.emit('signInAuthenticate', this.username);
           this.$store.commit(setIsAuthenticatedKey, true);
           this.$store.commit(setUsernameKey, this.username);
           this.$router.push({

@@ -2,12 +2,13 @@ import Vue from 'vue';
 
 import App from './App.vue';
 import router from './router';
-import store, { setIsAuthenticatedKey, setUsernameKey } from './store';
+import store, { setIsAuthenticatedKey, setSocket, setUsernameKey } from './store';
 import { APP_ID } from './constants';
 import './registerServiceWorker';
 
 Vue.config.productionTip = false;
 
+/* STORE.COMMIT SEEMS TO BE UNECESSARY WHEN USING: router.beforeEach in router/index  */
 (async () => {
   fetch('/api/isAuthenticated')
     .then((res) => {
@@ -15,12 +16,7 @@ Vue.config.productionTip = false;
       return res.json();
     })
     .then(({ isAuthenticated, username }) => {
-      store.commit(setIsAuthenticatedKey, isAuthenticated);
-      store.commit(setUsernameKey, username);
-      return;
-    })
-    .then(() => {
-      new Vue({
+      const vueInstance = new Vue({
         router,
         store,
         render: (createApp) => {
@@ -28,5 +24,11 @@ Vue.config.productionTip = false;
           return createApp(App);
         },
       }).$mount(APP_ID);
+      return { vueInstance, isAuthenticated, username };
+    })
+    .then(({ vueInstance, isAuthenticated, username }) => {
+      store.commit(setIsAuthenticatedKey, isAuthenticated);
+      store.commit(setUsernameKey, username);
+      return;
     });
 })();

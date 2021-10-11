@@ -56,6 +56,7 @@
 </template>
 
 <script>
+import { preFetchSocket } from '../utils/preFetchSocket';
 export default {
   name: 'Profile',
   components: {},
@@ -99,7 +100,8 @@ export default {
           'Content-Type': 'application/json',
         },
       })
-        .then(() => {
+        .then((res) => {
+          if (res.status === 404) this.$store.state.socket.emit('closeClientSocket');
           this.$store.commit('setIsAuthenticated', false);
           this.$store.commit('setUsername', '');
           this.$router.push({

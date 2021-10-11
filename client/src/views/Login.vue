@@ -39,8 +39,10 @@ import store, {
   addOnlineUser,
   removeOnlineUser,
   setIsAuthenticatedKey,
+  setSocket,
   setUsernameKey,
 } from '../store/index';
+import { preFetchSocket } from '../utils/preFetchSocket';
 
 export default {
   name: 'Login',
@@ -48,6 +50,7 @@ export default {
   data: () => ({
     username: '',
     password: '',
+    socket: preFetchSocket(true),
   }),
   methods: {
     redirect(target) {
@@ -75,6 +78,7 @@ export default {
           return resp;
         })
         .then(() => {
+          this.socket.emit('signInAuthenticate', this.username);
           this.$store.commit(setIsAuthenticatedKey, true);
           this.$store.commit(setUsernameKey, this.username);
           this.$router.push({

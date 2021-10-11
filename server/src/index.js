@@ -15,20 +15,26 @@ import { gameRouter } from './controllers/game.controller.js';
 import { authRouter, requireAuth } from './controllers/auth.controller.js';
 import { chatRouter } from './controllers/chat.controller.js';
 import {
-  init,
+  initSocketIOServerModel,
   findUser,
   updateUserSocket,
   addUnregisteredSocket,
   backToMenu,
   getMatchHistory,
+  addUserOnline,
+  matchHistoryInit,
+  liveGamesInit,
+  usersInit,
+  deleteUserOnline,
+  signInUser,
 } from './model.js';
-import { addUserOnlineDB, deleteUsersOnlineDB } from './firestore.js';
 
 const PORT = process.env.PORT || 8989;
 const EXPRESS_APP = express();
 
 const httpServer = http.createServer(EXPRESS_APP);
 const io = SocketIO.listen(httpServer);
+initSocketIOServerModel(io);
 
 const SQLiteStore = connectSqlite3(expressSession);
 
@@ -36,12 +42,18 @@ EXPRESS_APP.use(helmet());
 EXPRESS_APP.use(express.json());
 EXPRESS_APP.use(express.urlencoded({ extended: true }));
 
+const TEN_MINUTES_IN_MILLIS = 1000 * 60 * 10;
+/**
+ * Session Handling
+ * @param {, rolling: boolean, cookie: { maxAge: number } } - rolling and maxAge setup enables Passive Session Invalidation
+ * @returns {void}
+ */
 const session = expressSession({
   secret: 'secret',
   resave: true,
   saveUninitialized: true,
-  rolling: true, // Passive session invalidation
-  cookie: { maxAge: 300000 }, // Passive session invalidation
+  rolling: true,
+  cookie: { maxAge: TEN_MINUTES_IN_MILLIS },
   store: new SQLiteStore(),
 });
 EXPRESS_APP.use(session);
@@ -76,9 +88,6 @@ EXPRESS_APP.use('/api', userRouter);
 EXPRESS_APP.use('/api', gameRouter);
 EXPRESS_APP.use('/api', requireAuth, chatRouter);
 
-// Init model
-init(io);
-
 const randomId = () => crypto.randomBytes(8).toString('hex');
 export const sessionStore = new InMemorySessionStore();
 
@@ -95,13 +104,6 @@ io.use((socket, next) => {
   socket.sessionID = randomId(); // create new session
   next();
 });
-
-const addUserOnline = socket => {
-  if (socket.handshake.session.userID) {
-    addUserOnlineDB(socket.handshake.session.userID);
-    io.emit('userOnlineUpdate', socket.handshake.session.userID, true);
-  }
-};
 
 const saveSocketSessionInMemory = socket => {
   sessionStore.saveSession(socket.sessionID, {
@@ -121,32 +123,45 @@ const bindSocketToUserInMemoryModel = socket => {
   } else {
     socket.handshake.session.socketID = addUnregisteredSocket(socket);
     socket.handshake.session.save(err => {
-      if (err) console.log('Connection error in index.js', err);
+      if (err) console.log('Connection error in index.js');
+      // , err);
       else console.log(`Saved SocketID: ${socket.handshake.session.socketID}`);
     });
   }
 };
 
-// Handle connected sockets (socket.io)
-io.on('connection', socket => {
-  console.log('Connection ... ', socket.handshake.session.userID);
-  saveSocketSessionInMemory(socket);
-  bindSocketToUserInMemoryModel(socket);
-  addUserOnline(socket);
-  socket.on('disconnect', () => {
-    const userId = socket.handshake.session.userID;
-    console.log('Disconnect ... ', userId);
-    if (!userId) return;
-    deleteUsersOnlineDB(userId);
-    io.emit('userOnlineUpdate', userId, false);
+const initalizeServerEnvironment = async () => {
+  // Initialize InMemoryDatabaseModel
+  await usersInit();
+  await liveGamesInit();
+  await matchHistoryInit();
+  // Handle connected sockets (socket.io)
+  io.on('connection', socket => {
+    console.log('Connection ... ', socket.handshake.session.userID);
+    saveSocketSessionInMemory(socket);
+    bindSocketToUserInMemoryModel(socket);
+    addUserOnline(socket);
+    socket.on('disconnect', () => {
+      console.log('Disconnect ... ', socket.handshake.session.userID);
+      deleteUserOnline(socket);
+    });
+    socket.on('backToMenu', gameId => {
+      backToMenu(gameId);
+    });
+    socket.on('signInAuthenticate', username => {
+      socket.handshake.session.userID = username;
+      console.log('SignIn User... ', socket.handshake.session.userID);
+      addUserOnline(socket);
+      signInUser(username, socket.handshake.session.socketID);
+    });
+    socket.on('closeClientSocket', () => {
+      socket.conn.close();
+    });
   });
-  socket.on('backToMenu', gameId => {
-    backToMenu(gameId);
-  });
-  socket.on('getMatchHistory', userId => getMatchHistory(userId));
-});
+};
+initalizeServerEnvironment();
 
 // Start server
 httpServer.listen(PORT, () => {
-  console.log(`Listening on http://localhost:${PORT}`);
+  console.log(`Server listening for requests on http://localhost:${PORT}`);
 });

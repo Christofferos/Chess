@@ -25,6 +25,7 @@ userRouter.put('/signOut', (req, res) => {
     io.emit('userOnlineUpdate', userSigningOut.name, false);
   }
   req.session.destroy();
+  if (!userSigningOut) res.sendStatus(404);
   res.status(200).end();
 });
 

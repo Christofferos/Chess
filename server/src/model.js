@@ -4,7 +4,10 @@ import { MatchHistory } from './models/matchHistory.model.js';
 import {
   addMatchHistoryGameDB,
   addUserExperiencePointDB,
+  addUserOnlineDB,
+  cleanOldLiveGamesDB,
   deleteLiveGameDB,
+  deleteUsersOnlineDB,
   getAllMatchHistoryDB,
   getLiveGamesDB,
   getUsersDB,
@@ -34,8 +37,45 @@ export let io = undefined;
  * @param { { io: SocketIO.Server} } config - The configurations needed to initialize the model.
  * @returns {void}
  */
-export const init = ioParam => {
+export const initSocketIOServerModel = ioParam => {
   io = ioParam;
+};
+
+// Fill local liveGames model with db data
+export const liveGamesInit = async () => {
+  games = {};
+  const liveGames = await getLiveGamesDB();
+  liveGames.forEach(({ id, currentGame, player1, player2, timeLeft1, timeLeft2 }) => {
+    games[id] = new LiveGame(id, currentGame, player1, player2, timeLeft1, timeLeft2);
+  });
+  await cleanOldLiveGamesDB();
+};
+
+const initMatchHistoryArrays = (player1, player2) => {
+  const isPlayer1MatchHistoryEmpty = !matchHistory[player1];
+  const isPlayer2MatchHistoryEmpty = !matchHistory[player2];
+  if (isPlayer1MatchHistoryEmpty) matchHistory[player1] = [];
+  if (isPlayer2MatchHistoryEmpty) matchHistory[player2] = [];
+};
+
+// Fill local matchHistory model with db data
+export const matchHistoryInit = async () => {
+  matchHistory = {};
+  const finishedGames = await getAllMatchHistoryDB();
+  finishedGames.forEach(({ player1, player2, nMoves, winner, date }) => {
+    initMatchHistoryArrays(player1, player2);
+    matchHistory[player1].push(new MatchHistory(player2, winner, nMoves, date));
+    matchHistory[player2].push(new MatchHistory(player1, winner, nMoves, date));
+  });
+};
+
+// Fill local users model with db data
+export const usersInit = async () => {
+  const usersFromDB = await getUsersDB();
+  const setUsers = usersFromDB.map(user => {
+    users[user.username] = new User(user.username);
+  });
+  Promise.all(setUsers).then(() => console.log('Stored users initialized'));
 };
 
 /**
@@ -49,7 +89,6 @@ export const addUnregisteredSocket = socket => {
   unregisteredSockets[socketID] = socket;
   return socketID;
 };
-
 const assignUnregisteredSocket = socketID => {
   const socket = unregisteredSockets[socketID];
   unregisteredSockets = Object.keys(unregisteredSockets)
@@ -58,51 +97,38 @@ const assignUnregisteredSocket = socketID => {
   return socket;
 };
 
-// Fill local liveGames model with db data
-const gamesInit = async () => {
-  games = {};
-  const liveGames = await getLiveGamesDB();
-  liveGames.forEach(({ id, currentGame, player1, player2, timeLeft1, timeLeft2 }) => {
-    games[id] = new LiveGame(id, currentGame, player1, player2, timeLeft1, timeLeft2);
-  });
-};
-gamesInit();
-
-const initMatchHistoryArrays = (player1, player2) => {
-  const isPlayer1MatchHistoryEmpty = !matchHistory[player1];
-  const isPlayer2MatchHistoryEmpty = !matchHistory[player2];
-  if (isPlayer1MatchHistoryEmpty) matchHistory[player1] = [];
-  if (isPlayer2MatchHistoryEmpty) matchHistory[player2] = [];
-};
-
-// Fill local matchHistory model with db data
-const matchHistoryInit = async () => {
-  matchHistory = {};
-  const finishedGames = await getAllMatchHistoryDB();
-  finishedGames.forEach(({ player1, player2, nMoves, winner, date }) => {
-    initMatchHistoryArrays(player1, player2);
-    matchHistory[player1].push(new MatchHistory(player2, winner, nMoves, date));
-    matchHistory[player2].push(new MatchHistory(player1, winner, nMoves, date));
-  });
-};
-matchHistoryInit();
-
-// Fill local users model with db data
-const usersInit = async () => {
-  const usersFromDB = await getUsersDB();
-  usersFromDB.forEach(user => (users[user.username] = new User(user.username)));
-};
-usersInit();
-
 /**
- * Add a message to a room & push out the message to all connected clients
- * @param {String} roomName - The name of the room to add the message to.
- * @param {String} message - The message to add.
+ * Updated the socket associated with the user with the given name.
+ * @param {String} name - The name of the user.
+ * @param {SocketIO.Socket} socket - A socket.io socket.
  * @returns {void}
  */
-export const addMessage = (roomName, message) => {
-  findLiveGame(roomName).addMessage(message);
-  io.in(roomName).emit('msg', message);
+export const updateUserSocket = (name, socket) => {
+  users[name].socket = socket;
+};
+
+/**
+ * Adds an onlineUser to DB and other clients web apps.
+ * @param {Socket} socket - An optional ID of a socket.io socket in the unregistered sockets pool.
+ * @returns {void}
+ */
+export const addUserOnline = socket => {
+  if (socket.handshake.session.userID) {
+    addUserOnlineDB(socket.handshake.session.userID);
+    io.emit('userOnlineUpdate', socket.handshake.session.userID, true);
+  }
+};
+
+/**
+ * Removes an onlineUser to DB and other clients web apps.
+ * @param {Socket} socket - An optional ID of a socket.io socket in the unregistered sockets pool.
+ * @returns {void}
+ */
+export const deleteUserOnline = socket => {
+  if (socket.handshake.session.userID) {
+    deleteUsersOnlineDB(socket.handshake.session.userID);
+    io.emit('userOnlineUpdate', socket.handshake.session.userID, false);
+  }
 };
 
 /**
@@ -123,14 +149,11 @@ export const addUser = (name, socketID = undefined) => {
   return true;
 };
 
-/**
- * Updated the socket associated with the user with the given name.
- * @param {String} name - The name of the user.
- * @param {SocketIO.Socket} socket - A socket.io socket.
- * @returns {void}
- */
-export const updateUserSocket = (name, socket) => {
-  users[name].socket = socket;
+export const signInUser = (name, socketID = undefined) => {
+  if (socketID !== undefined) {
+    users[name].socket = assignUnregisteredSocket(socketID);
+  }
+  return true;
 };
 
 /**
@@ -156,6 +179,17 @@ export const authorizedToJoinGame = (userId, gameId) => {
   const isSecondPlayerJoining = games[gameId].player2 === '' || games[gameId].player2 === userId;
   if (isFirstPlayerJoining || isSecondPlayerJoining) return true;
   return false;
+};
+
+/**
+ * Add a message to a room & push out the message to all connected clients
+ * @param {String} roomName - The name of the room to add the message to.
+ * @param {String} message - The message to add.
+ * @returns {void}
+ */
+export const addMessage = (roomName, message) => {
+  findLiveGame(roomName).addMessage(message);
+  io.in(roomName).emit('msg', message);
 };
 
 /**
@@ -185,10 +219,15 @@ export const getLiveGames = () => Object.values(games);
  * @returns {LiveGame[]}
  */
 export const getUserLiveGames = userID =>
-  Object.values(games).filter(game => {
-    const isUserParticipantInGame = game.player1 === userID || game.player2 === userID;
-    return isUserParticipantInGame;
-  });
+  Object.values(games)
+    .filter(game => {
+      const isUserParticipantInGame = game.player1 === userID || game.player2 === userID;
+      return isUserParticipantInGame;
+    })
+    .map(game => {
+      const { timer1, timer2, ...gameWithoutTimers } = game;
+      return gameWithoutTimers;
+    });
 
 /**
  * Removes the liveGame object with the matching id.
@@ -328,7 +367,6 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
   if (isLegalMove) startOpposingTimer(game);
   game.fen = game.gameState.fen();
   setLiveGameStateDB(gameId, game.fen, game.timeLeft1, game.timeLeft2);
-
   const isGameOver = game.gameState.game_over();
   if (isGameOver) {
     gameOver(game);

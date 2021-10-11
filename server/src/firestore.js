@@ -56,6 +56,7 @@ export const addUserExperiencePointDB = async userId => {
 };
 
 export const addLiveGameDB = async (id, currentGame, player1, player2, timeLeft1, timeLeft2) => {
+  const UNIX_SECONDS = Math.round(new Date().getTime() / 1000);
   await liveGamesCollection.doc(id).set({
     id,
     currentGame,
@@ -63,11 +64,27 @@ export const addLiveGameDB = async (id, currentGame, player1, player2, timeLeft1
     player2,
     timeLeft1,
     timeLeft2,
+    unixTimeCreation: UNIX_SECONDS,
   });
 };
 
 export const setLiveGameStateDB = async (id, fen, timeLeft1, timeLeft2) => {
   await liveGamesCollection.doc(id).update({ currentGame: fen, timeLeft1, timeLeft2 });
+};
+
+export const cleanOldLiveGamesDB = async () => {
+  const CURRENT_UNIX_TIME_SECONDS = Math.round(new Date().getTime() / 1000);
+  const ONE_DAY_SECONDS = 24 * 60 * 60;
+  const liveGames = await liveGamesCollection
+    .where('unixTimeCreation', '<', CURRENT_UNIX_TIME_SECONDS - ONE_DAY_SECONDS)
+    .get();
+  const isGamesNotFound = !liveGames;
+  if (isGamesNotFound) return;
+  const batch = firestore.batch();
+  liveGames.forEach(liveGame => {
+    batch.delete(liveGame.ref);
+  });
+  await batch.commit();
 };
 
 export const deleteLiveGameDB = async id => {
