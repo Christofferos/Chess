@@ -1,6 +1,6 @@
 # Chess
 
-Play online via this link: https://chessbattle.herokuapp.com
+Game is available online here: https://chessbattle.herokuapp.com
 
 ![bild](https://user-images.githubusercontent.com/42782387/134075059-34b31eac-2c56-4468-8585-f90f7980e200.png)
 
@@ -31,7 +31,6 @@ TODO LIST:
     linked to having to **unsubscribe from socket listeners** in FE) ✔️
     https://dev.to/bravemaster619/how-to-prevent-multiple-socket-connections-and-events-in-react-531d
 14. Signing out should result in being removed from the Online Users list ✔️
-
 15. Add a create game time limit selection & an unlimited time option.
 16. Delete liveGames older than 1 day - to maintain database data quality ✔️
 17. Add a pause / resume button for chess timer - in case players have to eat dinner with family
@@ -40,5 +39,7 @@ TODO LIST:
     ✔️
 19. Match analysis after game?
 20. Flashing red light when near loss due to lack of time (<20% time) ✔️
+21. Server restart does not affect users that play a game of chess against each other. Game can
+    continue as soon as server is live - server restart goes unnoticed. ✔️
 
 🕹️▶️⏸️🔙
