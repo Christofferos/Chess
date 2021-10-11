@@ -15,14 +15,13 @@
 
       <div
         v-bind:style="{
-          display: this.isPawnPromotionTime ? 'block' : 'none',
+          display: this.isPawnPromotionTime ? 'flex' : 'none',
           position: 'absolute',
-          top: '60%',
           left: '50%',
           width: '300px',
           height: '300px',
           marginLeft: '-150px',
-          marginTop: '-150px',
+          marginTop: '-350px',
           overflow: 'auto',
           backgroundColor: 'rgba(205, 133, 63, 0.6)',
           padding: '30px auto',
@@ -31,6 +30,8 @@
           color: 'black',
           fontSize: '30px',
           zIndex: '11',
+          justifyContent: 'center',
+          alignItems: 'center',
         }"
         type="text"
       >
