@@ -33,9 +33,10 @@ TODO-LIST:
 | 16. Delete liveGames older than 1 day - to maintain database data quality     | ✔️   |
 | 17. Add a pause / resume button for chess timer                               |      |
 | 18. Throttle audio                                                            | ✔️   |
-| 19. Match analysis after game?                                                |      |
+| 19. Match analysis after game (Stockfish?)                                    | Prio |
 | 20. Flashing red light when near loss due to lack of time (<20% time)         | ✔️   |
 | 21. Server restart does not affect users that play a game of chess            | ✔️   |
+| 22. Add React Konva for drag-n-drop of pieces                                 | Prio |
 
 **_---------------_**
 
