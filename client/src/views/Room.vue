@@ -246,6 +246,7 @@ export default {
       letters: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
       setIntervalObj: null,
       endGameMsg: '',
+      gameOver: false,
       pieces: {
         P,
         R,
@@ -288,7 +289,6 @@ export default {
       piecePointsBlack: 0,
       timer1: null,
       timer2: null,
-      msgAudio: new Audio(require('../assets/messageNotification.mp3')),
       timeConstraintForGame: 0,
       whiteTime: '-',
       blackTime: '-',
@@ -299,6 +299,15 @@ export default {
         this.reconnectionEvents();
       },
       socket: '',
+      isCapture: false,
+      msgAudio: new Audio(require('../assets/messageNotification.mp3')),
+      gameStartAudio: new Audio(require('../assets/gameStart.mp3')),
+      moveAudio: new Audio(require('../assets/move.mp3')),
+      checkAudio: new Audio(require('../assets/check.mp3')),
+      timerRunningOutAudio: new Audio(require('../assets/timerRunningOut1.mp3')),
+      gameOverAudio: new Audio(require('../assets/gameOver.mp3')),
+      captureAudio: new Audio(require('../assets/capture.mp3')),
+      castleAudio: new Audio(require('../assets/castle.mp3')),
     };
   },
   methods: {
@@ -336,8 +345,15 @@ export default {
         else if (fenChar === 'R') whitePieces += 5;
         else if (fenChar === 'Q') whitePieces += 9;
       });
-      this.piecePointsWhite = whitePieces - blackPieces;
-      this.piecePointsBlack = blackPieces - whitePieces;
+      const pointsWhite = whitePieces - blackPieces;
+      const pointsBlack = blackPieces - whitePieces;
+      const isNewScores =
+        pointsWhite !== this.piecePointsWhite || pointsBlack !== this.piecePointsBlack;
+      if (isNewScores) {
+        this.piecePointsWhite = pointsWhite;
+        this.piecePointsBlack = pointsBlack;
+        this.isCapture = true;
+      }
     },
     updatePiecePlacement() {
       if (this.game !== null) {
@@ -455,7 +471,7 @@ export default {
       };
     },
     handleRecieveMessageEvent(msg) {
-      if (msg.includes(this.$store.state.cookie.username)) return;
+      if (msg.includes(this.$store.state.cookie.username) || msg.includes('joined')) return;
       this.msgAudio.play();
     },
     reconnectionEvents() {
@@ -497,8 +513,10 @@ export default {
         if (this.$store.state.cookie.username !== players.player1) {
           this.opponent = players.player1;
           this.black = true;
+          this.gameStartAudio.play();
         } else if (this.$store.state.cookie.username !== players.player2) {
           this.opponent = players.player2;
+          this.gameStartAudio.play();
         }
       });
 
@@ -512,7 +530,18 @@ export default {
 
       this.$store.state.socket.on(
         'movePieceResponse',
-        (newFen, timeLeft1, timeLeft2, isGameOver, draw1, draw2, draw3, draw4) => {
+        (
+          newFen,
+          timeLeft1,
+          timeLeft2,
+          isGameOver,
+          draw1,
+          draw2,
+          draw3,
+          draw4,
+          isCheck,
+          isCastle,
+        ) => {
           if (isGameOver) {
             this.stopPlayerTimes();
             this.stopFlashingTimeLights();
@@ -529,7 +558,19 @@ export default {
           this.game.fen = newFen;
           this.updatePiecePlacement();
           const isWhiteTurn = newFen.split(' ')[1] === 'w';
-          if (!isGameOver && isLegalMove) this.startOpposingTimer(isWhiteTurn);
+          if (!isGameOver && isLegalMove) {
+            this.startOpposingTimer(isWhiteTurn);
+            if (isCheck) {
+              this.checkAudio.play();
+            } else if (this.isCapture) {
+              this.captureAudio.play();
+              this.isCapture = false;
+            } else if (isCastle) {
+              this.castleAudio.play();
+            } else {
+              this.moveAudio.play();
+            }
+          }
         },
       );
     },
@@ -537,8 +578,7 @@ export default {
       this.deviceScale = getBoardSize();
     },
     startTimerWarningSound() {
-      const audio = new Audio(require('../assets/timerRunningOut1.mp3'));
-      audio.play();
+      if (!this.gameOver) this.timerRunningOutAudio.play();
     },
     startOpposingTimer(isWhiteTurn) {
       const isGameDefined = this.game;
@@ -596,9 +636,13 @@ export default {
       } else if (isBlackTurn && this.black === false) {
         this.endGameMsg = `${gameOverMsg} You win`;
       }
+      this.gameOver = true;
+      this.gameOverAudio.play();
     },
     surrenderGameOver(surrenderUser) {
       this.endGameMsg = `${surrenderUser} surrendered!`;
+      this.gameOver = true;
+      this.gameOverAudio.play();
     },
     getWhiteTime() {
       const isGameDefined = this.game;
@@ -661,6 +705,12 @@ export default {
   beforeDestroy() {
     window.removeEventListener('resize', this.onResize);
     this.socket.off('connect', this.eventListener);
+    this.socket.off('msg');
+    this.socket.off('backToMenuResponse');
+    this.socket.off('getGamePlayers');
+    this.socket.off('timerGameOver');
+    this.socket.off('surrenderGameOver');
+    this.socket.off('movePieceResponse');
     const isUserLeavingEmptyRoom = this.opponent === '';
     if (isUserLeavingEmptyRoom) {
       fetch('/api/removeGame', {

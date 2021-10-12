@@ -37,6 +37,7 @@ TODO-LIST:
 | 20. Flashing red light when near loss due to lack of time (<20% time)         | ✔️   |
 | 21. Server restart does not affect users that play a game of chess            | ✔️   |
 | 22. Add React Konva for drag-n-drop of pieces                                 | Prio |
+| 23. Add move, over, start, check, castle, capture sound effects               | ✔️   |
 
 **_---------------_**
 

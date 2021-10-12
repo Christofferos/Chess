@@ -260,8 +260,10 @@ const emitTimerGameOver = game => {
   io.in(game.id).emit('timerGameOver', game.fen, game.gameState.game_over());
 };
 
-const emitMovePiece = game => {
+const emitMovePiece = (game, flag) => {
   const isGameOver = game.gameState.game_over() || game.timeLeft1 <= 0 || game.timeLeft2 <= 0;
+  const isCastle = flag === 'k' || flag === 'q';
+  const isEnPassant = flag === 'e';
   io.in(game.id).emit(
     'movePieceResponse',
     game.fen,
@@ -272,6 +274,8 @@ const emitMovePiece = game => {
     game.gameState.in_stalemate(),
     game.gameState.in_threefold_repetition(),
     game.gameState.insufficient_material(),
+    game.gameState.in_check(),
+    isCastle,
   );
 };
 
@@ -359,19 +363,19 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
     username === games[gameId].player1 || username === games[gameId].player2;
   if (!isUserAllowedToMove) return;
   const game = games[gameId];
-  const isLegalMove = game.gameState.move({
+  const move = game.gameState.move({
     from: startPos,
     to: endPos,
     promotion: promotionPiece?.toLowerCase(),
   });
-  if (isLegalMove) startOpposingTimer(game);
+  if (move) startOpposingTimer(game);
   game.fen = game.gameState.fen();
   setLiveGameStateDB(gameId, game.fen, game.timeLeft1, game.timeLeft2);
   const isGameOver = game.gameState.game_over();
   if (isGameOver) {
     gameOver(game);
   }
-  emitMovePiece(game);
+  emitMovePiece(game, move.flags);
 };
 
 export const backToMenu = gameId => {
