@@ -264,6 +264,7 @@ const emitMovePiece = (game, flag) => {
   const isGameOver = game.gameState.game_over() || game.timeLeft1 <= 0 || game.timeLeft2 <= 0;
   const isCastle = flag === 'k' || flag === 'q';
   const isEnPassant = flag === 'e';
+  const isPromotion = flag === 'p' || flag === 'cp';
   io.in(game.id).emit(
     'movePieceResponse',
     game.fen,
