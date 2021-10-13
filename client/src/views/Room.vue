@@ -308,6 +308,7 @@ export default {
       gameOverAudio: new Audio(require('../assets/gameOver.mp3')),
       captureAudio: new Audio(require('../assets/capture.mp3')),
       castleAudio: new Audio(require('../assets/castle.mp3')),
+      enableAudio: true,
     };
   },
   methods: {
@@ -693,6 +694,27 @@ export default {
     },
   },
   created() {
+    document.body.addEventListener('touchstart', () => {
+      if (this.enableAudio) {
+        this.moveAudio.play();
+        this.moveAudio.pause();
+        this.moveAudio.currentTime = 0;
+        //
+        this.checkAudio.play();
+        this.checkAudio.pause();
+        this.checkAudio.currentTime = 0;
+        //
+        this.captureAudio.play();
+        this.captureAudio.pause();
+        this.captureAudio.currentTime = 0;
+        //
+        this.castleAudio.play();
+        this.castleAudio.pause();
+        this.castleAudio.currentTime = 0;
+
+        this.enableAudio = false;
+      }
+    });
     this.reconnectionEvents();
     this.$store.state.socket.on('connect', this.eventListener);
     this.socket = this.$store.state.socket;
