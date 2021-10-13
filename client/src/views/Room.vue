@@ -693,22 +693,27 @@ export default {
     },
   },
   created() {
+    let enableAudioInStart = true;
     document.body.addEventListener('touchstart', () => {
-      this.moveAudio.play();
-      this.moveAudio.pause();
-      this.moveAudio.currentTime = 0;
-      //
-      this.checkAudio.play();
-      this.checkAudio.pause();
-      this.checkAudio.currentTime = 0;
-      //
-      this.captureAudio.play();
-      this.captureAudio.pause();
-      this.captureAudio.currentTime = 0;
-      //
-      this.castleAudio.play();
-      this.castleAudio.pause();
-      this.castleAudio.currentTime = 0;
+      if (enableAudioInStart) {
+        this.moveAudio.play();
+        this.moveAudio.pause();
+        this.moveAudio.currentTime = 0;
+        //
+        this.checkAudio.play();
+        this.checkAudio.pause();
+        this.checkAudio.currentTime = 0;
+        //
+        this.captureAudio.play();
+        this.captureAudio.pause();
+        this.captureAudio.currentTime = 0;
+        //
+        this.castleAudio.play();
+        this.castleAudio.pause();
+        this.castleAudio.currentTime = 0;
+
+        enableAudioInStart = false;
+      }
     });
     this.reconnectionEvents();
     this.$store.state.socket.on('connect', this.eventListener);
