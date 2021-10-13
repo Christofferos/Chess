@@ -569,7 +569,9 @@ export default {
             } else if (isCastle) {
               this.castleAudio.play();
             } else {
-              this.moveAudio.play();
+              this.isMoveAudio = true;
+              this.tapped();
+              // this.moveAudio.play();
             }
           }
         },
@@ -693,7 +695,6 @@ export default {
         .catch(console.error);
     },
     tapped() {
-      if (!this.enableAudio) return;
       let allAudio = [];
       allAudio.push(this.moveAudio);
       allAudio.push(this.checkAudio);
@@ -706,13 +707,11 @@ export default {
           audio.currentTime = 0;
         }
         allAudio = null;
-        this.enableAudio = false;
       }
-      const audioTest = this.moveAudio;
-      setTimeout(function() {
-        console.log('HERE', audioTest);
-        audioTest.play();
-      }, 2000);
+      if (this.isMoveAudio) {
+        this.moveAudio.play();
+        this.isMoveAudio = false;
+      }
     },
   },
   created() {
