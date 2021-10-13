@@ -568,8 +568,6 @@ export default {
             } else if (isCastle) {
               this.castleAudio.play();
             } else {
-              this.moveAudio.autoplay = true;
-              this.moveAudio.src = '../assets/move.mp3';
               this.moveAudio.play();
             }
           }
@@ -695,6 +693,23 @@ export default {
     },
   },
   created() {
+    document.body.addEventListener('touchstart', () => {
+      this.moveAudio.play();
+      this.moveAudio.pause();
+      this.moveAudio.currentTime = 0;
+      //
+      this.checkAudio.play();
+      this.checkAudio.pause();
+      this.checkAudio.currentTime = 0;
+      //
+      this.captureAudio.play();
+      this.captureAudio.pause();
+      this.captureAudio.currentTime = 0;
+      //
+      this.castleAudio.play();
+      this.castleAudio.pause();
+      this.castleAudio.currentTime = 0;
+    });
     this.reconnectionEvents();
     this.$store.state.socket.on('connect', this.eventListener);
     this.socket = this.$store.state.socket;
@@ -705,6 +720,7 @@ export default {
     });
   },
   beforeDestroy() {
+    document.body.removeEventListener('touchstart');
     window.removeEventListener('resize', this.onResize);
     this.socket.off('connect', this.eventListener);
     this.socket.off('msg');
