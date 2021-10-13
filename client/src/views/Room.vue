@@ -692,29 +692,32 @@ export default {
         })
         .catch(console.error);
     },
+    tapped() {
+      if (!this.enableAudio) return;
+      let allAudio = [];
+      allAudio.push(this.moveAudio);
+      allAudio.push(this.checkAudio);
+      allAudio.push(this.captureAudio);
+      allAudio.push(this.castleAudio);
+      if (allAudio) {
+        for (const audio of allAudio) {
+          audio.play();
+          audio.pause();
+          audio.currentTime = 0;
+        }
+        allAudio = null;
+        this.enableAudio = false;
+      }
+      const audioTest = this.moveAudio;
+      setTimeout(function() {
+        console.log('HERE', audioTest);
+        audioTest.play();
+      }, 2000);
+    },
   },
   created() {
-    document.body.addEventListener('touchstart', () => {
-      if (this.enableAudio) {
-        this.moveAudio.play();
-        this.moveAudio.pause();
-        this.moveAudio.currentTime = 0;
-        //
-        this.checkAudio.play();
-        this.checkAudio.pause();
-        this.checkAudio.currentTime = 0;
-        //
-        this.captureAudio.play();
-        this.captureAudio.pause();
-        this.captureAudio.currentTime = 0;
-        //
-        this.castleAudio.play();
-        this.castleAudio.pause();
-        this.castleAudio.currentTime = 0;
-
-        // this.enableAudio = false;
-      }
-    });
+    window.addEventListener('touchstart', this.tapped, false);
+    window.addEventListener('click', this.tapped, false);
     this.reconnectionEvents();
     this.$store.state.socket.on('connect', this.eventListener);
     this.socket = this.$store.state.socket;
@@ -725,7 +728,8 @@ export default {
     });
   },
   beforeDestroy() {
-    document.body.removeEventListener('touchstart');
+    window.removeEventListener('touchstart', this.tapped, false);
+    window.removeEventListener('click', this.tapped, false);
     window.removeEventListener('resize', this.onResize);
     this.socket.off('connect', this.eventListener);
     this.socket.off('msg');
