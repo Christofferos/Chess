@@ -712,7 +712,7 @@ export default {
         this.castleAudio.pause();
         this.castleAudio.currentTime = 0;
 
-        this.enableAudio = false;
+        // this.enableAudio = false;
       }
     });
     this.reconnectionEvents();
