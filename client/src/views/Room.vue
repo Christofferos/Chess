@@ -308,7 +308,6 @@ export default {
       gameOverAudio: new Audio(require('../assets/gameOver.mp3')),
       captureAudio: new Audio(require('../assets/capture.mp3')),
       castleAudio: new Audio(require('../assets/castle.mp3')),
-      enableAudio: true,
     };
   },
   methods: {
@@ -569,9 +568,7 @@ export default {
             } else if (isCastle) {
               this.castleAudio.play();
             } else {
-              this.isMoveAudio = true;
-              this.tapped();
-              // this.moveAudio.play();
+              this.moveAudio.play();
             }
           }
         },
@@ -694,29 +691,8 @@ export default {
         })
         .catch(console.error);
     },
-    tapped() {
-      let allAudio = [];
-      allAudio.push(this.moveAudio);
-      allAudio.push(this.checkAudio);
-      allAudio.push(this.captureAudio);
-      allAudio.push(this.castleAudio);
-      if (allAudio) {
-        for (const audio of allAudio) {
-          audio.play();
-          audio.pause();
-          audio.currentTime = 0;
-        }
-        allAudio = null;
-      }
-      if (this.isMoveAudio) {
-        this.moveAudio.play();
-        this.isMoveAudio = false;
-      }
-    },
   },
   created() {
-    window.addEventListener('touchstart', this.tapped, false);
-    window.addEventListener('click', this.tapped, false);
     this.reconnectionEvents();
     this.$store.state.socket.on('connect', this.eventListener);
     this.socket = this.$store.state.socket;
@@ -727,8 +703,6 @@ export default {
     });
   },
   beforeDestroy() {
-    window.removeEventListener('touchstart', this.tapped, false);
-    window.removeEventListener('click', this.tapped, false);
     window.removeEventListener('resize', this.onResize);
     this.socket.off('connect', this.eventListener);
     this.socket.off('msg');
