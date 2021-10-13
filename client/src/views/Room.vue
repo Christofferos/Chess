@@ -568,6 +568,8 @@ export default {
             } else if (isCastle) {
               this.castleAudio.play();
             } else {
+              this.moveAudio.autoplay = true;
+              this.moveAudio.src = '../assets/move.mp3';
               this.moveAudio.play();
             }
           }

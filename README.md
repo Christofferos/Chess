@@ -25,7 +25,7 @@ TODO-LIST:
 | 8. Fix bug that cause no live updates to happen in game                       | ✔️   |
 | 9. Add a new game mode - Crazy Chess                                          |      |
 | 10. Points you have during a match                                            | ✔️   |
-| 11. Make web app a Progressive Web App (WIP)                                  |      |
+| 11. Make web app a Progressive Web App (WIP)                                  | Prio |
 | 12. Add surrender button                                                      | ✔️   |
 | 13. Sort out all the confusion about multiple sessions/sockets from same user | ✔️   |
 | 14. Signing out should result in being removed from the Online Users list     | ✔️   |
@@ -33,7 +33,7 @@ TODO-LIST:
 | 16. Delete liveGames older than 1 day - to maintain database data quality     | ✔️   |
 | 17. Add a pause / resume button for chess timer                               |      |
 | 18. Throttle audio                                                            | ✔️   |
-| 19. Match analysis after game (Stockfish?)                                    | Prio |
+| 19. Match analysis after game (Stockfish?)                                    |      |
 | 20. Flashing red light when near loss due to lack of time (<20% time)         | ✔️   |
 | 21. Server restart does not affect users that play a game of chess            | ✔️   |
 | 22. Add React Konva for drag-n-drop of pieces                                 | Prio |
