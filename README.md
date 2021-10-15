@@ -31,7 +31,7 @@ TODO-LIST:
 | 14. Signing out should result in being removed from the Online Users list     | ✔️   |
 | 15. Add a create game time limit selection & an unlimited time option         |      |
 | 16. Delete liveGames older than 1 day - to maintain database data quality     | ✔️   |
-| 17. Add a pause / resume button for chess timer                               |      |
+| 17. -                               |   -   |
 | 18. Throttle audio                                                            | ✔️   |
 | 19. Match analysis after game (Stockfish?)                                    |      |
 | 20. Flashing red light when near loss due to lack of time (<20% time)         | ✔️   |
@@ -54,8 +54,6 @@ where you can upgrade the horse to Bishop/Rook)
 
 [13]. (BUG - might be linked to having to **unsubscribe from socket listeners** in FE)
 https://dev.to/bravemaster619/how-to-prevent-multiple-socket-connections-and-events-in-react-531d
-
-[17]. in case players have to eat dinner with family
 
 [18]. Guide:
 https://stackoverflow.com/questions/54141738/how-can-i-use-throttling-with-getting-an-event-target
