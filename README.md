@@ -25,13 +25,13 @@ TODO-LIST:
 | 8. Fix bug that cause no live updates to happen in game                       | ✔️   |
 | 9. Add a new game mode - Crazy Chess                                          |      |
 | 10. Points you have during a match                                            | ✔️   |
-| 11. Make web app a Progressive Web App (WIP)                                  | Prio |
+| 11. Make web app a Progressive Web App (WIP)                                  | ✔️   |
 | 12. Add surrender button                                                      | ✔️   |
 | 13. Sort out all the confusion about multiple sessions/sockets from same user | ✔️   |
 | 14. Signing out should result in being removed from the Online Users list     | ✔️   |
 | 15. Add a create game time limit selection & an unlimited time option         |      |
 | 16. Delete liveGames older than 1 day - to maintain database data quality     | ✔️   |
-| 17. -                               |   -   |
+| 17. -                                                                         | -    |
 | 18. Throttle audio                                                            | ✔️   |
 | 19. Match analysis after game (Stockfish?)                                    |      |
 | 20. Flashing red light when near loss due to lack of time (<20% time)         | ✔️   |
@@ -51,6 +51,8 @@ TODO-LIST:
 [9]. (Squares fall off the board, disco board, rotating board, have to solve puzzles before you can
 move - Mario Cart mechanics if ahead it gets more difficult, if you are behind you get one square
 where you can upgrade the horse to Bishop/Rook)
+
+[11]. On iOS safari go to brower then press the middle far-down button Share > "Add to Home Screen"
 
 [13]. (BUG - might be linked to having to **unsubscribe from socket listeners** in FE)
 https://dev.to/bravemaster619/how-to-prevent-multiple-socket-connections-and-events-in-react-531d
