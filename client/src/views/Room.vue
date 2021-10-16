@@ -559,17 +559,7 @@ export default {
           this.updatePiecePlacement();
           const isWhiteTurn = newFen.split(' ')[1] === 'w';
           if (!isGameOver && isLegalMove) {
-            this.startOpposingTimer(isWhiteTurn);
-            if (isCheck) {
-              this.checkAudio.play();
-            } else if (this.isCapture) {
-              this.captureAudio.play();
-              this.isCapture = false;
-            } else if (isCastle) {
-              this.castleAudio.play();
-            } else {
-              this.moveSound();
-            }
+            this.startOpposingTimer(isWhiteTurn, isCheck, isCastle);
           }
         },
       );
@@ -583,7 +573,7 @@ export default {
     startTimerWarningSound() {
       if (!this.gameOver) this.timerRunningOutAudio.play();
     },
-    startOpposingTimer(isWhiteTurn) {
+    startOpposingTimer(isWhiteTurn, isCheck, isCastle) {
       const isGameDefined = this.game;
       if (!isGameDefined) return;
       const isWhiteTimerDefined = this.timer1;
@@ -600,6 +590,18 @@ export default {
           }
         }, 1000);
         if (this.isTimeAboutToRunOutBlack && this.black) this.startTimerWarningSound();
+        //
+        if (isCheck) {
+          this.checkAudio.play();
+        } else if (this.isCapture) {
+          this.captureAudio.play();
+          this.isCapture = false;
+        } else if (isCastle) {
+          this.castleAudio.play();
+        } else {
+          this.moveSound();
+        }
+        //
         if (!isWhiteTimerDefined) return;
         clearInterval(this.timer1);
         this.timer1 = null;
