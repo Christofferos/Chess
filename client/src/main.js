@@ -4,7 +4,7 @@ import App from './App.vue';
 import router from './router';
 import store, { setIsAuthenticatedKey, setSocket, setUsernameKey } from './store';
 import { APP_ID } from './constants';
-import './registerServiceWorker';
+// import './registerServiceWorker';
 
 Vue.config.productionTip = false;
 
