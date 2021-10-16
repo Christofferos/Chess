@@ -569,6 +569,7 @@ export default {
               this.castleAudio.play();
             } else {
               this.moveAudio.play();
+              this.moveAudio.src = require('../assets/move.mp3');
             }
           }
         },
@@ -697,10 +698,10 @@ export default {
     this.$store.state.socket.on('connect', this.eventListener);
     this.socket = this.$store.state.socket;
 
-    window.addEventListener('touchstart', () => {
+    /* window.addEventListener('touchstart', () => {
       this.moveAudio.play();
       new Audio(require('../assets/move.mp3')).play();
-    });
+    }); */
   },
   mounted() {
     this.$nextTick(() => {
