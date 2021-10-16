@@ -559,7 +559,17 @@ export default {
           this.updatePiecePlacement();
           const isWhiteTurn = newFen.split(' ')[1] === 'w';
           if (!isGameOver && isLegalMove) {
-            this.startOpposingTimer(isWhiteTurn, isCheck, isCastle);
+            this.startOpposingTimer(isWhiteTurn);
+            if (isCheck) {
+              this.checkAudio.play();
+            } else if (this.isCapture) {
+              this.captureAudio.play();
+              this.isCapture = false;
+            } else if (isCastle) {
+              this.castleAudio.play();
+            } else {
+              this.moveAudio.play();
+            }
           }
         },
       );
@@ -567,13 +577,10 @@ export default {
     onResize() {
       this.deviceScale = getBoardSize();
     },
-    moveSound() {
-      if (!this.gameOver) this.moveAudio.play();
-    },
     startTimerWarningSound() {
       if (!this.gameOver) this.timerRunningOutAudio.play();
     },
-    startOpposingTimer(isWhiteTurn, isCheck, isCastle) {
+    startOpposingTimer(isWhiteTurn) {
       const isGameDefined = this.game;
       if (!isGameDefined) return;
       const isWhiteTimerDefined = this.timer1;
@@ -590,18 +597,6 @@ export default {
           }
         }, 1000);
         if (this.isTimeAboutToRunOutBlack && this.black) this.startTimerWarningSound();
-        //
-        if (isCheck) {
-          this.checkAudio.play();
-        } else if (this.isCapture) {
-          this.captureAudio.play();
-          this.isCapture = false;
-        } else if (isCastle) {
-          this.castleAudio.play();
-        } else {
-          this.moveSound();
-        }
-        //
         if (!isWhiteTimerDefined) return;
         clearInterval(this.timer1);
         this.timer1 = null;
@@ -701,6 +696,11 @@ export default {
     this.reconnectionEvents();
     this.$store.state.socket.on('connect', this.eventListener);
     this.socket = this.$store.state.socket;
+
+    window.addEventListener('touchstart', () => {
+      this.moveAudio.play();
+      new Audio('../assets/move.mp3').play();
+    });
   },
   mounted() {
     this.$nextTick(() => {
