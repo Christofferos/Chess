@@ -25,7 +25,7 @@ TODO-LIST:
 | 8. Fix bug that cause no live updates to happen in game                       | ✔️   |
 | 9. Add a new game mode - Crazy Chess                                          |      |
 | 10. Points you have during a match                                            | ✔️   |
-| 11. Make web app a Progressive Web App (WIP)                                  | ✔️   |
+| 11. Make web app a Progressive Web App (PWA)                                  | ✔️   |
 | 12. Add surrender button                                                      | ✔️   |
 | 13. Sort out all the confusion about multiple sessions/sockets from same user | ✔️   |
 | 14. Signing out should result in being removed from the Online Users list     | ✔️   |
