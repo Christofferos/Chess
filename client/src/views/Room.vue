@@ -568,7 +568,7 @@ export default {
             } else if (isCastle) {
               this.castleAudio.play();
             } else {
-              this.moveAudio.play();
+              this.moveSound();
             }
           }
         },
@@ -576,6 +576,9 @@ export default {
     },
     onResize() {
       this.deviceScale = getBoardSize();
+    },
+    moveSound() {
+      if (!this.gameOver) this.moveAudio.play();
     },
     startTimerWarningSound() {
       if (!this.gameOver) this.timerRunningOutAudio.play();
