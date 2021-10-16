@@ -699,7 +699,7 @@ export default {
 
     window.addEventListener('touchstart', () => {
       this.moveAudio.play();
-      new Audio('../assets/move.mp3').play();
+      new Audio(require('../assets/move.mp3')).play();
     });
   },
   mounted() {
