@@ -260,11 +260,12 @@ const emitTimerGameOver = game => {
   io.in(game.id).emit('timerGameOver', game.fen, game.gameState.game_over());
 };
 
-const emitMovePiece = (game, flag) => {
+const emitMovePiece = (game, flag, isPlayer1) => {
   const isGameOver = game.gameState.game_over() || game.timeLeft1 <= 0 || game.timeLeft2 <= 0;
   const isCastle = flag === 'k' || flag === 'q';
   const isEnPassant = flag === 'e';
   const isPromotion = flag === 'p' || flag === 'cp';
+  const isCapture = flag === 'c';
   io.in(game.id).emit(
     'movePieceResponse',
     game.fen,
@@ -277,6 +278,10 @@ const emitMovePiece = (game, flag) => {
     game.gameState.insufficient_material(),
     game.gameState.in_check(),
     isCastle,
+    isEnPassant,
+    isPromotion,
+    isCapture,
+    isPlayer1,
   );
 };
 
@@ -360,8 +365,8 @@ const gameOver = async game => {
  * Updates the piece placement
  */
 export const movePiece = async (gameId, startPos, endPos, username, promotionPiece) => {
-  const isUserAllowedToMove =
-    username === games[gameId].player1 || username === games[gameId].player2;
+  const isPlayer1 = username === games[gameId].player1;
+  const isUserAllowedToMove = isPlayer1 || username === games[gameId].player2;
   if (!isUserAllowedToMove) return;
   const game = games[gameId];
   const move = game.gameState.move({
@@ -377,7 +382,7 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
     gameOver(game);
   }
   const flags = move ? move.flags : null;
-  emitMovePiece(game, flags);
+  emitMovePiece(game, flags, isPlayer1);
 };
 
 export const backToMenu = gameId => {

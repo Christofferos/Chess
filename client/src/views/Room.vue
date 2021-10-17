@@ -325,7 +325,6 @@ export default {
         this.reconnectionEvents();
       },
       socket: '',
-      isCapture: false,
       msgAudio: new Audio(require('../assets/messageNotification.mp3')),
       gameStartAudio: new Audio(require('../assets/gameStart.mp3')),
       moveAudio: new Audio(require('../assets/move.mp3')),
@@ -379,7 +378,6 @@ export default {
       if (isNewScores) {
         this.piecePointsWhite = pointsWhite;
         this.piecePointsBlack = pointsBlack;
-        this.isCapture = true;
       }
     },
     updatePiecePlacement() {
@@ -586,6 +584,10 @@ export default {
           draw4,
           isCheck,
           isCastle,
+          isEnPassant,
+          isPromotion,
+          isCapture,
+          isPlayer1MovingPiece,
         ) => {
           if (isGameOver) {
             this.stopPlayerTimes();
@@ -602,25 +604,24 @@ export default {
           this.game.fen = newFen;
           this.updatePiecePlacement();
           if (isGameOver) return;
-          const isWhiteTurn = newFen.split(' ')[1] === 'w';
-          const isResponsibleForCurrentMove =
-            (isWhiteTurn && this.black) || (!isWhiteTurn && !this.black);
           if (!isLegalMove) {
-            if (isResponsibleForCurrentMove) {
+            if ((isPlayer1MovingPiece && !this.black) || (!isPlayer1MovingPiece && this.black)) {
               this.invalidMoveAudio.src = '/media/invalidAction.b8f64af9.mp3';
               this.invalidMoveAudio.play();
             }
             return;
           }
-          if (isResponsibleForCurrentMove) this.selectedPiece = '';
+          const isWhiteTurn = newFen.split(' ')[1] === 'w';
+          const disableSelectedPieceColor =
+            (isWhiteTurn && this.black) || (!isWhiteTurn && !this.black);
+          if (disableSelectedPieceColor) this.selectedPiece = '';
           this.startOpposingTimer(isWhiteTurn);
           if (isCheck) {
             this.checkAudio.src = '/media/check.d8e0e09a.mp3';
             this.checkAudio.play();
-          } else if (this.isCapture) {
+          } else if (isCapture) {
             this.captureAudio.src = '/media/capture.ef8074e3.mp3';
             this.captureAudio.play();
-            this.isCapture = false;
           } else if (isCastle) {
             this.castleAudio.src = '/media/castle.7bad3985.mp3';
             this.castleAudio.play();
