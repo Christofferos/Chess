@@ -561,15 +561,17 @@ export default {
           if (!isGameOver && isLegalMove) {
             this.startOpposingTimer(isWhiteTurn);
             if (isCheck) {
+              this.checkAudio.src = '/media/check.d8e0e09a.mp3';
               this.checkAudio.play();
             } else if (this.isCapture) {
+              this.captureAudio.src = '/media/capture.ef8074e3.mp3';
               this.captureAudio.play();
               this.isCapture = false;
             } else if (isCastle) {
+              this.castleAudio.src = '/media/castle.7bad3985.mp3';
               this.castleAudio.play();
             } else {
               this.moveAudio.src = '/media/move.9707c466.mp3';
-              console.log('HERE: ', this.moveAudio.src);
               this.moveAudio.play();
             }
           }
@@ -702,11 +704,16 @@ export default {
     window.addEventListener(
       'touchstart',
       () => {
-        this.moveAudio.autoplay = true;
-        this.moveAudio.src =
+        const audioSrc =
           'data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSVQyAAAABgAAAzIyMzUAVFNTRQAAAA8AAANMYXZmNTcuODMuMTAwAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
-        // this.moveAudio.play();
-        // new Audio(require('../assets/move.mp3')).play();
+        this.checkAudio.autoplay = true;
+        this.captureAudio.autoplay = true;
+        this.castleAudio.autoplay = true;
+        this.moveAudio.autoplay = true;
+        this.moveAudio.src = audioSrc;
+        this.checkAudio.src = audioSrc;
+        this.captureAudio.src = audioSrc;
+        this.castleAudio.src = audioSrc;
       },
       { once: true },
     );
