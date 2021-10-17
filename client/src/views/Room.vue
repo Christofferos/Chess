@@ -602,14 +602,17 @@ export default {
           this.game.fen = newFen;
           this.updatePiecePlacement();
           if (isGameOver) return;
+          const isWhiteTurn = newFen.split(' ')[1] === 'w';
+          const isResponsibleForCurrentMove =
+            (isWhiteTurn && this.black) || (!isWhiteTurn && !this.black);
           if (!isLegalMove) {
-            this.invalidMoveAudio.src = '/media/invalidAction.b8f64af9.mp3';
-            this.invalidMoveAudio.play();
+            if (isResponsibleForCurrentMove) {
+              this.invalidMoveAudio.src = '/media/invalidAction.b8f64af9.mp3';
+              this.invalidMoveAudio.play();
+            }
             return;
           }
-          const isWhiteTurn = newFen.split(' ')[1] === 'w';
-          if (isWhiteTurn && this.black) this.selectedPiece = '';
-          if (!isWhiteTurn && !this.black) this.selectedPiece = '';
+          if (isResponsibleForCurrentMove) this.selectedPiece = '';
           this.startOpposingTimer(isWhiteTurn);
           if (isCheck) {
             this.checkAudio.src = '/media/check.d8e0e09a.mp3';

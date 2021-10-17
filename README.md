@@ -38,7 +38,7 @@ TODO-LIST:
 | 21. Server restart does not affect users that play a game of chess            | ✔️   |
 | 22. Add VueDraggable (React Konva) for drag-n-drop of pieces                  | -    |
 | 23. Add move, over, start, check, castle, capture sound effects               | ✔️   |
-| 24. Add invalid move sound effect and entertaining sound effects              |      |
+| 24. Add invalid move and entertaining sound effects                           |      |
 | 25. Implement ability to rotate board                                         | ✔️   |
 | 26. Implement ability to ask for a redo move                                  |      |
 | 27. Implement ability to make a random move                                   |      |
