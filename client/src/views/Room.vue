@@ -303,6 +303,7 @@ export default {
       msgAudio: new Audio(require('../assets/messageNotification.mp3')),
       gameStartAudio: new Audio(require('../assets/gameStart.mp3')),
       moveAudio: new Audio(require('../assets/move.mp3')),
+      invalidMoveAudio: new Audio(require('../assets/invalidAction.mp3')),
       checkAudio: new Audio(require('../assets/check.mp3')),
       timerRunningOutAudio: new Audio(require('../assets/timerRunningOut1.mp3')),
       gameOverAudio: new Audio(require('../assets/gameOver.mp3')),
@@ -558,7 +559,8 @@ export default {
           this.game.fen = newFen;
           this.updatePiecePlacement();
           const isWhiteTurn = newFen.split(' ')[1] === 'w';
-          if (!isGameOver && isLegalMove) {
+          if (isGameOver) return;
+          if (isLegalMove) {
             this.startOpposingTimer(isWhiteTurn);
             if (isCheck) {
               this.checkAudio.src = '/media/check.d8e0e09a.mp3';
@@ -574,6 +576,9 @@ export default {
               this.moveAudio.src = '/media/move.9707c466.mp3';
               this.moveAudio.play();
             }
+          } else {
+            this.invalidMoveAudio.src = '/media/invalidAction.b8f64af9.mp3';
+            this.invalidMoveAudio.play();
           }
         },
       );
@@ -710,7 +715,9 @@ export default {
         this.captureAudio.autoplay = true;
         this.castleAudio.autoplay = true;
         this.moveAudio.autoplay = true;
+        this.invalidMoveAudio.autoplay = true;
         this.moveAudio.src = audioSrc;
+        this.invalidMoveAudio.src = audioSrc;
         this.checkAudio.src = audioSrc;
         this.captureAudio.src = audioSrc;
         this.castleAudio.src = audioSrc;

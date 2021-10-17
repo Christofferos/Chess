@@ -376,7 +376,8 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
   if (isGameOver) {
     gameOver(game);
   }
-  emitMovePiece(game, move.flags);
+  const flags = move ? move.flags : null;
+  emitMovePiece(game, flags);
 };
 
 export const backToMenu = gameId => {
