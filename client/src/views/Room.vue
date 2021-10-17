@@ -205,6 +205,7 @@
         </div>
       </div>
     </div>
+    <audio autoplay="true" src="../assets/move.mp3" id="move" />
   </div>
 </template>
 
@@ -568,8 +569,8 @@ export default {
             } else if (isCastle) {
               this.castleAudio.play();
             } else {
-              this.moveAudio.play();
-              this.moveAudio.src = require('../assets/move.mp3');
+              document.getElementById('move').play();
+              // this.moveAudio.play();
             }
           }
         },
