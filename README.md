@@ -46,6 +46,7 @@ TODO-LIST:
 | 29. Selected pieces are not unselected upon opponent move                     | ✔️   |
 | 30. Pre-moving                                                                |      |
 | 31. Move animation                                                            |      |
+| 32. Add an invite opponent/player process after creating game                 |      |
 
 **_---------------_**
 
@@ -67,5 +68,8 @@ https://stackoverflow.com/questions/54141738/how-can-i-use-throttling-with-getti
 https://www.w3schools.com/html/html5_draganddrop.asp React Konva disables scroll on mobile and
 places canvas behind all chess pieces. It requries pieces to be stored in state - works well on
 mobile. VueDraggable: https://github.com/SortableJS/Vue.Draggable
+
+[24]. Enable entertaining sound effects via profile page switch/toggle. Put in context and adjust
+in Room.vue
 
 🕹️▶️⏸️🔙
