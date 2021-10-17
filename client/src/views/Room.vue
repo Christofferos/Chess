@@ -6,10 +6,8 @@
       <div class="row" style="text-align: center">
         <h1 v-if="this.opponent === ''">Waiting for an opponent...</h1>
         <h1 v-else>
-          {{ this.blackTime }} |
-          {{ this.black ? this.$store.state.cookie.username : this.opponent }} |
-          {{ piecePointsBlack > 0 ? `+${piecePointsBlack}` : piecePointsBlack }}
-          <span v-if="black" v-on:click="surrender()" style="cursor: pointer">🏳️</span>
+          {{ this.black ? this.whiteTime : this.blackTime }} | {{ this.opponent }} |
+          {{ this.black ? piecePointsWhite : piecePointsBlack }}
         </h1>
       </div>
 
@@ -90,9 +88,23 @@
       </div>
 
       <div
-        :class="isTimeAboutToRunOutBlack ? 'blinking' : null"
+        :class="
+          black
+            ? isTimeAboutToRunOutWhite
+              ? 'blinking'
+              : null
+            : isTimeAboutToRunOutBlack
+            ? 'blinking'
+            : null
+        "
         v-bind:style="{
-          borderBottom: isTimeAboutToRunOutBlack ? '3px solid red' : '',
+          borderBottom: black
+            ? isTimeAboutToRunOutWhite
+              ? '3px solid red'
+              : ''
+            : isTimeAboutToRunOutBlack
+            ? '3px solid red'
+            : '',
           width: '375px',
           height: '3px',
         }"
@@ -143,7 +155,7 @@
                 fontWeight: 800,
                 zIndex: 10,
               }"
-              >{{ 8 - row }}
+              >{{ black ? row + 1 : 8 - row }}
             </span>
             <span
               v-if="row === 7"
@@ -154,15 +166,29 @@
                 fontWeight: 1000,
                 paddingRight: '3px',
               }"
-              >{{ letters[col] }}</span
+              >{{ black ? letters[7 - col] : letters[col] }}</span
             >
           </span>
         </div>
       </div>
       <div
-        :class="isTimeAboutToRunOutWhite ? 'blinking' : null"
+        :class="
+          black
+            ? isTimeAboutToRunOutBlack
+              ? 'blinking'
+              : null
+            : isTimeAboutToRunOutWhite
+            ? 'blinking'
+            : null
+        "
         v-bind:style="{
-          borderBottom: isTimeAboutToRunOutWhite ? '3px solid red' : '',
+          borderBottom: black
+            ? isTimeAboutToRunOutBlack
+              ? '3px solid red'
+              : ''
+            : isTimeAboutToRunOutWhite
+            ? '3px solid red'
+            : '',
           width: '375px',
           height: '3px',
         }"
@@ -170,10 +196,10 @@
 
       <div class="row" style="text-align: center">
         <h1 style="margin-top: 10px">
-          {{ this.whiteTime }} |
-          {{ this.black ? this.opponent : this.$store.state.cookie.username }} |
-          {{ piecePointsWhite > 0 ? `+${piecePointsWhite}` : piecePointsWhite }}
-          <span v-if="!black" v-on:click="surrender()" style="cursor: pointer">🏳️</span>
+          {{ this.black ? this.blackTime : this.whiteTime }} |
+          {{ this.$store.state.cookie.username }} |
+          {{ this.black ? piecePointsBlack : piecePointsWhite }}
+          <span v-on:click="surrender()" style="cursor: pointer">🏳️</span>
         </h1>
       </div>
 
@@ -371,26 +397,43 @@ export default {
           ['', '', '', '', '', '', '', ''],
         ];
         const pieces = this.game.fen.split(' ')[0];
-        for (let i = 0; i < pieces.length; i += 1) {
-          if (pieces.charAt(i) === '/') {
-            row += 1;
-            col = 0;
-          } else if (pieces.charAt(i).match('[rnbqkpRNBQKP]')) {
-            this.piecePlacement[row][col] = pieces.charAt(i);
-            col += 1;
-          } else {
-            for (let j = 0; j < Number(pieces.charAt(i)); j += 1) {
-              this.piecePlacement[row][col + j] = '';
+        if (this.black) {
+          for (let i = pieces.length - 1; i >= 0; i -= 1) {
+            if (pieces.charAt(i) === '/') {
+              row += 1;
+              col = 0;
+            } else if (pieces.charAt(i).match('[rnbqkpRNBQKP]')) {
+              this.piecePlacement[row][col] = pieces.charAt(i);
+              col += 1;
+            } else {
+              for (let j = 0; j < Number(pieces.charAt(i)); j += 1) {
+                this.piecePlacement[row][col + j] = '';
+              }
+              col += Number(pieces.charAt(i));
             }
-            col += Number(pieces.charAt(i));
+          }
+        } else {
+          for (let i = 0; i < pieces.length; i += 1) {
+            if (pieces.charAt(i) === '/') {
+              row += 1;
+              col = 0;
+            } else if (pieces.charAt(i).match('[rnbqkpRNBQKP]')) {
+              this.piecePlacement[row][col] = pieces.charAt(i);
+              col += 1;
+            } else {
+              for (let j = 0; j < Number(pieces.charAt(i)); j += 1) {
+                this.piecePlacement[row][col + j] = '';
+              }
+              col += Number(pieces.charAt(i));
+            }
           }
         }
       }
       this.updateScores();
     },
     translateSelectedPiece(row, col) {
-      const rank = 8 - Number(row);
-      const file = this.letters[Number(col)];
+      const rank = this.black ? 1 + Number(row) : 8 - Number(row);
+      const file = this.black ? this.letters[Number(7 - col)] : this.letters[Number(col)];
       return file.toString() + rank.toString();
     },
     checkSelectedPiece(row, col) {
@@ -490,11 +533,12 @@ export default {
           this.blackTime = this.getBlackTime();
           if (data.game.player1 === this.$store.state.cookie.username) {
             this.opponent = data.game.player2;
-          } else if (data.game.player2 === this.$store.state.cookie.username) {
-            this.opponent = data.game.player1;
+            this.updatePiecePlacement();
+          } else {
             this.black = true;
+            this.opponent = data.game.player1;
+            this.updatePiecePlacement();
           }
-          this.updatePiecePlacement();
         })
         .catch((err) => {
           return;
@@ -552,33 +596,34 @@ export default {
               this.gameOverWinLose(newFen);
             }
           }
-          this.selectedPiece = '';
           this.game.timeLeft1 = timeLeft1;
           this.game.timeLeft2 = timeLeft2;
           const isLegalMove = this.game.fen !== newFen;
           this.game.fen = newFen;
           this.updatePiecePlacement();
-          const isWhiteTurn = newFen.split(' ')[1] === 'w';
           if (isGameOver) return;
-          if (isLegalMove) {
-            this.startOpposingTimer(isWhiteTurn);
-            if (isCheck) {
-              this.checkAudio.src = '/media/check.d8e0e09a.mp3';
-              this.checkAudio.play();
-            } else if (this.isCapture) {
-              this.captureAudio.src = '/media/capture.ef8074e3.mp3';
-              this.captureAudio.play();
-              this.isCapture = false;
-            } else if (isCastle) {
-              this.castleAudio.src = '/media/castle.7bad3985.mp3';
-              this.castleAudio.play();
-            } else {
-              this.moveAudio.src = '/media/move.9707c466.mp3';
-              this.moveAudio.play();
-            }
-          } else {
+          if (!isLegalMove) {
             this.invalidMoveAudio.src = '/media/invalidAction.b8f64af9.mp3';
             this.invalidMoveAudio.play();
+            return;
+          }
+          const isWhiteTurn = newFen.split(' ')[1] === 'w';
+          if (isWhiteTurn && this.black) this.selectedPiece = '';
+          if (!isWhiteTurn && !this.black) this.selectedPiece = '';
+          this.startOpposingTimer(isWhiteTurn);
+          if (isCheck) {
+            this.checkAudio.src = '/media/check.d8e0e09a.mp3';
+            this.checkAudio.play();
+          } else if (this.isCapture) {
+            this.captureAudio.src = '/media/capture.ef8074e3.mp3';
+            this.captureAudio.play();
+            this.isCapture = false;
+          } else if (isCastle) {
+            this.castleAudio.src = '/media/castle.7bad3985.mp3';
+            this.castleAudio.play();
+          } else {
+            this.moveAudio.src = '/media/move.9707c466.mp3';
+            this.moveAudio.play();
           }
         },
       );

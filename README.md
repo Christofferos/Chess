@@ -36,14 +36,16 @@ TODO-LIST:
 | 19. Match analysis after game (Stockfish?)                                    |      |
 | 20. Flashing red light when near loss due to lack of time (<20% time)         | ✔️   |
 | 21. Server restart does not affect users that play a game of chess            | ✔️   |
-| 22. Add React Konva for drag-n-drop of pieces                                 | -    |
+| 22. Add VueDraggable (React Konva) for drag-n-drop of pieces                  | -    |
 | 23. Add move, over, start, check, castle, capture sound effects               | ✔️   |
 | 24. Add invalid move sound effect and entertaining sound effects              |      |
-| 25. Implement ability to rotate board                                         |      |
+| 25. Implement ability to rotate board                                         | ✔️   |
 | 26. Implement ability to ask for a redo move                                  |      |
 | 27. Implement ability to make a random move                                   |      |
 | 28. Implement ability to see historic moves after game                        |      |
-| 29. Pre-moving and selected pieces are not unselected upon opponent move      |      |
+| 29. Selected pieces are not unselected upon opponent move                     | ✔️   |
+| 30. Pre-moving                                                                |      |
+| 31. Move animation                                                            |      |
 
 **_---------------_**
 
@@ -64,6 +66,6 @@ https://stackoverflow.com/questions/54141738/how-can-i-use-throttling-with-getti
 [22]. Implemented vue vanilla drag & drop but it only worked for desktop:
 https://www.w3schools.com/html/html5_draganddrop.asp React Konva disables scroll on mobile and
 places canvas behind all chess pieces. It requries pieces to be stored in state - works well on
-mobile.
+mobile. VueDraggable: https://github.com/SortableJS/Vue.Draggable
 
 🕹️▶️⏸️🔙
