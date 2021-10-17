@@ -73,3 +73,7 @@ gameRouter.post('/surrender', async (req, res) => {
   surrender(req.body.id, req.session.userID);
   res.status(200).end();
 });
+
+/* gameRouter.get('/moveAudio', async (req, res) => {
+  res.status(200).end();
+}); */

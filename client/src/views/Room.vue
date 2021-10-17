@@ -205,7 +205,6 @@
         </div>
       </div>
     </div>
-    <audio autoplay="true" src="../assets/move.mp3" id="move" />
   </div>
 </template>
 
@@ -569,8 +568,9 @@ export default {
             } else if (isCastle) {
               this.castleAudio.play();
             } else {
-              document.getElementById('move').play();
-              // this.moveAudio.play();
+              this.moveAudio.src = '/media/move.9707c466.mp3';
+              console.log('HERE: ', this.moveAudio.src);
+              this.moveAudio.play();
             }
           }
         },
@@ -699,10 +699,17 @@ export default {
     this.$store.state.socket.on('connect', this.eventListener);
     this.socket = this.$store.state.socket;
 
-    /* window.addEventListener('touchstart', () => {
-      this.moveAudio.play();
-      new Audio(require('../assets/move.mp3')).play();
-    }); */
+    window.addEventListener(
+      'touchstart',
+      () => {
+        this.moveAudio.autoplay = true;
+        this.moveAudio.src =
+          'data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSVQyAAAABgAAAzIyMzUAVFNTRQAAAA8AAANMYXZmNTcuODMuMTAwAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
+        // this.moveAudio.play();
+        // new Audio(require('../assets/move.mp3')).play();
+      },
+      { once: true },
+    );
   },
   mounted() {
     this.$nextTick(() => {
