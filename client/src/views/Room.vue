@@ -181,7 +181,7 @@
         <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
           🔗 Game Code
         </button>
-        <h1>Chat</h1>
+        <p style="font-size: 36px; color: white">Chat</p>
         <form v-on:submit.prevent="send()">
           <input
             v-model="input"

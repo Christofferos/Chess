@@ -29,20 +29,21 @@ TODO-LIST:
 | 12. Add surrender button                                                      | ✔️   |
 | 13. Sort out all the confusion about multiple sessions/sockets from same user | ✔️   |
 | 14. Signing out should result in being removed from the Online Users list     | ✔️   |
-| 15. Add a create game time limit selection & an unlimited time option         |      |
+| 15. Add a create game time limit selection                                    |      |
 | 16. Delete liveGames older than 1 day - to maintain database data quality     | ✔️   |
 | 17. -                                                                         | -    |
 | 18. Throttle audio                                                            | ✔️   |
 | 19. Match analysis after game (Stockfish?)                                    |      |
 | 20. Flashing red light when near loss due to lack of time (<20% time)         | ✔️   |
 | 21. Server restart does not affect users that play a game of chess            | ✔️   |
-| 22. Add React Konva for drag-n-drop of pieces                                 | Prio |
+| 22. Add React Konva for drag-n-drop of pieces                                 | -    |
 | 23. Add move, over, start, check, castle, capture sound effects               | ✔️   |
 | 24. Add invalid move sound effect and entertaining sound effects              |      |
 | 25. Implement ability to rotate board                                         |      |
 | 26. Implement ability to ask for a redo move                                  |      |
 | 27. Implement ability to make a random move                                   |      |
 | 28. Implement ability to see historic moves after game                        |      |
+| 29. Pre-moving and selected pieces are not unselected upon opponent move      |      |
 
 **_---------------_**
 
@@ -59,5 +60,10 @@ https://dev.to/bravemaster619/how-to-prevent-multiple-socket-connections-and-eve
 
 [18]. Guide:
 https://stackoverflow.com/questions/54141738/how-can-i-use-throttling-with-getting-an-event-target
+
+[22]. Implemented vue vanilla drag & drop but it only worked for desktop:
+https://www.w3schools.com/html/html5_draganddrop.asp React Konva disables scroll on mobile and
+places canvas behind all chess pieces. It requries pieces to be stored in state - works well on
+mobile.
 
 🕹️▶️⏸️🔙
