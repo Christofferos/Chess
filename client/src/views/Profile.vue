@@ -17,8 +17,18 @@
       v-on:click="signOut()"
     />
 
+    <div>
+      <h4 style="color: white">
+        Sound Effect Bonus
+      </h4>
+      <label class="ios-switch">
+        <input type="checkbox" />
+        <i></i>
+      </label>
+    </div>
+
     <div
-      style="border: 2px solid black; width: 350px; margin: 50px auto 25px auto;
+      style="border: 2px solid black; width: 350px; margin: 25px auto 25px auto;
            background: #504F4C; border-radius: 5px; padding-bottom: 20px;"
     >
       <h1 style="color: white">Match History:</h1>
@@ -115,3 +125,70 @@ export default {
   },
 };
 </script>
+
+<style>
+.ios-switch {
+  display: inline-block;
+  cursor: pointer;
+}
+
+.ios-switch input {
+  display: none;
+}
+
+.ios-switch i {
+  position: relative;
+  display: inline-block;
+  margin-right: 0.5rem;
+  width: 46px;
+  height: 26px;
+  background-color: #6d6b6c;
+  border-radius: 23px;
+  vertical-align: text-bottom;
+  transition: all 0.3s;
+}
+
+.ios-switch i::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 42px;
+  height: 22px;
+  background-color: #6d6b6c;
+  border-radius: 11px;
+  transform: translate3d(2px, 2px, 0) scale3d(1, 1, 1);
+  transition: all 0.3;
+}
+
+.ios-switch i::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 22px;
+  height: 22px;
+  background-color: #fff;
+  border-radius: 11px;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.24);
+  transform: translate3d(2px, 2px, 0);
+  transition: all 0.2s ease-in-out;
+}
+
+.ios-switch:active i::after {
+  width: 28px;
+  transform: translate3d(2px, 2px, 0);
+}
+.ios-switch:active input:checked + i::after {
+  transform: translate3d(16px, 2px, 0);
+}
+
+.ios-switch input:checked + i {
+  background-color: #83a954;
+}
+
+.ios-switch input:checked + i::before {
+  transform: translate3d(18px, 2px, 0) scale3d(0, 0, 0);
+}
+.ios-switch input:checked + i::after {
+  transform: translate3d(22px, 2px, 0);
+}
+</style>
