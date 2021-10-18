@@ -751,6 +751,8 @@ export default {
     },
   },
   created() {
+    // Conditional for sound effects extras
+    console.log(this.$store.state.extraSoundEffects);
     this.reconnectionEvents();
     this.$store.state.socket.on('connect', this.eventListener);
     this.socket = this.$store.state.socket;

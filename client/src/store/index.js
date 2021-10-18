@@ -7,6 +7,7 @@ Vue.use(Vuex);
 Vue.use(Clipboard);
 Vue.use(VueHead);
 
+export const setExtraSoundEffectsKey = 'setExtraSoundEffects';
 export const setIsAuthenticatedKey = 'setIsAuthenticated';
 export const setUsernameKey = 'setUsername';
 export const setSocket = 'setSocket';
@@ -21,6 +22,7 @@ export default new Vuex.Store({
     },
     socket: null,
     usersOnline: [],
+    extraSoundEffects: false,
   },
   mutations: {
     setIsAuthenticated(store, isAuthenticated) {
@@ -31,6 +33,9 @@ export default new Vuex.Store({
     },
     setSocket(store, socket) {
       store.socket = socket;
+    },
+    setExtraSoundEffects(store, extraSoundEffects) {
+      store.extraSoundEffects = extraSoundEffects;
     },
     addOnlineUser(store, userId) {
       const isNewOnlineUser = store.usersOnline.indexOf(userId) === -1;

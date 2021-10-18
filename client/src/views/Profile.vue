@@ -22,7 +22,16 @@
         Sound Effect Bonus
       </h4>
       <label class="ios-switch">
-        <input type="checkbox" />
+        <input
+          type="checkbox"
+          :checked="isExtraSoundEffectsEnabled ? true : false"
+          @click="
+            {
+              isExtraSoundEffectsEnabled = !isExtraSoundEffectsEnabled;
+              debug();
+            }
+          "
+        />
         <i></i>
       </label>
     </div>
@@ -66,12 +75,15 @@
 </template>
 
 <script>
+import { setExtraSoundEffectsKey } from '../store';
 import { preFetchSocket } from '../utils/preFetchSocket';
+
 export default {
   name: 'Profile',
   components: {},
   data() {
     return {
+      isExtraSoundEffectsEnabled: this.$store.state.extraSoundEffects,
       currentlyLoggedIn: '',
       success: true,
       matches: [],
@@ -100,6 +112,10 @@ export default {
       });
   },
   methods: {
+    debug() {
+      console.log(this.isExtraSoundEffectsEnabled);
+      this.$store.commit(setExtraSoundEffectsKey, this.isExtraSoundEffectsEnabled);
+    },
     capitalizeFirstLetter(inputStr) {
       return inputStr.charAt(0).toUpperCase() + inputStr.slice(1);
     },
