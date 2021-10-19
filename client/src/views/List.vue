@@ -28,8 +28,8 @@
               type="text"
               placeholder="Enter Game Code"
               style="width: 350px; font-size: 22px; text-align: center; border-radius: 5px;"
-              pattern="[A-Za-z0-9]{8}"
-              title="Eight letter code"
+              pattern="[A-Za-z0-9]{3}"
+              title="Three letter code"
               v-model="gameCode"
             />
           </div>

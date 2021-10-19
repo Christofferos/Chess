@@ -20,7 +20,7 @@ gameRouter.post('/newGame', (req, res) => {
     res.status(401).end();
     return;
   }
-  const gameId = makeId(8);
+  const gameId = makeId(3);
   console.log(req.session.userID);
   io.emit('inviteToGame', req.body.userToInvite, gameId, req.session.userID);
   const minutes = req.body.minuteTimeLimit ? req.body.minuteTimeLimit : 5;

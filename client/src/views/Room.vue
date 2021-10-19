@@ -334,6 +334,10 @@ export default {
       gameOverAudio: new Audio(require('../assets/gameOver.mp3')),
       captureAudio: new Audio(require('../assets/capture.mp3')),
       castleAudio: new Audio(require('../assets/castle.mp3')),
+      extraAudio: this.$store.state.extraSoundEffects,
+      checkExtraAudio: new Audio(require('../assets/checkExtra.mp3')),
+      checkExtra2Audio: new Audio(require('../assets/checkExtra2.mp3')),
+      aunPassunAudio: new Audio(require('../assets/aunPassun.mp3')),
     };
   },
   methods: {
@@ -539,6 +543,7 @@ export default {
           }
         })
         .catch((err) => {
+          console.log('HERE 404', err);
           return;
         });
 
@@ -617,8 +622,17 @@ export default {
           if (disableSelectedPieceColor) this.selectedPiece = '';
           this.startOpposingTimer(isWhiteTurn);
           if (isCheck) {
-            this.checkAudio.src = '/media/check.d8e0e09a.mp3';
-            this.checkAudio.play();
+            if (this.extraAudio) {
+              this.checkExtraAudio.src = '/media/checkExtra.20bca44b.mp3';
+              this.checkExtra2Audio.src = '/media/checkExtra2.7fb32fd1.mp3';
+              Math.random() > 0.5 ? this.checkExtraAudio.play() : this.checkExtra2Audio.play();
+            } else {
+              this.checkAudio.src = '/media/check.d8e0e09a.mp3';
+              this.checkAudio.play();
+            }
+          } else if (isEnPassant && this.extraAudio) {
+            this.aunPassunAudio.src = '/media/aunPassun.b2755919.mp3';
+            this.aunPassunAudio.play();
           } else if (isCapture) {
             this.captureAudio.src = '/media/capture.ef8074e3.mp3';
             this.captureAudio.play();
@@ -636,7 +650,10 @@ export default {
       this.deviceScale = getBoardSize();
     },
     startTimerWarningSound() {
-      if (!this.gameOver) this.timerRunningOutAudio.play();
+      if (!this.gameOver) {
+        this.timerRunningOutAudio.src = '/media/timerRunningOut1.6c28c715.mp3';
+        this.timerRunningOutAudio.play();
+      }
     },
     startOpposingTimer(isWhiteTurn) {
       const isGameDefined = this.game;
@@ -751,12 +768,9 @@ export default {
     },
   },
   created() {
-    // Conditional for sound effects extras
-    console.log(this.$store.state.extraSoundEffects);
     this.reconnectionEvents();
     this.$store.state.socket.on('connect', this.eventListener);
     this.socket = this.$store.state.socket;
-
     window.addEventListener(
       'touchstart',
       () => {
@@ -767,11 +781,20 @@ export default {
         this.castleAudio.autoplay = true;
         this.moveAudio.autoplay = true;
         this.invalidMoveAudio.autoplay = true;
+        this.timerRunningOutAudio.autoplay = true;
         this.moveAudio.src = audioSrc;
         this.invalidMoveAudio.src = audioSrc;
         this.checkAudio.src = audioSrc;
         this.captureAudio.src = audioSrc;
         this.castleAudio.src = audioSrc;
+        this.timerRunningOutAudio.src = audioSrc;
+        if (!this.extraAudio) return;
+        this.checkExtraAudio.autoplay = true;
+        this.checkExtra2Audio.autoplay = true;
+        this.aunPassunAudio.autoplay = true;
+        this.checkExtraAudio.src = audioSrc;
+        this.checkExtra2Audio.src = audioSrc;
+        this.aunPassunAudio.src = audioSrc;
       },
       { once: true },
     );

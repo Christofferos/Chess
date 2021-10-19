@@ -77,16 +77,20 @@ chatRouter.get('/room/:room/join', (req, res) => {
   }
   if (!user.socket) {
     console.log('User socket was null ');
+    res.status(404).end();
+    return;
   }
   user.currentRoom = game.id;
   user.socket.join(user.currentRoom);
-  addMessage(user.currentRoom, `${user.name} joined the room!`);
   const isPlayer1RejoiningGame = game.player2 !== '' || game.player1 === req.session.userID;
   const isPlayer2JoiningGame = !isPlayer1RejoiningGame;
   const RESPONSE_OBJ = getJoinGameResponseObject(game);
   if (isPlayer1RejoiningGame) {
+    addMessage(user.currentRoom, `Game code: ${game.id}`);
+    addMessage(user.currentRoom, `${user.name} joined the room!`);
     res.status(200).json(RESPONSE_OBJ);
   } else if (isPlayer2JoiningGame) {
+    addMessage(user.currentRoom, `${user.name} joined the room!`);
     game.player2 = req.session.userID;
     setPlayer2InLiveGameDB(game.player2, game.id);
     io.emit('getGamePlayers', { player1: game.player1, player2: game.player2 });

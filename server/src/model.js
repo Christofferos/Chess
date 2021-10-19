@@ -303,7 +303,7 @@ const startOpposingTimer = game => {
   const isBlacksTurn = playerTurn === 'b';
   if (isBlacksTurn) {
     games[game.id].timer2 = setInterval(() => {
-      if (!isGameDefined) return;
+      if (!games[game.id]) return;
       games[game.id].timeLeft2 -= 1;
       const isOutOfTime = games[game.id].timeLeft2 <= 0;
       if (isOutOfTime) {
@@ -316,7 +316,7 @@ const startOpposingTimer = game => {
     games[game.id].timer1 = null;
   } else {
     games[game.id].timer1 = setInterval(() => {
-      if (!isGameDefined) return;
+      if (!games[game.id]) return;
       games[game.id].timeLeft1 -= 1;
       const isOutOfTime = games[game.id].timeLeft1 <= 0;
       if (isOutOfTime) {
