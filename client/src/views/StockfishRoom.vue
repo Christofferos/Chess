@@ -178,6 +178,9 @@ import q from '../assets/bq.png';
 import k from '../assets/bk.png';
 import { getBoardSize } from '../utils/getBoardSize';
 
+/* AFTER USER HAS MADE A VALID MOVE - RUN prepareMove() */
+const stockfishEngine = new Worker('stockfish.js');
+
 const TWENTY_PERCENT = 0.2;
 
 export default {
@@ -382,6 +385,7 @@ export default {
         this.endPos = this.translateSelectedPiece(y1, x1);
         const promoteToQueen = this.black ? 'q' : 'Q';
         this.movePiece(promoteToQueen);
+        this.prepareMove();
       }
     },
     movePiece(piece = undefined) {
@@ -395,6 +399,27 @@ export default {
           startPos: this.startPos,
           endPos: this.endPos,
           ...(piece && { promotion: piece }),
+        }),
+      })
+        .then((resp) => {
+          if (!resp.ok) {
+            throw new Error(`Unexpected failure when moving piece in room: ${this.room}`);
+          }
+          return resp;
+        })
+        .catch(console.error);
+    },
+    stockfishMovePiece(from, to, promotion) {
+      fetch('/api/stockfishMovePiece', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: this.game.id,
+          from,
+          to,
+          promotion,
         }),
       })
         .then((resp) => {
@@ -422,7 +447,6 @@ export default {
           this.whiteTime = this.getWhiteTime();
           this.blackTime = this.getBlackTime();
           if (data.game.player1 === this.$store.state.cookie.username) {
-            this.opponent = data.game.player2;
             this.updatePiecePlacement();
           } else {
             this.black = true;
@@ -648,6 +672,49 @@ export default {
         })
         .catch(console.error);
     },
+    setDefaultConfigs() {
+      const skillLevel = 0;
+      const contemptConfig = `setoption name Contempt value 0`;
+      const skillLevelConfig = `setoption name Skill Level value ${skillLevel}`;
+      const maxErrorConfig = `setoption name Skill Level Maximum Error value ${Math.round(
+        skillLevel * -0.5 + 10,
+      )}`;
+      const probabilityConfig = `setoption name Skill Level Probability value ${Math.round(
+        skillLevel * 6.35 + 1,
+      )}`;
+      // const kingSafetyConfig = `setoption name King Safety value 0`;
+      stockfishEngine.postMessage(contemptConfig);
+      stockfishEngine.postMessage(skillLevelConfig);
+      stockfishEngine.postMessage(maxErrorConfig);
+      stockfishEngine.postMessage(probabilityConfig);
+      // stockfishEngine.postMessage(kingSafetyConfig);
+    },
+    prepareMove() {
+      let moves = '';
+      fetch(`/api/stockfishGetHistory`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: this.game.id,
+        }),
+      })
+        .then((res) => res.json())
+        .then((historyObj) => {
+          const { history } = historyObj;
+          console.log('HERE HISTORY: ', history);
+          history?.forEach((_, i) => {
+            const move = history[i];
+            moves += ' ' + move.from + move.to + (move.promotion ? move.promotion : '');
+          });
+          stockfishEngine.postMessage(`position startpos moves ${moves}`);
+          const thinkingDepth = 5;
+          stockfishEngine.postMessage(
+            `go depth ${thinkingDepth} wtime ${this.timeLeftWhite} btime ${this.timeLeftBlack}`,
+          );
+        });
+    },
   },
   created() {
     this.reconnectionEvents();
@@ -680,6 +747,46 @@ export default {
       },
       { once: true },
     );
+
+    stockfishEngine.onmessage = (event) => {
+      if (!this.game) return;
+      let line;
+      if (event && typeof event === 'object') {
+        line = event.data;
+      } else {
+        line = event;
+      }
+      console.log('Reply: ' + line);
+      if (line == 'uciok' || line == 'readyok') return;
+      let match = line.match(/^bestmove ([a-h][1-8])([a-h][1-8])([qrbk])?/);
+      const isStockfishMakingMove = match;
+      if (isStockfishMakingMove) {
+        const from = match[1];
+        const to = match[2];
+        const promotion = match[3];
+        this.stockfishMovePiece(from, to, promotion);
+      }
+      const isGameTurnWhite = this.game.fen.split(' ')[1] === 'w';
+      const isScoreFeedback = (match = line.match(/^info .*\bscore (\w+) (-?\d+)/));
+      if (!isScoreFeedback) return;
+      let score = parseInt(match[2]) * (isGameTurnWhite ? 1 : -1);
+      let finalScore = 0;
+      const isMeasuringInCentiPawns = match[1] == 'cp';
+      const isMateFound = match[1] == 'mate';
+      if (isMeasuringInCentiPawns) {
+        finalScore = (score / 100.0).toFixed(2);
+      } else if (isMateFound) {
+        finalScore = 'Mate in ' + Math.abs(score);
+      }
+      const isScoreBounded = (match = line.match(/\b(upper|lower)bound\b/));
+      if (isScoreBounded) {
+        finalScore = ((match[1] == 'upper') == isGameTurnWhite ? '<= ' : '>= ') + finalScore;
+      }
+      console.log('FinalScore: ', finalScore);
+    };
+    this.setDefaultConfigs();
+    stockfishEngine.postMessage('ucinewgame');
+    stockfishEngine.postMessage('isready');
   },
   mounted() {
     this.$nextTick(() => {

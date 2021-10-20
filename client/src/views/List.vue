@@ -39,7 +39,7 @@
         </form>
 
         <div class="row" style="text-align: center; margin-top: 10px;">
-          <h3 style="color: white">Players Online: {{ usersOnline.length }}</h3>
+          <h3 style="color: white">Players Online: {{ usersOnline.length + 1 }}</h3>
           <div
             v-for="userOnline in usersOnline"
             @click="
@@ -56,6 +56,17 @@
             <div class="row" style="text-align: center;">
               <h4>
                 <span>{{ userOnline }}</span>
+              </h4>
+            </div>
+          </div>
+          <div
+            v-on:click="newGameStockfish()"
+            class="row well button"
+            style="margin: auto auto 5px auto; cursor: pointer"
+          >
+            <div class="row" style="text-align: center;">
+              <h4>
+                <span>Stockfish</span>
               </h4>
             </div>
           </div>
@@ -81,15 +92,6 @@
               <span>{{ room.id }}</span>
             </h4>
           </div>
-        </div>
-
-        <div class="row" style="text-align: center;">
-          <input
-            class="well btn btn-default button"
-            v-on:click="newGameStockfish()"
-            type="button"
-            value="Play vs. Stockfish"
-          />
         </div>
       </div>
 
@@ -169,86 +171,6 @@
 <script>
 import { mapState } from 'vuex';
 import { addOnlineUser, removeOnlineUser } from '../store';
-
-const stockfishEngine = new Worker('stockfish.js');
-
-/* AFTER USER HAS MADE A VALID MOVE - RUN prepareMove() */
-
-stockfishEngine.onmessage = (event) => {
-  let line;
-  if (event && typeof event === 'object') {
-    line = event.data;
-  } else {
-    line = event;
-  }
-  console.log('Reply: ' + line);
-  if (line == 'uciok' || line == 'readyok') return;
-  let match = line.match(/^bestmove ([a-h][1-8])([a-h][1-8])([qrbk])?/);
-  const isStockfishMakingMove = match;
-  if (isStockfishMakingMove) {
-    game.move({ from: match[1], to: match[2], promotion: match[3] }); // --- SERVER SIDE ---
-    prepareMove();
-  }
-  const isGameTurnWhite = game.turn() == 'w'; // --- SERVER SIDE ---
-  const isScoreFeedback = (match = line.match(/^info .*\bscore (\w+) (-?\d+)/));
-  if (!isScoreFeedback) return;
-  let score = parseInt(match[2]) * (isGameTurnWhite ? 1 : -1);
-  let finalScore = 0;
-  const isMeasuringInCentiPawns = match[1] == 'cp';
-  const isMateFound = match[1] == 'mate';
-  if (isMeasuringInCentiPawns) {
-    finalScore = (score / 100.0).toFixed(2);
-  } else if (isMateFound) {
-    finalScore = 'Mate in ' + Math.abs(score);
-  }
-  const isScoreBounded = (match = line.match(/\b(upper|lower)bound\b/));
-  if (isScoreBounded) {
-    finalScore = ((match[1] == 'upper') == isGameTurnWhite ? '<= ' : '>= ') + finalScore;
-  }
-  console.log('FinalScore: ', finalScore);
-};
-setDefaultConfigs();
-stockfishEngine.postMessage('ucinewgame');
-stockfishEngine.postMessage('isready');
-prepareMove();
-
-const setDefaultConfigs = () => {
-  const skillLevel = 5;
-  const contemptConfig = `setoption name Contempt value 0`;
-  const skillLevelConfig = `setoption name Skill Level value ${skillLevel}`;
-  const maxErrorConfig = `setoption name Skill Level Maximum Error value ${Math.round(
-    skillLevel * -0.5 + 10,
-  )}`;
-  const probabilityConfig = `setoption name Skill Level Probability value ${Math.round(
-    skillLevel * 6.35 + 1,
-  )}`;
-  const kingSafetyConfig = `setoption name King Safety value 0`;
-  stockfishEngine.postMessage(contemptConfig);
-  stockfishEngine.postMessage(skillLevelConfig);
-  stockfishEngine.postMessage(maxErrorConfig);
-  stockfishEngine.postMessage(probabilityConfig);
-  stockfishEngine.postMessage(kingSafetyConfig);
-};
-
-const prepareMove = () => {
-  stockfishEngine.postMessage(`position startpos moves ${getMoves()}`);
-  const thinkingDepth = 5;
-  const timeLeftWhite = 5 * 60 * 1000;
-  const timeLeftBlack = 5 * 60 * 1000;
-  stockfishEngine.postMessage(
-    `go depth ${thinkingDepth} wtime ${timeLeftWhite} btime ${timeLeftBlack}`,
-  );
-};
-
-const getMoves = () => {
-  let moves = '';
-  const history = game.history({ verbose: true }); // --- SERVER SIDE ---
-  history?.forEach((_, i) => {
-    const move = history[i];
-    moves += ' ' + move.from + move.to + (move.promotion ? move.promotion : '');
-  });
-  return moves;
-};
 
 export default {
   name: 'List',
