@@ -82,6 +82,15 @@
             </h4>
           </div>
         </div>
+
+        <div class="row" style="text-align: center;">
+          <input
+            class="well btn btn-default button"
+            v-on:click="newGameStockfish()"
+            type="button"
+            value="Play vs. Stockfish"
+          />
+        </div>
       </div>
 
       <div
@@ -160,6 +169,87 @@
 <script>
 import { mapState } from 'vuex';
 import { addOnlineUser, removeOnlineUser } from '../store';
+
+const stockfishEngine = new Worker('stockfish.js');
+
+/* AFTER USER HAS MADE A VALID MOVE - RUN prepareMove() */
+
+stockfishEngine.onmessage = (event) => {
+  let line;
+  if (event && typeof event === 'object') {
+    line = event.data;
+  } else {
+    line = event;
+  }
+  console.log('Reply: ' + line);
+  if (line == 'uciok' || line == 'readyok') return;
+  let match = line.match(/^bestmove ([a-h][1-8])([a-h][1-8])([qrbk])?/);
+  const isStockfishMakingMove = match;
+  if (isStockfishMakingMove) {
+    game.move({ from: match[1], to: match[2], promotion: match[3] }); // --- SERVER SIDE ---
+    prepareMove();
+  }
+  const isGameTurnWhite = game.turn() == 'w'; // --- SERVER SIDE ---
+  const isScoreFeedback = (match = line.match(/^info .*\bscore (\w+) (-?\d+)/));
+  if (!isScoreFeedback) return;
+  let score = parseInt(match[2]) * (isGameTurnWhite ? 1 : -1);
+  let finalScore = 0;
+  const isMeasuringInCentiPawns = match[1] == 'cp';
+  const isMateFound = match[1] == 'mate';
+  if (isMeasuringInCentiPawns) {
+    finalScore = (score / 100.0).toFixed(2);
+  } else if (isMateFound) {
+    finalScore = 'Mate in ' + Math.abs(score);
+  }
+  const isScoreBounded = (match = line.match(/\b(upper|lower)bound\b/));
+  if (isScoreBounded) {
+    finalScore = ((match[1] == 'upper') == isGameTurnWhite ? '<= ' : '>= ') + finalScore;
+  }
+  console.log('FinalScore: ', finalScore);
+};
+setDefaultConfigs();
+stockfishEngine.postMessage('ucinewgame');
+stockfishEngine.postMessage('isready');
+prepareMove();
+
+const setDefaultConfigs = () => {
+  const skillLevel = 5;
+  const contemptConfig = `setoption name Contempt value 0`;
+  const skillLevelConfig = `setoption name Skill Level value ${skillLevel}`;
+  const maxErrorConfig = `setoption name Skill Level Maximum Error value ${Math.round(
+    skillLevel * -0.5 + 10,
+  )}`;
+  const probabilityConfig = `setoption name Skill Level Probability value ${Math.round(
+    skillLevel * 6.35 + 1,
+  )}`;
+  const kingSafetyConfig = `setoption name King Safety value 0`;
+  stockfishEngine.postMessage(contemptConfig);
+  stockfishEngine.postMessage(skillLevelConfig);
+  stockfishEngine.postMessage(maxErrorConfig);
+  stockfishEngine.postMessage(probabilityConfig);
+  stockfishEngine.postMessage(kingSafetyConfig);
+};
+
+const prepareMove = () => {
+  stockfishEngine.postMessage(`position startpos moves ${getMoves()}`);
+  const thinkingDepth = 5;
+  const timeLeftWhite = 5 * 60 * 1000;
+  const timeLeftBlack = 5 * 60 * 1000;
+  stockfishEngine.postMessage(
+    `go depth ${thinkingDepth} wtime ${timeLeftWhite} btime ${timeLeftBlack}`,
+  );
+};
+
+const getMoves = () => {
+  let moves = '';
+  const history = game.history({ verbose: true }); // --- SERVER SIDE ---
+  history?.forEach((_, i) => {
+    const move = history[i];
+    moves += ' ' + move.from + move.to + (move.promotion ? move.promotion : '');
+  });
+  return moves;
+};
+
 export default {
   name: 'List',
   components: {},
@@ -235,6 +325,9 @@ export default {
     redirect(roomName) {
       this.$router.push(`/room/${roomName}`);
     },
+    stockfishRedirect(roomName) {
+      this.$router.push(`/stockfish/${roomName}`);
+    },
     newGame(minuteTimeLimit = undefined, userToInvite = undefined) {
       fetch('/api/newGame', {
         method: 'POST',
@@ -277,6 +370,31 @@ export default {
         })
         .catch((error) => {
           console.log(error);
+        });
+    },
+    newGameStockfish(minuteTimeLimit = 10) {
+      fetch('/api/newGame', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: this.username,
+          minuteTimeLimit,
+        }),
+      })
+        .then((resp) => {
+          if (!resp.ok) throw new Error(resp.text);
+          return resp.json();
+        })
+        .then((data) => {
+          this.gameCode = data.gameId;
+          this.stockfishRedirect(data.gameId);
+        })
+        .catch((error) => {
+          alert('Failed to create game. Please try to sign out, sign in and try again.');
+          this.$router.go();
+          throw new Error(`Failed to create game ${error}.`);
         });
     },
   },

@@ -14,6 +14,7 @@
     "core-js": "^3.4.3",
     "register-service-worker": "^1.7.1",
     "socket.io-client": "^2.3.0",
+    "stockfish": "^12.0.0",
     "v-clipboard": "^2.2.3",
     "vue": "^2.6.10",
     "vue-chessboard": "^0.6.7",
