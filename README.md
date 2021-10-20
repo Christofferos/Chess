@@ -13,41 +13,41 @@ Game is available online here: https://chessbattle.herokuapp.com
 
 TODO-LIST:
 
-| Tasks                                                                         | Done           |
-| ----------------------------------------------------------------------------- | -------------- |
-| 1. Fix pawn promotion for UI and logic                                        | ✔️             |
-| 2. Add user-online field in database & display in UI                          | ✔️             |
-| 3. Add a create game modal with invite options                                | ✔️             |
-| 4. Add a leaderboard - experience in amount of games                          | ✔️             |
-| 5. Add device scaling of the board                                            | ✔️             |
-| 6. Add timers in game                                                         | ✔️             |
-| 7. Fix re-routing to correct http/https link after connection loss            | ✔️             |
-| 8. Fix bug that cause no live updates to happen in game                       | ✔️             |
-| 9. Add a new game mode - Crazy Chess                                          | Difficult      |
-| 10. Points you have during a match                                            | ✔️             |
-| 11. Make web app a Progressive Web App (PWA)                                  | ✔️             |
-| 12. Add surrender button                                                      | ✔️             |
-| 13. Sort out all the confusion about multiple sessions/sockets from same user | ✔️             |
-| 14. Signing out should result in being removed from the Online Users list     | ✔️             |
-| 15. Add a create game time limit selection & invite player                    | High Prio      |
-| 16. Delete liveGames older than 1 day - to maintain database data quality     | ✔️             |
-| 17. -                                                                         | -              |
-| 18. Throttle audio                                                            | ✔️             |
-| 19. Match analysis after game (Stockfish - In Progress)                       | Time Consuming |
-| 20. Flashing red light when near loss due to lack of time (<20% time)         | ✔️             |
-| 21. Server restart does not affect users that play a game of chess            | ✔️             |
-| 22. Add VueDraggable (React Konva) for drag-n-drop of pieces                  | -              |
-| 23. Add move, over, start, check, castle, capture sound effects               | ✔️             |
-| 24. Add invalid move and entertaining sound effects                           | ✔️             |
-| 25. Implement ability to rotate board                                         | ✔️             |
-| 26. Implement ability to ask for a redo move                                  |                |
-| 27. Implement ability to make a random move                                   |                |
-| 28. Implement ability to see historic moves after game                        |                |
-| 29. Selected pieces are not unselected upon opponent move                     | ✔️             |
-| 30. Pre-moving                                                                | -              |
-| 31. Move animation                                                            | -              |
-| 32. Add an invite opponent/player process after creating game                 |                |
-| 33. TBA                                                                       |                |
+| Tasks                                                                         | Done      |
+| ----------------------------------------------------------------------------- | --------- |
+| 1. Fix pawn promotion for UI and logic                                        | ✔️        |
+| 2. Add user-online field in database & display in UI                          | ✔️        |
+| 3. Add a create game modal with invite options                                | ✔️        |
+| 4. Add a leaderboard - experience in amount of games                          | ✔️        |
+| 5. Add device scaling of the board                                            | ✔️        |
+| 6. Add timers in game                                                         | ✔️        |
+| 7. Fix re-routing to correct http/https link after connection loss            | ✔️        |
+| 8. Fix bug that cause no live updates to happen in game                       | ✔️        |
+| 9. Add a new game mode - Crazy Chess                                          | Difficult |
+| 10. Points you have during a match                                            | ✔️        |
+| 11. Make web app a Progressive Web App (PWA)                                  | ✔️        |
+| 12. Add surrender button                                                      | ✔️        |
+| 13. Sort out all the confusion about multiple sessions/sockets from same user | ✔️        |
+| 14. Signing out should result in being removed from the Online Users list     | ✔️        |
+| 15. Add a create game time limit selection & invite player                    | High Prio |
+| 16. Delete liveGames older than 1 day - to maintain database data quality     | ✔️        |
+| 17. -                                                                         | -         |
+| 18. Throttle audio                                                            | ✔️        |
+| 19. Match analysis after game (Stockfish)                                     | ✔️        |
+| 20. Flashing red light when near loss due to lack of time (<20% time)         | ✔️        |
+| 21. Server restart does not affect users that play a game of chess            | ✔️        |
+| 22. Add VueDraggable (React Konva) for drag-n-drop of pieces                  | -         |
+| 23. Add move, over, start, check, castle, capture sound effects               | ✔️        |
+| 24. Add invalid move and entertaining sound effects                           | ✔️        |
+| 25. Implement ability to rotate board                                         | ✔️        |
+| 26. Implement ability to ask for a redo move                                  |           |
+| 27. Implement ability to make a random move                                   |           |
+| 28. Implement ability to see historic moves after game                        |           |
+| 29. Selected pieces are not unselected upon opponent move                     | ✔️        |
+| 30. Pre-moving                                                                | -         |
+| 31. Move animation                                                            | -         |
+| 32. Add an invite opponent/player process after creating game                 |           |
+| 33. TBA                                                                       |           |
 
 **_---------------_**
 
