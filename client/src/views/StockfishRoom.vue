@@ -382,11 +382,10 @@ export default {
         this.startPos = this.translateSelectedPiece(y0, x0);
         this.endPos = this.translateSelectedPiece(y1, x1);
         const promoteToQueen = this.black ? 'q' : 'Q';
-        this.movePiece(promoteToQueen);
-        this.prepareMove();
+        this.movePlayerPiece(promoteToQueen);
       }
     },
-    movePiece(piece = undefined) {
+    movePlayerPiece(piece = undefined) {
       fetch('/api/movePiece', {
         method: 'POST',
         headers: {
@@ -403,6 +402,7 @@ export default {
           if (!resp.ok) {
             throw new Error(`Unexpected failure when moving piece in room: ${this.room}`);
           }
+          this.prepareStockfishMove();
           return resp;
         })
         .catch(console.error);
@@ -684,7 +684,7 @@ export default {
       stockfishEngine.postMessage(maxErrorConfig);
       stockfishEngine.postMessage(probabilityConfig);
     },
-    prepareMove() {
+    prepareStockfishMove() {
       let moves = '';
       fetch(`/api/stockfishGetHistory`, {
         method: 'POST',
