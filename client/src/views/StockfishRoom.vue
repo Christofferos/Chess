@@ -749,8 +749,6 @@ export default {
     );
 
     stockfishEngine.onmessage = (event) => {
-      alert('HEY WE REACH THIS POINT!!!');
-      this.opponent = 'TROLOLOLOLOLOL';
       if (!this.game) return;
       let line;
       if (event && typeof event === 'object') {
