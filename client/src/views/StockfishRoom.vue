@@ -698,7 +698,10 @@ export default {
         .then((res) => res.json())
         .then((historyObj) => {
           const { history } = historyObj;
-          if (!history) return;
+          if (!history) {
+            console.log('HISTORY was empty: ', history);
+            return;
+          }
           console.log('HERE HISTORY: ', history);
           history?.forEach((_, i) => {
             const move = history[i];

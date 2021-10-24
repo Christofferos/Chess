@@ -415,8 +415,8 @@ export const stockfishMovePiece = async (gameId, from, to, username, promotionPi
 
 export const stockfishGetHistory = (gameId, username) => {
   const game = games[gameId];
-  const isStockfishTurn = game.gameState.turn() === 'b';
-  if (!isStockfishTurn) return;
+  /* const isStockfishTurn = game.gameState.turn() === 'b';
+  if (!isStockfishTurn) return; */
   const isPlayer1 = username === games[gameId].player1;
   const isUserAllowedToMove = isPlayer1 || username === games[gameId].player2;
   if (!isUserAllowedToMove) return;
