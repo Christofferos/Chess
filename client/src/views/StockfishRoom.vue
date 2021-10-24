@@ -178,9 +178,7 @@ import q from '../assets/bq.png';
 import k from '../assets/bk.png';
 import { getBoardSize } from '../utils/getBoardSize';
 
-/* AFTER USER HAS MADE A VALID MOVE - RUN prepareMove() */
 const stockfishEngine = new Worker('stockfish.js');
-
 const TWENTY_PERCENT = 0.2;
 
 export default {
@@ -530,8 +528,7 @@ export default {
           if (isCheck) {
             if (this.extraAudio) {
               this.checkExtraAudio.src = '/media/checkExtra.20bca44b.mp3';
-              this.checkExtra2Audio.src = '/media/checkExtra2.7fb32fd1.mp3';
-              Math.random() > 0.5 ? this.checkExtraAudio.play() : this.checkExtra2Audio.play();
+              this.checkExtraAudio.play();
             } else {
               this.checkAudio.src = '/media/check.d8e0e09a.mp3';
               this.checkAudio.play();
@@ -682,12 +679,10 @@ export default {
       const probabilityConfig = `setoption name Skill Level Probability value ${Math.round(
         skillLevel * 6.35 + 1,
       )}`;
-      // const kingSafetyConfig = `setoption name King Safety value 0`;
       stockfishEngine.postMessage(contemptConfig);
       stockfishEngine.postMessage(skillLevelConfig);
       stockfishEngine.postMessage(maxErrorConfig);
       stockfishEngine.postMessage(probabilityConfig);
-      // stockfishEngine.postMessage(kingSafetyConfig);
     },
     prepareMove() {
       let moves = '';
@@ -703,6 +698,7 @@ export default {
         .then((res) => res.json())
         .then((historyObj) => {
           const { history } = historyObj;
+          if (!history) return;
           console.log('HERE HISTORY: ', history);
           history?.forEach((_, i) => {
             const move = history[i];
@@ -713,7 +709,8 @@ export default {
           stockfishEngine.postMessage(
             `go depth ${thinkingDepth} wtime ${this.timeLeftWhite} btime ${this.timeLeftBlack}`,
           );
-        });
+        })
+        .catch((err) => console.log(`Not Stockfish turn. ${err}`));
     },
   },
   created() {

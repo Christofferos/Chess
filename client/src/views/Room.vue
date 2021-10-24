@@ -623,9 +623,9 @@ export default {
           this.startOpposingTimer(isWhiteTurn);
           if (isCheck) {
             if (this.extraAudio) {
-              this.checkExtraAudio.src = '/media/checkExtra.20bca44b.mp3';
+              /* this.checkExtraAudio.src = '/media/checkExtra.20bca44b.mp3'; */
               this.checkExtra2Audio.src = '/media/checkExtra2.7fb32fd1.mp3';
-              Math.random() > 0.5 ? this.checkExtraAudio.play() : this.checkExtra2Audio.play();
+              this.checkExtra2Audio.play();
             } else {
               this.checkAudio.src = '/media/check.d8e0e09a.mp3';
               this.checkAudio.play();

@@ -98,6 +98,6 @@ gameRouter.post('/stockfishMovePiece', async (req, res) => {
 
 gameRouter.post('/stockfishGetHistory', async (req, res) => {
   if (!req.session.userID) return res.status(401).end();
-  const history = await stockfishGetHistory(req.body.gameId, req.session.userID);
+  const history = stockfishGetHistory(req.body.gameId, req.session.userID);
   res.json({ history: history });
 });

@@ -391,8 +391,9 @@ export const backToMenu = gameId => {
 
 export const getMatchHistory = userId => matchHistory[userId];
 
-/*  */
-
+/* ---           --- */
+/* ---           --- */
+/* --- STOCKFISH --- */
 export const stockfishMovePiece = async (gameId, from, to, username, promotionPiece) => {
   const isPlayer1 = username === games[gameId].player1;
   const isUserAllowedToMove = isPlayer1 || username === games[gameId].player2;
@@ -407,18 +408,17 @@ export const stockfishMovePiece = async (gameId, from, to, username, promotionPi
   game.fen = game.gameState.fen();
   setLiveGameStateDB(gameId, game.fen, game.timeLeft1, game.timeLeft2);
   const isGameOver = game.gameState.game_over();
-  if (isGameOver) {
-    gameOver(game);
-  }
+  if (isGameOver) gameOver(game);
   const flags = move ? move.flags : null;
   emitMovePiece(game, flags, !isPlayer1);
 };
 
-export const stockfishGetHistory = async (gameId, username) => {
+export const stockfishGetHistory = (gameId, username) => {
+  const game = games[gameId];
+  const isStockfishTurn = game.gameState.turn() === 'b';
+  if (!isStockfishTurn) return;
   const isPlayer1 = username === games[gameId].player1;
   const isUserAllowedToMove = isPlayer1 || username === games[gameId].player2;
   if (!isUserAllowedToMove) return;
-  const game = games[gameId];
-  console.log('GAME: ', game.gameState.history({ verbose: true }));
   return game.gameState.history({ verbose: true });
 };
