@@ -105,7 +105,10 @@ export default {
         return resp.json();
       })
       .then((data) => {
-        this.matches = data.matchHistory;
+        const matchList = data.matchHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
+        if (matchList.length > 50) {
+          this.matches = matchList.slice(0, 49);
+        } else this.matches = matchList;
       })
       .catch((error) => {
         throw new Error(`Match History request failed ${error}`);

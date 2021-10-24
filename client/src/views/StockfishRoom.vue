@@ -4,53 +4,10 @@
       style="display: flex; flex-direction: column; justify-content: center; align-items: center"
     >
       <div class="row" style="text-align: center">
-        <h1 v-if="this.opponent === ''">Waiting for an opponent...</h1>
-        <h1 v-else>
+        <h1>
           {{ this.black ? this.whiteTime : this.blackTime }} | {{ this.opponent }} |
           {{ this.black ? piecePointsWhite : piecePointsBlack }}
         </h1>
-      </div>
-
-      <div
-        v-bind:style="{
-          display: this.isPawnPromotionTime ? 'flex' : 'none',
-          position: 'absolute',
-          left: '50%',
-          width: '300px',
-          height: '300px',
-          marginLeft: '-150px',
-          marginTop: '-350px',
-          overflow: 'auto',
-          backgroundColor: 'rgba(205, 133, 63, 0.6)',
-          padding: '30px auto',
-          textAlign: 'center',
-          borderRadius: '5px',
-          color: 'black',
-          fontSize: '30px',
-          zIndex: '11',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }"
-        type="text"
-      >
-        <div v-if="isPromotionColorWhite">
-          <img
-            v-for="(pieceSrc, piece) in promotionPiecesWhite"
-            :key="piece"
-            v-on:click="promotePawn(piece)"
-            :src="pieceSrc"
-            style="width: 150px; cursor: pointer"
-          />
-        </div>
-        <div v-if="!isPromotionColorWhite">
-          <img
-            v-for="(pieceSrc, piece) in promotionPiecesBlack"
-            :key="piece"
-            v-on:click="promotePawn(piece)"
-            :src="pieceSrc"
-            style="width: 150px; cursor: pointer"
-          />
-        </div>
       </div>
 
       <div
@@ -202,34 +159,6 @@
           <span v-on:click="surrender()" style="cursor: pointer">🏳️</span>
         </h1>
       </div>
-
-      <div class="gameCodeSection">
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          🔗 Game Code
-        </button>
-        <p style="font-size: 36px; color: white">Chat</p>
-        <form v-on:submit.prevent="send()">
-          <input
-            v-model="input"
-            class="form-control"
-            type="text"
-            style="margin: 10px auto; font-size: 15px"
-            required
-            autofocus
-            placeholder="Write to your opponent.."
-          />
-        </form>
-        <div class="chatBox">
-          <div
-            v-for="(entry, index) in entries.slice(0, 10)"
-            :key="index"
-            style="color: white; text-align: justify; padding: 3px"
-          >
-            {{ entry }}
-            <br />
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -249,10 +178,11 @@ import q from '../assets/bq.png';
 import k from '../assets/bk.png';
 import { getBoardSize } from '../utils/getBoardSize';
 
+const stockfishEngine = new Worker('stockfish.js');
 const TWENTY_PERCENT = 0.2;
 
 export default {
-  name: 'Room',
+  name: 'StockfishRoom',
   components: {},
   data() {
     return {
@@ -262,7 +192,7 @@ export default {
       entries: [],
       socket: null,
       input: '',
-      opponent: '',
+      opponent: 'Stockfish AI',
       black: false,
       startPos: '',
       endPos: '',
@@ -451,10 +381,9 @@ export default {
         const x1 = col.toString();
         this.startPos = this.translateSelectedPiece(y0, x0);
         this.endPos = this.translateSelectedPiece(y1, x1);
-        const piece = this.piecePlacement[y0][x0];
-        const isPromoteSelection = this.checkPawnPromotion(piece, y1);
-        if (isPromoteSelection) return;
-        this.movePiece();
+        const promoteToQueen = this.black ? 'q' : 'Q';
+        this.movePiece(promoteToQueen);
+        this.prepareMove();
       }
     },
     movePiece(piece = undefined) {
@@ -478,47 +407,29 @@ export default {
         })
         .catch(console.error);
     },
-    checkPawnPromotion(piece, y1) {
-      const isPawn = piece === 'p' || piece === 'P';
-      if (!isPawn) return;
-      const isBlackPawnAdvanced = piece === 'p' && Number(y1) === 7;
-      const isWhitePawnAdvanced = piece === 'P' && Number(y1) === 0;
-      if (isWhitePawnAdvanced) {
-        this.isPromotionColorWhite = true;
-      } else if (isBlackPawnAdvanced) {
-        this.isPromotionColorWhite = false;
-      }
-      if (isWhitePawnAdvanced || isBlackPawnAdvanced) {
-        this.isPawnPromotionTime = true;
-        return true;
-      }
-    },
-    promotePawn(piece) {
-      this.isPawnPromotionTime = false;
-      this.movePiece(piece);
+    stockfishMovePiece(from, to, promotion) {
+      fetch('/api/stockfishMovePiece', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: this.game.id,
+          from,
+          to,
+          promotion,
+        }),
+      })
+        .then((resp) => {
+          if (!resp.ok) {
+            throw new Error(`Unexpected failure when moving piece in room: ${this.room}`);
+          }
+          return resp;
+        })
+        .catch(console.error);
     },
     backToMenu() {
       this.$store.state.socket.emit('backToMenu', this.room);
-    },
-    throttle(delay, fn) {
-      let lastCall = 0;
-      const saveMsg = (msg) => {
-        this.entries = [msg, ...this.entries];
-      };
-      return function wrapper(...args) {
-        const msg = String(...args);
-        saveMsg(msg);
-        const now = new Date().getTime();
-        if (now - lastCall < delay) {
-          return;
-        }
-        lastCall = now;
-        return fn(...args);
-      };
-    },
-    handleRecieveMessageEvent(msg) {
-      if (msg.includes(this.$store.state.cookie.username) || msg.includes('joined')) return;
-      this.msgAudio.play();
     },
     reconnectionEvents() {
       fetch(`/api/room/${this.room}/join`)
@@ -534,7 +445,6 @@ export default {
           this.whiteTime = this.getWhiteTime();
           this.blackTime = this.getBlackTime();
           if (data.game.player1 === this.$store.state.cookie.username) {
-            this.opponent = data.game.player2;
             this.updatePiecePlacement();
           } else {
             this.black = true;
@@ -546,12 +456,6 @@ export default {
           console.log('HERE 404', err);
           return;
         });
-
-      const THROTTLE_DELAY = 5000;
-      this.$store.state.socket.on(
-        'msg',
-        this.throttle(THROTTLE_DELAY, this.handleRecieveMessageEvent),
-      );
 
       this.$store.state.socket.on('backToMenuResponse', () => {
         this.redirect('list');
@@ -623,9 +527,8 @@ export default {
           this.startOpposingTimer(isWhiteTurn);
           if (isCheck) {
             if (this.extraAudio) {
-              /* this.checkExtraAudio.src = '/media/checkExtra.20bca44b.mp3'; */
-              this.checkExtra2Audio.src = '/media/checkExtra2.7fb32fd1.mp3';
-              this.checkExtra2Audio.play();
+              this.checkExtraAudio.src = '/media/checkExtra.20bca44b.mp3';
+              this.checkExtraAudio.play();
             } else {
               this.checkAudio.src = '/media/check.d8e0e09a.mp3';
               this.checkAudio.play();
@@ -766,6 +669,49 @@ export default {
         })
         .catch(console.error);
     },
+    setDefaultConfigs() {
+      const skillLevel = 0;
+      const contemptConfig = `setoption name Contempt value 0`;
+      const skillLevelConfig = `setoption name Skill Level value ${skillLevel}`;
+      const maxErrorConfig = `setoption name Skill Level Maximum Error value ${Math.round(
+        skillLevel * -0.5 + 10,
+      )}`;
+      const probabilityConfig = `setoption name Skill Level Probability value ${Math.round(
+        skillLevel * 6.35 + 1,
+      )}`;
+      stockfishEngine.postMessage(contemptConfig);
+      stockfishEngine.postMessage(skillLevelConfig);
+      stockfishEngine.postMessage(maxErrorConfig);
+      stockfishEngine.postMessage(probabilityConfig);
+    },
+    prepareMove() {
+      let moves = '';
+      fetch(`/api/stockfishGetHistory`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: this.game.id,
+        }),
+      })
+        .then((res) => res.json())
+        .then((historyObj) => {
+          const { history } = historyObj;
+          if (!history) return;
+          console.log('HERE HISTORY: ', history);
+          history?.forEach((_, i) => {
+            const move = history[i];
+            moves += ' ' + move.from + move.to + (move.promotion ? move.promotion : '');
+          });
+          stockfishEngine.postMessage(`position startpos moves ${moves}`);
+          const thinkingDepth = 5;
+          stockfishEngine.postMessage(
+            `go depth ${thinkingDepth} wtime ${this.timeLeftWhite} btime ${this.timeLeftBlack}`,
+          );
+        })
+        .catch((err) => console.log(`Not Stockfish turn. ${err}`));
+    },
   },
   created() {
     this.reconnectionEvents();
@@ -798,6 +744,46 @@ export default {
       },
       { once: true },
     );
+
+    stockfishEngine.onmessage = (event) => {
+      if (!this.game) return;
+      let line;
+      if (event && typeof event === 'object') {
+        line = event.data;
+      } else {
+        line = event;
+      }
+      console.log('Reply: ' + line);
+      if (line == 'uciok' || line == 'readyok') return;
+      let match = line.match(/^bestmove ([a-h][1-8])([a-h][1-8])([qrbk])?/);
+      const isStockfishMakingMove = match;
+      if (isStockfishMakingMove) {
+        const from = match[1];
+        const to = match[2];
+        const promotion = match[3];
+        this.stockfishMovePiece(from, to, promotion);
+      }
+      const isGameTurnWhite = this.game.fen.split(' ')[1] === 'w';
+      const isScoreFeedback = (match = line.match(/^info .*\bscore (\w+) (-?\d+)/));
+      if (!isScoreFeedback) return;
+      let score = parseInt(match[2]) * (isGameTurnWhite ? 1 : -1);
+      let finalScore = 0;
+      const isMeasuringInCentiPawns = match[1] == 'cp';
+      const isMateFound = match[1] == 'mate';
+      if (isMeasuringInCentiPawns) {
+        finalScore = (score / 100.0).toFixed(2);
+      } else if (isMateFound) {
+        finalScore = 'Mate in ' + Math.abs(score);
+      }
+      const isScoreBounded = (match = line.match(/\b(upper|lower)bound\b/));
+      if (isScoreBounded) {
+        finalScore = ((match[1] == 'upper') == isGameTurnWhite ? '<= ' : '>= ') + finalScore;
+      }
+      console.log('FinalScore: ', finalScore);
+    };
+    this.setDefaultConfigs();
+    stockfishEngine.postMessage('ucinewgame');
+    stockfishEngine.postMessage('isready');
   },
   mounted() {
     this.$nextTick(() => {
@@ -807,29 +793,25 @@ export default {
   beforeDestroy() {
     window.removeEventListener('resize', this.onResize);
     this.socket.off('connect', this.eventListener);
-    this.socket.off('msg');
     this.socket.off('backToMenuResponse');
     this.socket.off('getGamePlayers');
     this.socket.off('timerGameOver');
     this.socket.off('surrenderGameOver');
     this.socket.off('movePieceResponse');
-    const isUserLeavingEmptyRoom = this.opponent === '';
-    if (isUserLeavingEmptyRoom) {
-      fetch('/api/removeGame', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: this.room,
-        }),
+    fetch('/api/removeGame', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        id: this.room,
+      }),
+    })
+      .then((resp) => {
+        if (!resp.ok) return;
+        return resp;
       })
-        .then((resp) => {
-          if (!resp.ok) return;
-          return resp;
-        })
-        .catch(console.error);
-    }
+      .catch(console.error);
   },
 };
 </script>

@@ -20,7 +20,7 @@
     "chess.js": "^0.11.0",
     "connect-mongo": "^4.4.0",
     "connect-redis": "^5.1.0",
-    "connect-sqlite3": "^0.9.11",
+    "connect-sqlite3": "^0.9.12",
     "core-js": "^3.9.1",
     "crypto": "^1.0.1",
     "crypto-js": "^4.0.0",

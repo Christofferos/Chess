@@ -65,6 +65,9 @@ https://dev.to/bravemaster619/how-to-prevent-multiple-socket-connections-and-eve
 [18]. Guide:
 https://stackoverflow.com/questions/54141738/how-can-i-use-throttling-with-getting-an-event-target
 
+[19]. Stockfish Guide (Felsökare - enginegame - Evaluation):
+http://www.netreal.de/stockfish.js/example/index.html
+
 [22]. Implemented vue vanilla drag & drop but it only worked for desktop:
 https://www.w3schools.com/html/html5_draganddrop.asp React Konva disables scroll on mobile and
 places canvas behind all chess pieces. It requries pieces to be stored in state - works well on

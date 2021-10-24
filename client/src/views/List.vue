@@ -39,7 +39,7 @@
         </form>
 
         <div class="row" style="text-align: center; margin-top: 10px;">
-          <h3 style="color: white">Players Online: {{ usersOnline.length }}</h3>
+          <h3 style="color: white">Players Online: {{ usersOnline.length + 1 }}</h3>
           <div
             v-for="userOnline in usersOnline"
             @click="
@@ -56,6 +56,17 @@
             <div class="row" style="text-align: center;">
               <h4>
                 <span>{{ userOnline }}</span>
+              </h4>
+            </div>
+          </div>
+          <div
+            v-on:click="newGameStockfish()"
+            class="row well button"
+            style="margin: auto auto 5px auto; cursor: pointer"
+          >
+            <div class="row" style="text-align: center;">
+              <h4>
+                <span>Stockfish</span>
               </h4>
             </div>
           </div>
@@ -160,6 +171,7 @@
 <script>
 import { mapState } from 'vuex';
 import { addOnlineUser, removeOnlineUser } from '../store';
+
 export default {
   name: 'List',
   components: {},
@@ -235,6 +247,9 @@ export default {
     redirect(roomName) {
       this.$router.push(`/room/${roomName}`);
     },
+    stockfishRedirect(roomName) {
+      this.$router.push(`/stockfish/${roomName}`);
+    },
     newGame(minuteTimeLimit = undefined, userToInvite = undefined) {
       fetch('/api/newGame', {
         method: 'POST',
@@ -277,6 +292,31 @@ export default {
         })
         .catch((error) => {
           console.log(error);
+        });
+    },
+    newGameStockfish(minuteTimeLimit = 10) {
+      fetch('/api/newGame', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: this.username,
+          minuteTimeLimit,
+        }),
+      })
+        .then((resp) => {
+          if (!resp.ok) throw new Error(resp.text);
+          return resp.json();
+        })
+        .then((data) => {
+          this.gameCode = data.gameId;
+          this.stockfishRedirect(data.gameId);
+        })
+        .catch((error) => {
+          alert('Failed to create game. Please try to sign out, sign in and try again.');
+          this.$router.go();
+          throw new Error(`Failed to create game ${error}.`);
         });
     },
   },

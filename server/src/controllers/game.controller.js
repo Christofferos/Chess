@@ -1,6 +1,15 @@
 import express from 'express';
 
-import { addLiveGame, movePiece, getLiveGame, removeLiveGame, io, surrender } from '../model.js';
+import {
+  addLiveGame,
+  movePiece,
+  getLiveGame,
+  removeLiveGame,
+  io,
+  surrender,
+  stockfishMovePiece,
+  stockfishGetHistory,
+} from '../model.js';
 import { addLiveGameDB } from '../firestore.js';
 
 export const gameRouter = express.Router();
@@ -72,4 +81,23 @@ gameRouter.post('/surrender', async (req, res) => {
   }
   surrender(req.body.id, req.session.userID);
   res.status(200).end();
+});
+
+gameRouter.post('/stockfishMovePiece', async (req, res) => {
+  if (req.session.userID) {
+    stockfishMovePiece(
+      req.body.gameId,
+      req.body.from,
+      req.body.to,
+      req.session.userID,
+      req.body.promotion,
+    );
+  }
+  res.status(200).end();
+});
+
+gameRouter.post('/stockfishGetHistory', async (req, res) => {
+  if (!req.session.userID) return res.status(401).end();
+  const history = stockfishGetHistory(req.body.gameId, req.session.userID);
+  res.json({ history: history });
 });

@@ -3327,7 +3327,7 @@ connect-redis@^5.1.0:
   resolved "https://registry.yarnpkg.com/connect-redis/-/connect-redis-5.2.0.tgz#d38e173f2e2cccecb89b8757ce7627ecdb8e3b94"
   integrity sha512-wcv1lZWa2K7RbsdSlrvwApBQFLQx+cia+oirLIeim0axR3D/9ZJbHdeTM/j8tJYYKk34dVs2QPAuAqcIklWD+Q==
 
-connect-sqlite3@^0.9.11:
+connect-sqlite3@^0.9.11, connect-sqlite3@^0.9.12:
   version "0.9.12"
   resolved "https://registry.yarnpkg.com/connect-sqlite3/-/connect-sqlite3-0.9.12.tgz#53dc4ff44aff2d5cc6da287fc7bd2be17545c60c"
   integrity sha512-s+8WaiY1nHI1W69yB070i2TOISddTlVFWQA9CgEAOhIpr02/Y9IWe2MX1ZQ0qwdnO1lAJHJBr9avhvBqNBvexg==
@@ -9177,6 +9177,11 @@ static-extend@^0.1.1:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/statuses/-/statuses-1.5.0.tgz#161c7dac177659fd9811f43771fa99381478628c"
   integrity sha1-Fhx9rBd2Wf2YEfQ3cfqZOBR4Yow=
+
+stockfish@^12.0.0:
+  version "12.0.0"
+  resolved "https://registry.yarnpkg.com/stockfish/-/stockfish-12.0.0.tgz#92b6aa4dcb80905da21037d8913804ae1000e0fc"
+  integrity sha512-hcYsWE8FS/gKxrJQZPQrw59UpAWTTiQuxFJOctivrBB0Qbt7bL0WGAuehdCFySofEM3H2l9zFIuYCGdWqVQ0fQ==
 
 stream-browserify@^2.0.1:
   version "2.0.2"
