@@ -8,7 +8,7 @@ Game is available online here: https://chessbattle.herokuapp.com
 <img src="https://user-images.githubusercontent.com/42782387/134075012-e344be22-49fc-4d95-aed9-8b064a79909a.png" width="342" />
   <img src="https://user-images.githubusercontent.com/42782387/134074848-bc23ccf3-c178-4333-b256-6e02fc0b4898.png" width="390" />
   <img src="https://user-images.githubusercontent.com/42782387/134074992-e7e3917c-96cf-4ef8-8fd6-145501b22711.png" width="345" /> 
-  <img src="https://user-images.githubusercontent.com/42782387/134975449-b8f8cd94-a71d-4b41-8454-29e3197b6ab7.png" width="440" /> 
+  <img src="https://user-images.githubusercontent.com/42782387/134975449-b8f8cd94-a71d-4b41-8454-29e3197b6ab7.png" width="435" /> 
 </p>
 
 TODO-LIST:
