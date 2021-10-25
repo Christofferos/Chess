@@ -29,7 +29,7 @@ TODO-LIST:
 | 12. Add surrender button                                                      | ✔️        |
 | 13. Sort out all the confusion about multiple sessions/sockets from same user | ✔️        |
 | 14. Signing out should result in being removed from the Online Users list     | ✔️        |
-| 15. Add a create game time limit selection & invite player                    | High Prio |
+| 15. Add a create game time limit selection & invite player                    | - |
 | 16. Delete liveGames older than 1 day - to maintain database data quality     | ✔️        |
 | 17. -                                                                         | -         |
 | 18. Throttle audio                                                            | ✔️        |
