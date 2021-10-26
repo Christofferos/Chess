@@ -21,7 +21,7 @@
       <h4 style="color: white">
         Sound Effect Bonus
       </h4>
-      <label class="ios-switch">
+      <label class="ios-switch" v-if="this.matches.length > 25">
         <input
           type="checkbox"
           :checked="isExtraSoundEffectsEnabled ? true : false"
@@ -34,6 +34,7 @@
         />
         <i></i>
       </label>
+      <label v-else style="color: white">Unlocked after 25 games 🔒</label>
     </div>
 
     <div
@@ -116,6 +117,7 @@ export default {
   },
   methods: {
     debug() {
+      console.log('Matches length: ', this.matches.length);
       console.log(this.isExtraSoundEffectsEnabled);
       this.$store.commit(setExtraSoundEffectsKey, this.isExtraSoundEffectsEnabled);
     },

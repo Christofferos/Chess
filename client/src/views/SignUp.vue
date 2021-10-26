@@ -28,6 +28,16 @@
         style="margin-top: 20px"
       />
     </form>
+    <input
+      class="btn btn-default back-button"
+      value="Back"
+      style="margin-top: 20px"
+      @click="
+        () => {
+          this.$router.push('/login');
+        }
+      "
+    />
   </div>
 </template>
 
@@ -59,11 +69,14 @@ export default {
         .then((resp) => {
           if (!resp.ok) {
             this.$store.commit(setIsAuthenticatedKey, false);
-            this.$router.push({
+            /* this.$router.push({
               path: 'signUp',
-            });
+            }); */
+            this.success = false;
+            setTimeout(() => (this.success = true), 5000);
             throw new Error(resp.text);
           }
+
           return resp.json();
         })
         .then((data) => {
@@ -78,8 +91,8 @@ export default {
             path: 'profile',
           });
         })
-        .catch((error) => {
-          throw new Error(`Authentication failed unexpectedly ${error}`);
+        .catch(() => {
+          console.log(`User sign up authentication failed`);
         });
     },
   },
@@ -120,6 +133,20 @@ export default {
 }
 .login-button:hover {
   background: #95bb4a;
+  color: white;
+}
+
+.back-button {
+  background: #727272;
+  font-size: 2.2rem;
+  font-weight: 600;
+  line-height: 1.2;
+  color: white;
+  width: 200px;
+  border: none;
+}
+.back-button:hover {
+  background: #d6d8d2;
   color: white;
 }
 </style>

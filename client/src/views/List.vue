@@ -8,6 +8,15 @@
       <div class="row">
         <div class="row" style="text-align: center;">
           <input
+            disabled
+            class="well btn btn-warning button"
+            v-on:click="newGame()"
+            type="button"
+            value="Crazy Chess"
+          />
+        </div>
+        <div class="row" style="text-align: center;">
+          <input
             class="well btn btn-default button"
             v-on:click="newGame()"
             type="button"

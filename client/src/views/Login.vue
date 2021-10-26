@@ -31,6 +31,36 @@
       style="margin-top: 20px"
       v-on:click="redirect('/signUp')"
     />
+
+    <div
+      class="modal"
+      v-bind:style="{
+        display: this.isSignInFail ? 'flex' : 'none',
+      }"
+      type="text"
+    >
+      <input
+        v-bind:value="'Create Account'"
+        class="well btn btn-default button"
+        @click="
+          () => {
+            redirectSignUp();
+          }
+        "
+        type="button"
+        style="margin-top:20px"
+      />
+      <input
+        class="well btn btn-default button"
+        @click="
+          () => {
+            this.isSignInFail = false;
+          }
+        "
+        type="button"
+        value="Cancel"
+      />
+    </div>
   </div>
 </template>
 
@@ -51,10 +81,14 @@ export default {
     username: '',
     password: '',
     socket: preFetchSocket(true),
+    isSignInFail: false,
   }),
   methods: {
     redirect(target) {
       this.$router.push(target);
+    },
+    redirectSignUp() {
+      this.$router.push('/signUp');
     },
     done() {
       fetch('/api/authenticate', {
@@ -70,9 +104,10 @@ export default {
         .then((resp) => {
           if (!resp.ok) {
             this.$store.commit(setIsAuthenticatedKey, false);
-            this.$router.push({
+            /* this.$router.push({
               path: 'login',
-            });
+            }); */
+            this.isSignInFail = true;
             throw new Error(resp.text);
           }
           return resp;
@@ -85,8 +120,8 @@ export default {
             path: 'profile',
           });
         })
-        .catch((error) => {
-          throw new Error(`Authentication failed unexpectedly ${error}`);
+        .catch(() => {
+          console.log(`Sign in authentication failed`);
         });
     },
   },
@@ -94,6 +129,18 @@ export default {
 </script>
 
 <style>
+.modal {
+  position: absolute;
+  flex-direction: column;
+  top: 0%;
+  right: 0%;
+  width: 100%;
+  height: 50vw;
+  background-color: rgba(205, 133, 63, 0.6);
+  z-index: 11;
+  align-items: center;
+  justify-content: center;
+}
 .login-title {
   color: white;
 }

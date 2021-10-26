@@ -11,13 +11,13 @@
               ><img src="../public/logoNavbar.png" style="height: 27px"
             /></a>
           </li>
-          <li v-on:click="redirect('/profile')">
+          <li v-on:click="redirect('/profile')" v-if="this.$store.state.isAuthenticated">
             <a style="cursor: pointer; line-height: 2">Profile</a>
           </li>
-          <li v-on:click="redirect('/leaderboard')">
+          <li v-on:click="redirect('/leaderboard')" v-if="this.$store.state.isAuthenticated">
             <a style="cursor: pointer; line-height: 2">Leaderboard</a>
           </li>
-          <li v-on:click="redirect('/list')">
+          <li v-on:click="redirect('/list')" v-if="this.$store.state.isAuthenticated">
             <a style="cursor: pointer; line-height: 2">Play Chess</a>
           </li>
         </ul>
