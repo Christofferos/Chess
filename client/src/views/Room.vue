@@ -481,7 +481,7 @@ export default {
     checkPawnPromotion(piece, y1) {
       const isPawn = piece === 'p' || piece === 'P';
       if (!isPawn) return;
-      const isBlackPawnAdvanced = piece === 'p' && Number(y1) === 7;
+      const isBlackPawnAdvanced = piece === 'p' && Number(y1) === 0;
       const isWhitePawnAdvanced = piece === 'P' && Number(y1) === 0;
       if (isWhitePawnAdvanced) {
         this.isPromotionColorWhite = true;
