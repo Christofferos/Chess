@@ -670,6 +670,11 @@ export default {
             this.stopPlayerTimes();
             this.stopFlashingTimeLights();
           }
+          const isLowTimeReached =
+            this.game.timeLeft2 / this.timeConstraintForGame === TWENTY_PERCENT;
+          if (isLowTimeReached) {
+            this.startTimerWarningSound();
+          }
         }, 1000);
         if (this.isTimeAboutToRunOutBlack && this.black) this.startTimerWarningSound();
         if (!isWhiteTimerDefined) return;
@@ -684,6 +689,11 @@ export default {
           if (isOutOfTime) {
             this.stopPlayerTimes();
             this.stopFlashingTimeLights();
+          }
+          const isLowTimeReached =
+            this.game.timeLeft1 / this.timeConstraintForGame === TWENTY_PERCENT;
+          if (isLowTimeReached) {
+            this.startTimerWarningSound();
           }
         }, 1000);
         if (this.isTimeAboutToRunOutWhite && !this.black) this.startTimerWarningSound();
