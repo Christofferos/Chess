@@ -33,7 +33,7 @@
     />
 
     <div
-      class="modal"
+      class="modal-login"
       v-bind:style="{
         display: this.isSignInFail ? 'flex' : 'none',
       }"
@@ -129,7 +129,7 @@ export default {
 </script>
 
 <style>
-.modal {
+.modal-login {
   position: absolute;
   flex-direction: column;
   top: 0%;
