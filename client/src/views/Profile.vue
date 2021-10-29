@@ -21,7 +21,7 @@
       <h4 style="color: white">
         Sound Effect Bonus
       </h4>
-      <label class="ios-switch" v-if="this.matches.length > 25">
+      <label class="ios-switch" v-if="this.matches.length > 10">
         <input
           type="checkbox"
           :checked="isExtraSoundEffectsEnabled ? true : false"
