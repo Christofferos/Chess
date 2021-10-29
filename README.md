@@ -48,7 +48,7 @@ TODO-LIST:
 | 31. Move animation                                                            | -    |
 | 32. Add an invite opponent/player process after creating game                 | ✔️   |
 | 33. Color the last move piece from and to squares                             | -    |
-| 34. Local 2 player chess                                                      | WIP  |
+| 34. Local 2 player chess                                                      | ✔️   |
 
 **_---------------_**
 
