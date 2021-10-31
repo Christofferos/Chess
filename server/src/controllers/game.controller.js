@@ -9,6 +9,12 @@ import {
   surrender,
   stockfishMovePiece,
   stockfishGetHistory,
+  nextOpponentMoveRandom,
+  undoMove,
+  disableSelectedCell,
+  disabledCells,
+  activateCaptureImmunity,
+  cutDownOpponentTime,
 } from '../model.js';
 import { addLiveGameDB } from '../firestore.js';
 
@@ -34,7 +40,8 @@ gameRouter.post('/newGame', (req, res) => {
   io.emit('inviteToGame', req.body.userToInvite, gameId, req.session.userID);
   const minutes = req.body.minuteTimeLimit ? req.body.minuteTimeLimit : 5;
   const timeLimitSecs = minutes * 60;
-  addLiveGame(gameId, req.session.userID, timeLimitSecs);
+  const isCrazyChess = req.body.crazyChess ? true : false;
+  addLiveGame(gameId, req.session.userID, timeLimitSecs, isCrazyChess);
   addLiveGameDB(gameId, '', req.session.userID, '', timeLimitSecs, timeLimitSecs);
   res.json({ gameId });
 });
@@ -100,4 +107,40 @@ gameRouter.post('/stockfishGetHistory', async (req, res) => {
   if (!req.session.userID) return res.status(401).end();
   const history = stockfishGetHistory(req.body.gameId, req.session.userID);
   res.json({ history: history });
+});
+
+gameRouter.post('/randomMoveOpponent', async (req, res) => {
+  if (!req.session.userID) return res.status(401).end();
+  nextOpponentMoveRandom(req.body.gameId, req.session.userID);
+  res.status(200).end();
+});
+
+gameRouter.post('/undoMove', async (req, res) => {
+  if (!req.session.userID) return res.status(401).end();
+  undoMove(req.body.gameId);
+  res.status(200).end();
+});
+
+gameRouter.post('/disabledCells', async (req, res) => {
+  if (!req.session.userID) return res.status(401).end();
+  const roadblocks = disabledCells(req.body.gameId);
+  res.json({ roadblocks });
+});
+
+gameRouter.post('/disableSelectedCell', async (req, res) => {
+  if (!req.session.userID) return res.status(401).end();
+  disableSelectedCell(req.body.gameId, req.body.row, req.body.col);
+  res.status(200).end();
+});
+
+gameRouter.post('/captureImmunity', async (req, res) => {
+  if (!req.session.userID) return res.status(401).end();
+  activateCaptureImmunity(req.body.gameId, req.session.userID);
+  res.status(200).end();
+});
+
+gameRouter.post('/cutDownOpponentTime', async (req, res) => {
+  if (!req.session.userID) return res.status(401).end();
+  cutDownOpponentTime(req.body.gameId, req.session.userID);
+  res.status(200).end();
 });

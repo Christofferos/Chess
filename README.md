@@ -40,8 +40,8 @@ TODO-LIST:
 | 23. Add move, over, start, check, castle, capture sound effects               | ✔️   |
 | 24. Add invalid move and entertaining sound effects                           | ✔️   |
 | 25. Implement ability to rotate board                                         | ✔️   |
-| 26. Implement ability to ask for a redo move (Crazy Chess)                    | WIP  |
-| 27. Implement ability to make a random move for opponent (Crazy Chess)        | WIP  |
+| 26. Implement ability to ask for a redo move (Crazy Chess)                    | ✔️   |
+| 27. Implement ability to make a random move for opponent (Crazy Chess)        | ✔️   |
 | 28. Implement ability to see historic moves after game                        | -    |
 | 29. Selected pieces are not unselected upon opponent move                     | ✔️   |
 | 30. Pre-moving                                                                | -    |
@@ -49,7 +49,7 @@ TODO-LIST:
 | 32. Add an invite opponent/player process after creating game                 | ✔️   |
 | 33. Color the last move piece from and to squares                             | -    |
 | 34. Local 2 player chess                                                      | ✔️   |
-| 35. Make one cell unclickable for opponent (Crazy Chess)                      | WIP  |
+| 35. Make one cell unclickable for opponent (Crazy Chess)                      | ✔️   |
 
 **_---------------_**
 
@@ -81,8 +81,6 @@ mobile. VueDraggable: https://github.com/SortableJS/Vue.Draggable
 [24]. Enable entertaining sound effects via profile page switch/toggle. Put in context and adjust
 in Room.vue
 
-🕹️▶️⏸️🔙
-
 </details>
 
 **_---------------_**
@@ -93,7 +91,10 @@ in Room.vue
 - Profile screen (match history)
 - Leaderboard screen
 - Create/join game screen
-- Game board screen
+- Online game screen
+- Stockfish AI game screen
+- Local 2 player game screen
+- Crazy chess game screen
 
 ### The application database is:
 

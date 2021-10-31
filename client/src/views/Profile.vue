@@ -17,11 +17,23 @@
       v-on:click="signOut()"
     />
 
-    <div>
+    <div style="display:flex; flex-direction: column">
       <h4 style="color: white">
-        Sound Effect Bonus
+        Bonus Features:
       </h4>
-      <label class="ios-switch" v-if="this.matches.length > 10">
+      <label v-if="this.matches.length < 5" style="color: white">Unlocked after 5 games 🔒</label>
+      <span v-else-if="this.matches.length >= 5" style="color: white"
+        >Crazy Chess Available ✔️
+        <div style="height: 5px" />
+      </span>
+
+      <label v-if="this.matches.length < 10" style="color: white"
+        >Unlocked after 10 games 🔒</label
+      >
+      <span v-else-if="this.matches.length >= 10" style="color: white"
+        >Extra Sound Effects ✔️</span
+      >
+      <label v-if="this.matches.length >= 10" class="ios-switch">
         <input
           type="checkbox"
           :checked="isExtraSoundEffectsEnabled ? true : false"
@@ -34,7 +46,6 @@
         />
         <i></i>
       </label>
-      <label v-else style="color: white">Unlocked after 25 games 🔒</label>
     </div>
 
     <div

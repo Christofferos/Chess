@@ -5,6 +5,7 @@ import ListView from '../views/List.vue';
 import RoomView from '../views/Room.vue';
 import StockfishRoomView from '../views/StockfishRoom.vue';
 import LocalRoomView from '../views/LocalRoom.vue';
+import CrazyChessRoomView from '../views/CrazyChessRoom.vue';
 import LoginView from '../views/Login.vue';
 import ProfileView from '../views/Profile.vue';
 import LeaderboardView from '../views/Leaderboard.vue';
@@ -20,6 +21,7 @@ const routes = [
   { path: '/room/:roomName', component: RoomView },
   { path: '/stockfish/:roomName', component: StockfishRoomView },
   { path: '/localroom/:roomName', component: LocalRoomView },
+  { path: '/crazyroom/:roomName', component: CrazyChessRoomView },
   { path: '/login', component: LoginView },
   { path: '/profile', component: ProfileView },
   { path: '/signUp', component: SignUp },

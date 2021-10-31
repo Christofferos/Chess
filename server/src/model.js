@@ -197,8 +197,8 @@ export const addMessage = (roomName, message) => {
  * @param {String} id - The id of the game.
  * @returns {void}
  */
-export const addLiveGame = (id, player1, timeLimit) => {
-  games[id] = new LiveGame(id, undefined, player1, undefined, timeLimit, timeLimit);
+export const addLiveGame = (id, player1, timeLimit, isCrazyChess) => {
+  games[id] = new LiveGame(id, undefined, player1, undefined, timeLimit, timeLimit, isCrazyChess);
   io.emit('newRoom', games[id]);
 };
 
@@ -369,19 +369,38 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
   const isUserAllowedToMove = isPlayer1 || username === games[gameId].player2;
   if (!isUserAllowedToMove) return;
   const game = games[gameId];
-  const move = game.gameState.move({
-    from: startPos,
-    to: endPos,
-    promotion: promotionPiece?.toLowerCase(),
-  });
+  if (!game) return;
+  let move;
+  let isCaptureImmunity = false;
+  const isCrazyChessGame = games[gameId].isCrazyChess;
+  if (isCrazyChessGame) {
+    const { randomMove, isRoadblock, isCaptureImmune } = crazyChessPower(game, username, endPos);
+    isCaptureImmunity = isCaptureImmune;
+    if (isRoadblock) {
+      emitMovePiece(game, null, isPlayer1);
+      return;
+    }
+    move = randomMove;
+  }
+  const isNoMoveMadeYet = !move;
+  if (isNoMoveMadeYet) {
+    move = game.gameState.move({
+      from: startPos,
+      to: endPos,
+      promotion: promotionPiece?.toLowerCase(),
+    });
+  }
+  const flags = move ? move.flags : null;
+  if (isCaptureImmunity && isMoveCapture(flags)) {
+    game.gameState.undo();
+    io.in(game.id).emit('captureImmune');
+    return;
+  } else if (move && isCaptureImmunity) game.crazyChessPowers.captureImmunity = '';
   if (move) startOpposingTimer(game);
   game.fen = game.gameState.fen();
   setLiveGameStateDB(gameId, game.fen, game.timeLeft1, game.timeLeft2);
   const isGameOver = game.gameState.game_over();
-  if (isGameOver) {
-    gameOver(game);
-  }
-  const flags = move ? move.flags : null;
+  if (isGameOver) gameOver(game);
   emitMovePiece(game, flags, isPlayer1);
 };
 
@@ -421,4 +440,136 @@ export const stockfishGetHistory = (gameId, username) => {
   const isUserAllowedToMove = isPlayer1 || username === games[gameId].player2;
   if (!isUserAllowedToMove) return;
   return game.gameState.history({ verbose: true });
+};
+
+export const crazyChessPower = (game, username, endPos) => {
+  let randomMove;
+  let isRoadblock = false;
+  let isCaptureImmune = false;
+  const isUserMatchImmunity = username === game.crazyChessPowers.captureImmunity;
+  const isUserMatchRandomMove = username === game.crazyChessPowers.randomMove;
+  const isPlayer1 = username === game.player1;
+  const isPlayerTurn =
+    (game.gameState.turn() === 'w' && isPlayer1) || (game.gameState.turn() === 'b' && !isPlayer1);
+  if (isUserMatchRandomMove && isPlayerTurn) {
+    game.crazyChessPowers.randomMove = '';
+    const moves = game.gameState.moves();
+    const move = moves[Math.floor(Math.random() * moves.length)];
+    randomMove = game.gameState.move(move);
+  } else if (isUserMatchImmunity && isPlayerTurn) {
+    isCaptureImmune = true;
+  }
+  const { row, col } = translateSelectedPiece(endPos);
+  const rowColId = `${row}${col}`;
+  const isCellBlocked = game.crazyChessPowers.disabledCells.includes(rowColId);
+  if (isCellBlocked) {
+    isRoadblock = true;
+  }
+  return { randomMove, isRoadblock, isCaptureImmune };
+};
+
+export const nextOpponentMoveRandom = (gameId, username) => {
+  const game = games[gameId];
+  if (!game) return;
+  const isPlayer1 = username === games[gameId].player1;
+  const isPlayer2 = username === games[gameId].player2;
+  if (isPlayer1) game.crazyChessPowers.randomMove = games[gameId].player2;
+  else if (isPlayer2) game.crazyChessPowers.randomMove = games[gameId].player1;
+};
+
+export const undoMove = gameId => {
+  const game = games[gameId];
+  if (!game) return;
+  const undoData = game.gameState.undo();
+  if (!undoData) return;
+  const flags = undoData.flags;
+  startOpposingTimer(game);
+  game.fen = game.gameState.fen();
+  setLiveGameStateDB(gameId, game.fen, game.timeLeft1, game.timeLeft2);
+  const isCastle = flags === 'k' || flags === 'q';
+  const isEnPassant = flags === 'e';
+  const isPromotion = flags === 'p' || flags === 'cp';
+  const isCapture = flags === 'c';
+  io.in(game.id).emit(
+    'undoMove',
+    game.fen,
+    game.gameState.in_check(),
+    isCastle,
+    isEnPassant,
+    isPromotion,
+    isCapture,
+  );
+};
+
+export const disableSelectedCell = (gameId, row, col) => {
+  const game = games[gameId];
+  if (!game) return;
+  const pieces = game.fen.split(' ')[0];
+  let rowIter = 0;
+  let colIter = 0;
+  for (let i = 0; i < pieces.length; i += 1) {
+    if (pieces.charAt(i) === '/') {
+      rowIter += 1;
+      colIter = 0;
+    } else if (pieces.charAt(i).match('[rnbqkpRNBQKP]')) {
+      const isCellOccupied = row === rowIter && col === colIter;
+      if (isCellOccupied) return;
+      colIter += 1;
+    } else {
+      for (let j = 0; j < Number(pieces.charAt(i)); j += 1) {
+        const isEmptyCell = row == rowIter && col == colIter;
+        if (isEmptyCell) {
+          io.in(game.id).emit('disableSelectedCell', row, col);
+          const rowColId = `${row}${col}`;
+          const isUnique = game.crazyChessPowers.disabledCells.indexOf(rowColId) === -1;
+          if (isUnique) game.crazyChessPowers.disabledCells.push(rowColId);
+          return;
+        }
+        colIter += 1;
+      }
+    }
+  }
+};
+
+export const disabledCells = gameId => {
+  const game = games[gameId];
+  if (!game) return;
+  return game.crazyChessPowers.disabledCells;
+};
+
+const translateSelectedPiece = pos => {
+  const letterIndex = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+  const row = 8 - Number(pos.charAt(1));
+  const file = pos.charAt(0);
+  const col = letterIndex.indexOf(file);
+  return { row, col };
+};
+
+export const activateCaptureImmunity = (gameId, username) => {
+  const game = games[gameId];
+  if (!game) return;
+  const isPlayer1 = username === games[gameId].player1;
+  const isPlayer2 = username === games[gameId].player2;
+  if (isPlayer1) game.crazyChessPowers.captureImmunity = games[gameId].player2;
+  else if (isPlayer2) game.crazyChessPowers.captureImmunity = games[gameId].player1;
+};
+
+const isMoveCapture = flags => {
+  const isEnPassant = flags === 'e';
+  const isPromotionCapture = flags === 'cp';
+  const isNormalCapture = flags === 'c';
+  const isCapture = isEnPassant || isPromotionCapture || isNormalCapture;
+  return isCapture;
+};
+
+export const cutDownOpponentTime = (gameId, username) => {
+  const game = games[gameId];
+  if (!game) return;
+  const isPlayer1 = username === games[gameId].player1;
+  const isPlayer2 = username === games[gameId].player2;
+  const twentyPercentCutOff = 5;
+  if (isPlayer1)
+    game.timeLeft2 = game.timeLeft2 - Math.trunc(game.timeLeft2 / twentyPercentCutOff);
+  else if (isPlayer2)
+    game.timeLeft1 = game.timeLeft1 - Math.trunc(game.timeLeft1 / twentyPercentCutOff);
 };

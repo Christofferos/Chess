@@ -8,9 +8,9 @@
       <div class="row">
         <div class="row" style="text-align: center;">
           <input
-            disabled
+            :disabled="matchHistoryLen < 5"
             class="well btn btn-warning button"
-            v-on:click="newGame()"
+            v-on:click="newGameCrazyChess()"
             type="button"
             value="Crazy Chess"
           />
@@ -204,6 +204,7 @@ export default {
     selectedOpponent: null,
     minuteOptions: [10, 5, 3, 1],
     isJoinGameModalVisible: false,
+    matchHistoryLen: 0,
   }),
   computed: {
     roomsList: function() {
@@ -262,6 +263,25 @@ export default {
         this.rooms = data.list;
       })
       .catch(console.error);
+    fetch(`/api/matchHistory/${this.$store.state.cookie.username}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then((resp) => {
+        if (!resp.ok) {
+          throw new Error('Match history response failed');
+        }
+        return resp.json();
+      })
+      .then((data) => {
+        const matchList = data.matchHistory;
+        this.matchHistoryLen = matchList.length;
+      })
+      .catch((error) => {
+        throw new Error(`Match History request failed ${error}`);
+      });
   },
   methods: {
     redirect(roomName) {
@@ -272,6 +292,9 @@ export default {
     },
     localGameRedirect(roomName) {
       this.$router.push(`/localroom/${roomName}`);
+    },
+    crazyChessRedirect(roomName) {
+      this.$router.push(`/crazyroom/${roomName}`);
     },
     newGame(minuteTimeLimit = undefined, userToInvite = undefined) {
       fetch('/api/newGame', {
@@ -360,6 +383,33 @@ export default {
         .then((data) => {
           this.gameCode = data.gameId;
           this.localGameRedirect(data.gameId);
+        })
+        .catch((error) => {
+          alert('Failed to create game. Please try to sign out, sign in and try again.');
+          this.$router.go();
+          throw new Error(`Failed to create game ${error}.`);
+        });
+    },
+    newGameCrazyChess(minuteTimeLimit = 10, userToInvite = undefined) {
+      fetch('/api/newGame', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: this.username,
+          minuteTimeLimit,
+          userToInvite,
+          crazyChess: true,
+        }),
+      })
+        .then((resp) => {
+          if (!resp.ok) throw new Error(resp.text);
+          return resp.json();
+        })
+        .then((data) => {
+          this.gameCode = data.gameId;
+          this.crazyChessRedirect(data.gameId);
         })
         .catch((error) => {
           alert('Failed to create game. Please try to sign out, sign in and try again.');

@@ -4,7 +4,7 @@ import { Chess } from '../chess.js';
  * @class LiveGame
  */
 export class LiveGame {
-  constructor(id, fen, player1, player2, timeLeft1, timeLeft2) {
+  constructor(id, fen, player1, player2, timeLeft1, timeLeft2, crazyChess = false) {
     this.id = id; // (Number)
     if (fen === undefined || fen === '' || fen === null) {
       /*
@@ -42,8 +42,14 @@ export class LiveGame {
     }
     this.timer1 = null;
     this.timer2 = null;
-    // Not persistant
-    this.messages = [];
+    this.messages = []; // Not persistant
+    this.isCrazyChess = crazyChess;
+    this.crazyChessPowers = {
+      randomMove: '',
+      undoMove: false,
+      disabledCells: [],
+      captureImmunity: '',
+    };
   }
 
   addMessage(message) {
