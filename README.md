@@ -51,6 +51,7 @@ TODO-LIST:
 | 34. Local 2 player chess                                                      | ✔️   |
 | 35. Roadblock powerup (Crazy Chess)                                           | ✔️   |
 | 36. Time cut off powerup (Crazy Chess)                                        | ✔️   |
+| 37. Immune to captures powerup (Crazy Chess)                                  | ✔️   |
 
 **_---------------_**
 
