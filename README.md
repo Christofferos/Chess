@@ -49,7 +49,8 @@ TODO-LIST:
 | 32. Add an invite opponent/player process after creating game                 | ✔️   |
 | 33. Color the last move piece from and to squares                             | -    |
 | 34. Local 2 player chess                                                      | ✔️   |
-| 35. Make one cell unclickable for opponent (Crazy Chess)                      | ✔️   |
+| 35. Roadblock powerup (Crazy Chess)                                           | ✔️   |
+| 36. Time cut off powerup (Crazy Chess)                                        | ✔️   |
 
 **_---------------_**
 
