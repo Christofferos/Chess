@@ -49,6 +49,7 @@ export class LiveGame {
       undoMove: false,
       disabledCells: [],
       captureImmunity: '',
+      omegaUpgrade: '',
     };
   }
 

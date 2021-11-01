@@ -15,6 +15,8 @@ import {
   disabledCells,
   activateCaptureImmunity,
   cutDownOpponentTime,
+  spawnFriendlyPiece,
+  omegaPieceUpgrade,
 } from '../model.js';
 import { addLiveGameDB } from '../firestore.js';
 
@@ -80,8 +82,8 @@ gameRouter.post('/surrender', async (req, res) => {
     return;
   }
   if (
-    getLiveGame(req.body.id)[0].player1 !== req.session.userID &&
-    getLiveGame(req.body.id)[0].player2 !== req.session.userID
+    getLiveGame(req.body.id)[0]?.player1 !== req.session.userID &&
+    getLiveGame(req.body.id)[0]?.player2 !== req.session.userID
   ) {
     res.status(401).end();
     return;
@@ -142,5 +144,17 @@ gameRouter.post('/captureImmunity', async (req, res) => {
 gameRouter.post('/cutDownOpponentTime', async (req, res) => {
   if (!req.session.userID) return res.status(401).end();
   cutDownOpponentTime(req.body.gameId, req.session.userID);
+  res.status(200).end();
+});
+
+gameRouter.post('/spawnFriendlyPiece', async (req, res) => {
+  if (!req.session.userID) return res.status(401).end();
+  spawnFriendlyPiece(req.body.gameId, req.session.userID, req.body.spawnCell);
+  res.status(200).end();
+});
+
+gameRouter.post('/omegaPieceUpgrade', async (req, res) => {
+  if (!req.session.userID) return res.status(401).end();
+  omegaPieceUpgrade(req.body.gameId, req.session.userID);
   res.status(200).end();
 });

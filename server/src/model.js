@@ -370,12 +370,19 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
   if (!isUserAllowedToMove) return;
   const game = games[gameId];
   if (!game) return;
+  if (game.gameState.fen() !== game.fen) game.gameState.load(game.fen);
   let move;
   let isCaptureImmunity = false;
+  let isOmegaUpgradeActive = false;
   const isCrazyChessGame = games[gameId].isCrazyChess;
   if (isCrazyChessGame) {
-    const { randomMove, isRoadblock, isCaptureImmune } = crazyChessPower(game, username, endPos);
+    const { randomMove, isRoadblock, isCaptureImmune, isOmegaUpgrade } = crazyChessPower(
+      game,
+      username,
+      endPos,
+    );
     isCaptureImmunity = isCaptureImmune;
+    isOmegaUpgradeActive = isOmegaUpgrade;
     if (isRoadblock) {
       emitMovePiece(game, null, isPlayer1);
       return;
@@ -398,6 +405,10 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
   } else if (move && isCaptureImmunity) game.crazyChessPowers.captureImmunity = '';
   if (move) startOpposingTimer(game);
   game.fen = game.gameState.fen();
+  if (isOmegaUpgradeActive && move) {
+    const newFen = upgradePiece(gameId, endPos, username);
+    game.fen = newFen;
+  }
   setLiveGameStateDB(gameId, game.fen, game.timeLeft1, game.timeLeft2);
   const isGameOver = game.gameState.game_over();
   if (isGameOver) gameOver(game);
@@ -446,6 +457,8 @@ export const crazyChessPower = (game, username, endPos) => {
   let randomMove;
   let isRoadblock = false;
   let isCaptureImmune = false;
+  let isOmegaUpgrade = false;
+  const isUserMatchUpgrade = username === game.crazyChessPowers.omegaUpgrade;
   const isUserMatchImmunity = username === game.crazyChessPowers.captureImmunity;
   const isUserMatchRandomMove = username === game.crazyChessPowers.randomMove;
   const isPlayer1 = username === game.player1;
@@ -458,6 +471,8 @@ export const crazyChessPower = (game, username, endPos) => {
     randomMove = game.gameState.move(move);
   } else if (isUserMatchImmunity && isPlayerTurn) {
     isCaptureImmune = true;
+  } else if (isUserMatchUpgrade) {
+    isOmegaUpgrade = true;
   }
   const { row, col } = translateSelectedPiece(endPos);
   const rowColId = `${row}${col}`;
@@ -465,7 +480,7 @@ export const crazyChessPower = (game, username, endPos) => {
   if (isCellBlocked) {
     isRoadblock = true;
   }
-  return { randomMove, isRoadblock, isCaptureImmune };
+  return { randomMove, isRoadblock, isCaptureImmune, isOmegaUpgrade };
 };
 
 export const nextOpponentMoveRandom = (gameId, username) => {
@@ -548,10 +563,10 @@ const translateSelectedPiece = pos => {
 export const activateCaptureImmunity = (gameId, username) => {
   const game = games[gameId];
   if (!game) return;
-  const isPlayer1 = username === games[gameId].player1;
-  const isPlayer2 = username === games[gameId].player2;
-  if (isPlayer1) game.crazyChessPowers.captureImmunity = games[gameId].player2;
-  else if (isPlayer2) game.crazyChessPowers.captureImmunity = games[gameId].player1;
+  const isPlayer1 = username === game.player1;
+  const isPlayer2 = username === game.player2;
+  if (isPlayer1) game.crazyChessPowers.captureImmunity = game.player2;
+  else if (isPlayer2) game.crazyChessPowers.captureImmunity = game.player1;
 };
 
 const isMoveCapture = flags => {
@@ -572,4 +587,56 @@ export const cutDownOpponentTime = (gameId, username) => {
     game.timeLeft2 = game.timeLeft2 - Math.trunc(game.timeLeft2 / twentyPercentCutOff);
   else if (isPlayer2)
     game.timeLeft1 = game.timeLeft1 - Math.trunc(game.timeLeft1 / twentyPercentCutOff);
+};
+
+export const spawnFriendlyPiece = (gameId, username, spawnCell) => {
+  const game = games[gameId];
+  if (!game) return;
+  const isPlayer1 = username === games[gameId].player1;
+  const isPlayer2 = username === games[gameId].player2;
+  const isAllowedRow =
+    (spawnCell.charAt(1) === '3' && isPlayer1) || (spawnCell.charAt(1) === '6' && isPlayer2);
+  if (!isAllowedRow) return;
+  let isSpawnValid = false;
+  if (isPlayer1)
+    isSpawnValid = game.gameState.put(
+      { type: game.gameState.PAWN, color: game.gameState.WHITE },
+      spawnCell,
+    );
+  else if (isPlayer2)
+    isSpawnValid = game.gameState.put(
+      { type: game.gameState.PAWN, color: game.gameState.BLACK },
+      spawnCell,
+    );
+  game.fen = game.gameState.fen();
+  if (isSpawnValid) io.in(gameId).emit('pieceSpawn', game.fen, username);
+};
+
+export const omegaPieceUpgrade = (gameId, username) => {
+  const game = games[gameId];
+  if (!game) return;
+  const isPlayer1 = username === game.player1;
+  const isPlayer2 = username === game.player2;
+  if (isPlayer1) game.crazyChessPowers.omegaUpgrade = game.player1;
+  else if (isPlayer2) game.crazyChessPowers.omegaUpgrade = game.player2;
+};
+
+const upgradePiece = (gameId, upgradeCell, username) => {
+  const game = games[gameId];
+  if (!game) return;
+  const color = game.gameState.turn() === 'w' ? game.gameState.BLACK : game.gameState.WHITE;
+  const piecePreUpgrade = game.gameState.get(upgradeCell);
+  let piecePostUpgrade = game.gameState.KNIGHT;
+  if (piecePreUpgrade.type === 'n' || piecePreUpgrade.type === 'N')
+    piecePostUpgrade = game.gameState.BISHOP;
+  const isPieceRemoved = games[gameId].gameState.remove(upgradeCell);
+  const isPiecePlaced = games[gameId].gameState.put(
+    { type: piecePostUpgrade, color: color },
+    upgradeCell,
+  );
+  if (isPieceRemoved && isPiecePlaced) {
+    io.in(gameId).emit('omegaPieceUpgrade', username);
+    games[gameId].crazyChessPowers.omegaUpgrade = '';
+    return games[gameId].gameState.fen();
+  }
 };

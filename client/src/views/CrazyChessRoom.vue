@@ -87,7 +87,6 @@
         }"
         v-on:click="
           (event) => {
-            if (!isDisableSelectEnabled) return;
             let rowId;
             let columnId;
             const isIdInParentNode = !isNaN(event.target.id) && event.target.id !== '';
@@ -98,6 +97,8 @@
               rowId = event.target.parentElement.parentElement.id;
               columnId = event.target.parentElement.id;
             }
+            if (isPieceSpawnEnabled && selectedPiece === '') spawnFriendlyPiece(rowId, columnId);
+            if (!isDisableSelectEnabled) return;
             disableSelectedCell(rowId, columnId);
           }
         "
@@ -124,8 +125,12 @@
                 selectedPiece === row.toString() + col.toString()
                   ? 'yellow'
                   : (col + row) % 2 === 0
-                  ? '#E2E5BE'
-                  : '#58793B',
+                  ? isPieceSpawnEnabled && row === 5
+                    ? '#A6E5A0'
+                    : cellWhiteColor
+                  : isPieceSpawnEnabled && row === 5
+                  ? '#58B23B'
+                  : cellGreenColor,
               display: 'flex',
               justifyContent: 'space-between',
               height: `${deviceScale}px`,
@@ -146,23 +151,41 @@
             <span
               v-bind:style="{
                 opacity: col === 0 ? 1 : 0,
-                color: row % 2 === 0 ? '#58793B' : '#E2E5BE',
+                color: row % 2 === 0 ? cellGreenColor : cellWhiteColor,
                 fontWeight: 800,
                 zIndex: 10,
               }"
               >{{ black ? row + 1 : 8 - row }}
             </span>
+
             <span
-              v-if="row === 7"
               v-bind:style="{
                 display: 'flex',
-                alignItems: 'flex-end',
-                color: col % 2 !== 0 ? '#58793B' : '#E2E5BE',
-                fontWeight: 1000,
-                paddingRight: '3px',
+                alignItems: isOmegaPieceUpgradeEnabled ? 'space-between' : 'flex-end',
+                justifyContent: isOmegaPieceUpgradeEnabled ? 'space-between' : 'flex-end',
+                flexDirection: 'column',
               }"
-              >{{ black ? letters[7 - col] : letters[col] }}</span
             >
+              <span
+                v-if="checkOmegaPieceUpgradePieces(row, col)"
+                v-bind:style="{
+                  fontSize: '13px',
+                }"
+                >🧬</span
+              >
+              <span v-else></span>
+              <span
+                v-if="row === 7"
+                v-bind:style="{
+                  display: 'flex',
+                  alignItems: 'flex-end',
+                  color: col % 2 !== 0 ? cellGreenColor : cellWhiteColor,
+                  fontWeight: 1000,
+                  paddingRight: '3px',
+                }"
+                >{{ black ? letters[7 - col] : letters[col] }}</span
+              >
+            </span>
           </span>
         </div>
       </div>
@@ -203,54 +226,57 @@
         <p style="font-size: 36px; color: white">Powers</p>
         <button v-on:click="opponentRandomMove()" class="well btn btn-default button gameCodeBtn">
           🔀 <span class="powerText">Random Opponent Move</span>
-          <!-- Example on chess.js -->
         </button>
         <button v-on:click="undoMove()" class="well btn btn-default button gameCodeBtn">
           🔙 <span class="powerText">Undo Move</span>
-          <!-- (.undo()) -->
         </button>
         <button
           v-on:click="() => (isDisableSelectEnabled = true)"
           class="well btn btn-default button gameCodeBtn"
         >
           🚧 <span class="powerText">Disable Selected Cell</span>
-          <!-- disable cell in frontend -->
         </button>
         <button
           v-on:click="activeCaptureImmunity()"
           class="well btn btn-default button gameCodeBtn"
         >
           💎 <span class="powerText">Immune to Captures</span>
-          <!-- .move() then .redo() if it was a capture while enabled-->
         </button>
         <button v-on:click="cutDownOpponentTime()" class="well btn btn-default button gameCodeBtn">
           🛠️ <span class="powerText">Cut Down Opponent Time</span>
-          <!-- (frontend) -->
         </button>
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          🕹️ <span class="powerText">Opponent Puzzle</span>
-          <!-- (frontend) -->
-        </button>
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          ⚔️ <span class="powerText">One Piece of Each Die</span>
-          <!-- (.remove(square)) -->
-        </button>
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
+        <button
+          v-on:click="
+            () => {
+              isPieceSpawnEnabled = true;
+              selectedPiece = '';
+            }
+          "
+          class="well btn btn-default button gameCodeBtn"
+        >
           🧙 <span class="powerText">Spawn Friendly Piece</span>
-          <!-- (.put(piece, square)) -->
         </button>
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          ☠️ <span class="powerText">Kill Enemy Pawn</span>
-          <!-- by selecting -->
+        <button
+          v-on:click="() => (isOmegaPieceUpgradeEnabled = true)"
+          class="well btn btn-default button gameCodeBtn"
+        >
+          🧬 <span class="powerText">Omega Piece Upgrade</span>
         </button>
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
+        <button v-on:click="debug('Fog of War')" class="well btn btn-default button gameCodeBtn">
+          🔦 <span class="powerText">Fog of War</span>
+          <!-- frontend -->
+        </button>
+        <button v-on:click="debug('Play Twice')" class="well btn btn-default button gameCodeBtn">
           ⚡ <span class="powerText">Play Twice</span>
-          <!-- (.load(fen)) -->
+          <!-- .load(fen) -->
         </button>
         <!-- 
+          <<< Max 3 powers at a time >>>
         <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          🧬 <span class="powerText">Omega Piece Upgrade</span>
-          (.load(fen))
+          ☠️ <span class="powerText">Kill Enemy Pawn</span>
+        </button>
+        <button v-clipboard="() => chooseOnePawnOnEachSideToDie" class="well btn btn-default button gameCodeBtn">
+          ⚔️ <span class="powerText">One Piece of Each Die</span>
         </button>
         <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
           🚀 <span class="powerText">Missle Launch</span>
@@ -260,16 +286,11 @@
           👾 <span class="powerText">Swap Piece Appearance</span>
         </button>
         <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          🔦 <span class="powerText">Fog of War</span>
+          🧭 <span class="powerText">Swap Orientation</span>
         </button>
         <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          🧭 <span class="powerText">Swap Navigation</span>
+          🕹️ <span class="powerText">Opponent Puzzle</span>
         </button>
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          🔋 <span class="powerText">Charge Phone</span>
-        </button>
-
-        Gold bolt 🔧🔩
         -->
       </div>
     </div>
@@ -310,7 +331,9 @@ export default {
       startPos: '',
       endPos: '',
       selectedPiece: '',
+      isPieceSpawnEnabled: false,
       isDisableSelectEnabled: false,
+      isOmegaPieceUpgradeEnabled: false,
       disabledCells: [],
       rows: [0, 1, 2, 3, 4, 5, 6, 7],
       columns: [0, 1, 2, 3, 4, 5, 6, 7],
@@ -385,6 +408,8 @@ export default {
       aunPassunAudio: new Audio(require('../assets/aunPassun.mp3')),
       captureImmunityAudio: new Audio(require('../assets/captureImmunity.mp3')),
       roadblock: roadblock,
+      cellWhiteColor: '#E2E5BE',
+      cellGreenColor: '#58793B',
     };
   },
   methods: {
@@ -497,6 +522,7 @@ export default {
       } else if (this.piecePlacement[row][col].match('[RNBQKP]') && this.black === false) {
         this.selectedPiece = row.toString() + col.toString();
       } else if (this.selectedPiece !== '') {
+        if (this.isOmegaPieceUpgradeEnabled) this.omegaPieceUpgrade();
         const y0 = this.selectedPiece.charAt(0);
         const x0 = this.selectedPiece.charAt(1);
         const y1 = row.toString();
@@ -673,6 +699,19 @@ export default {
         this.captureImmunityAudio.play();
       });
 
+      this.$store.state.socket.on('pieceSpawn', (newFen, username) => {
+        this.game.fen = newFen;
+        this.updatePiecePlacement();
+        if (username === this.$store.state.cookie.username) this.isPieceSpawnEnabled = false;
+        // Audio to queue attention
+      });
+
+      this.$store.state.socket.on('omegaPieceUpgrade', (username) => {
+        if (username === this.$store.state.cookie.username)
+          this.isOmegaPieceUpgradeEnabled = false;
+        // Audio to queue attention
+      });
+
       this.$store.state.socket.on(
         'movePieceResponse',
         (
@@ -704,10 +743,12 @@ export default {
           this.game.timeLeft2 = timeLeft2;
           const isLegalMove = this.game.fen !== newFen;
           this.game.fen = newFen;
+          console.log('NEW FEN CORRECT? ', newFen);
           this.updatePiecePlacement();
           if (isGameOver) return;
           if (!isLegalMove) {
             if ((isPlayer1MovingPiece && !this.black) || (!isPlayer1MovingPiece && this.black)) {
+              console.log('Invalid move apparently');
               this.invalidMoveAudio.src = '/media/invalidAction.b8f64af9.mp3';
               this.invalidMoveAudio.play();
             }
@@ -949,7 +990,45 @@ export default {
         console.log('/cutDownOpponentTime failed', err);
       });
     },
+    spawnFriendlyPiece(row, col) {
+      const spawnCell = this.translateSelectedPiece(row, col);
+      fetch(`/api/spawnFriendlyPiece`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: this.room,
+          spawnCell,
+        }),
+      }).catch((err) => {
+        console.log('/spawnFriendlyPiece failed', err);
+      });
+    },
+    omegaPieceUpgrade() {
+      fetch(`/api/omegaPieceUpgrade`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: this.room,
+        }),
+      }).catch((err) => {
+        console.log('/omegaPieceUpgrade failed', err);
+      });
+    },
+    checkOmegaPieceUpgradePieces(row, col) {
+      const isCorrectPiecesMarked =
+        (!this.black &&
+          (this.piecePlacement[row][col] === 'P' || this.piecePlacement[row][col] === 'N')) ||
+        (this.black &&
+          (this.piecePlacement[row][col] === 'p' || this.piecePlacement[row][col] === 'n'));
+      const isPieceEligibleForUpgrade = this.isOmegaPieceUpgradeEnabled && isCorrectPiecesMarked;
+      return isPieceEligibleForUpgrade;
+    },
   },
+
   created() {
     this.reconnectionEvents();
     this.$store.state.socket.on('connect', this.eventListener);
@@ -1000,6 +1079,8 @@ export default {
     this.socket.off('undoMove');
     this.socket.off('disableSelectedCell');
     this.socket.off('captureImmune');
+    this.socket.off('pieceSpawn');
+    this.socket.off('omegaPieceUpgrade');
     this.socket.off('movePieceResponse');
     const isUserLeavingEmptyRoom = this.opponent === '';
     if (isUserLeavingEmptyRoom) {
