@@ -52,6 +52,7 @@ TODO-LIST:
 | 35. Roadblock powerup (Crazy Chess)                                           | ✔️   |
 | 36. Time cut off powerup (Crazy Chess)                                        | ✔️   |
 | 37. Immune to captures powerup (Crazy Chess)                                  | ✔️   |
+| 38. Spawn friendly pawn (Crazy Chess)                                         | ✔️   |
 
 **_---------------_**
 
