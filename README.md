@@ -53,6 +53,7 @@ TODO-LIST:
 | 36. Time cut off powerup (Crazy Chess)                                        | ✔️   |
 | 37. Immune to captures powerup (Crazy Chess)                                  | ✔️   |
 | 38. Spawn friendly pawn (Crazy Chess)                                         | ✔️   |
+| 39. Omega piece upgrade (Crazy Chess)                                         | ✔️   |
 
 **_---------------_**
 
