@@ -474,6 +474,10 @@ export const crazyChessPower = (game, username, endPos) => {
   } else if (isUserMatchUpgrade) {
     isOmegaUpgrade = true;
   }
+  if (game.crazyChessPowers.fogOfWarP1 > 0) games[game.id].crazyChessPowers.fogOfWarP1 -= 1;
+  else if (game.crazyChessPowers.fogOfWarP1 <= 0) io.in(game.id).emit('fogOfWarDisable', 'b');
+  if (game.crazyChessPowers.fogOfWarP2 > 0) games[game.id].crazyChessPowers.fogOfWarP2 -= 1;
+  else if (game.crazyChessPowers.fogOfWarP2 <= 0) io.in(game.id).emit('fogOfWarDisable', 'w');
   const { row, col } = translateSelectedPiece(endPos);
   const rowColId = `${row}${col}`;
   const isCellBlocked = game.crazyChessPowers.disabledCells.includes(rowColId);
@@ -639,4 +643,28 @@ const upgradePiece = (gameId, upgradeCell, username) => {
     games[gameId].crazyChessPowers.omegaUpgrade = '';
     return games[gameId].gameState.fen();
   }
+};
+
+export const fogOfWar = (gameId, username) => {
+  const game = games[gameId];
+  if (!game) return;
+  const isPlayer1Turn = game.gameState.turn() === 'w';
+  const isPlayer2Turn = game.gameState.turn() === 'b';
+  const isPlayer1 = username === game.player1;
+  const isPlayer2 = username === game.player2;
+  if (isPlayer1 && !isPlayer1Turn) {
+    game.crazyChessPowers.fogOfWarP1 = 2;
+    io.in(gameId).emit('fogOfWarEnable', 'b');
+  } else if (isPlayer2 && !isPlayer2Turn) {
+    game.crazyChessPowers.fogOfWarP2 = 2;
+    io.in(gameId).emit('fogOfWarEnable', 'w');
+  }
+};
+
+export const getFogOfWar = (gameId, username) => {
+  const game = games[gameId];
+  if (!game) return;
+  if (game.crazyChessPowers.fogOfWarP1 > 0) io.in(gameId).emit('fogOfWarEnable', 'b');
+  if (game.crazyChessPowers.fogOfWarP2 > 0) io.in(gameId).emit('fogOfWarEnable', 'w');
+  return true;
 };

@@ -121,16 +121,7 @@
               }
             "
             v-bind:style="{
-              background:
-                selectedPiece === row.toString() + col.toString()
-                  ? 'yellow'
-                  : (col + row) % 2 === 0
-                  ? isPieceSpawnEnabled && row === 5
-                    ? '#A6E5A0'
-                    : cellWhiteColor
-                  : isPieceSpawnEnabled && row === 5
-                  ? '#58B23B'
-                  : cellGreenColor,
+              background: cellBackgroundColor(row, col),
               display: 'flex',
               justifyContent: 'space-between',
               height: `${deviceScale}px`,
@@ -139,7 +130,7 @@
             }"
           >
             <img
-              v-if="piecePlacement[row][col] !== ''"
+              v-if="conditionallyRenderPiece(row, col)"
               :src="pieces[piecePlacement[row][col]]"
               v-bind:style="{ width: `${deviceScale}px`, position: 'absolute' }"
             />
@@ -262,11 +253,11 @@
         >
           🧬 <span class="powerText">Omega Piece Upgrade</span>
         </button>
-        <button v-on:click="debug('Fog of War')" class="well btn btn-default button gameCodeBtn">
+        <button v-on:click="fogOfWar()" class="well btn btn-default button gameCodeBtn">
           🔦 <span class="powerText">Fog of War</span>
           <!-- frontend -->
         </button>
-        <button v-on:click="debug('Play Twice')" class="well btn btn-default button gameCodeBtn">
+        <button v-on:click="playTwice()" class="well btn btn-default button gameCodeBtn">
           ⚡ <span class="powerText">Play Twice</span>
           <!-- .load(fen) -->
         </button>
@@ -334,6 +325,7 @@ export default {
       isPieceSpawnEnabled: false,
       isDisableSelectEnabled: false,
       isOmegaPieceUpgradeEnabled: false,
+      isFogOfWarEnabled: false,
       disabledCells: [],
       rows: [0, 1, 2, 3, 4, 5, 6, 7],
       columns: [0, 1, 2, 3, 4, 5, 6, 7],
@@ -410,6 +402,7 @@ export default {
       roadblock: roadblock,
       cellWhiteColor: '#E2E5BE',
       cellGreenColor: '#58793B',
+      isReadyToRenderPieces: false,
     };
   },
   methods: {
@@ -649,6 +642,26 @@ export default {
           return;
         });
 
+      fetch(`/api/checkFogOfWar`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: this.room,
+        }),
+      })
+        .then((resp) => {
+          return resp.json();
+        })
+        .then(({ isReadyToRenderPieces }) => {
+          this.isReadyToRenderPieces = isReadyToRenderPieces;
+        })
+        .catch((err) => {
+          console.log('/checkFogOfWar failed', err);
+          return;
+        });
+
       const THROTTLE_DELAY = 5000;
       this.$store.state.socket.on(
         'msg',
@@ -712,6 +725,16 @@ export default {
         // Audio to queue attention
       });
 
+      this.$store.state.socket.on('fogOfWarEnable', (color) => {
+        if (color === 'b' && this.black) this.isFogOfWarEnabled = true;
+        else if (color === 'w' && !this.black) this.isFogOfWarEnabled = true;
+      });
+
+      this.$store.state.socket.on('fogOfWarDisable', (color) => {
+        if (this.black && color === 'b') this.isFogOfWarEnabled = false;
+        if (!this.black && color === 'w') this.isFogOfWarEnabled = false;
+      });
+
       this.$store.state.socket.on(
         'movePieceResponse',
         (
@@ -743,7 +766,6 @@ export default {
           this.game.timeLeft2 = timeLeft2;
           const isLegalMove = this.game.fen !== newFen;
           this.game.fen = newFen;
-          console.log('NEW FEN CORRECT? ', newFen);
           this.updatePiecePlacement();
           if (isGameOver) return;
           if (!isLegalMove) {
@@ -1027,6 +1049,58 @@ export default {
       const isPieceEligibleForUpgrade = this.isOmegaPieceUpgradeEnabled && isCorrectPiecesMarked;
       return isPieceEligibleForUpgrade;
     },
+    playTwice() {
+      console.log('Play Twice - Countered by undo move');
+    },
+    fogOfWar() {
+      fetch(`/api/fogOfWar`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: this.room,
+        }),
+      }).catch((err) => {
+        console.log('/fogOfWar failed', err);
+      });
+    },
+    conditionallyRenderPiece(row, col) {
+      const isPieceOnCell = this.piecePlacement[row][col] !== '';
+      const isOwnerOfPiece =
+        (this.black && this.piecePlacement[row][col].match('[rnbqkp]')) ||
+        (!this.black && this.piecePlacement[row][col].match('[RNBQKP]'));
+      const isFriendlySide = row >= 4;
+      if (!this.isReadyToRenderPieces) return;
+      if (!this.isFogOfWarEnabled && isPieceOnCell) return true;
+      else if (this.isFogOfWarEnabled && isFriendlySide) return true;
+      else if (this.isFogOfWarEnabled && !isFriendlySide && isOwnerOfPiece) return true;
+      return false;
+    },
+    cellBackgroundColor(row, col) {
+      const omegaUpgradeWhiteGreen = '#A6E5A0';
+      const omegaUpgradeLightGreen = '#58B23B';
+      const fogOfWarDarkGreen = '#3B4B2B';
+      const fogOfWarDarkWhite = '#777769';
+      const isOpponentSide = row <= 3;
+      const isOwnerOfPiece =
+        (this.black && this.piecePlacement[row][col].match('[rnbqkp]')) ||
+        (!this.black && this.piecePlacement[row][col].match('[RNBQKP]'));
+      if (this.selectedPiece === row.toString() + col.toString()) {
+        return 'yellow';
+      }
+      if ((col + row) % 2 === 0) {
+        if (this.isPieceSpawnEnabled && row === 5) return omegaUpgradeWhiteGreen;
+        else if (this.isFogOfWarEnabled && !isOwnerOfPiece && isOpponentSide)
+          return fogOfWarDarkWhite;
+        else return this.cellWhiteColor;
+      } else {
+        if (this.isPieceSpawnEnabled && row === 5) return omegaUpgradeLightGreen;
+        else if (this.isFogOfWarEnabled && !isOwnerOfPiece && isOpponentSide)
+          return fogOfWarDarkGreen;
+        else return this.cellGreenColor;
+      }
+    },
   },
 
   created() {
@@ -1081,6 +1155,8 @@ export default {
     this.socket.off('captureImmune');
     this.socket.off('pieceSpawn');
     this.socket.off('omegaPieceUpgrade');
+    this.socket.off('fogOfWarEnable');
+    this.socket.off('fogOfWarDisable');
     this.socket.off('movePieceResponse');
     const isUserLeavingEmptyRoom = this.opponent === '';
     if (isUserLeavingEmptyRoom) {
@@ -1108,6 +1184,15 @@ h1,
 h2 {
   color: white;
 }
+
+/* .col:after {
+  content: '';
+  display: block;
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background: rgba(0, 255, 0, 0.8);
+} */
 
 .button {
   background: #353432;

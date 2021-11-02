@@ -50,6 +50,8 @@ export class LiveGame {
       disabledCells: [],
       captureImmunity: '',
       omegaUpgrade: '',
+      fogOfWarP1: 0,
+      fogOfWarP2: 0,
     };
   }
 

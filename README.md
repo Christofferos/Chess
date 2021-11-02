@@ -54,6 +54,7 @@ TODO-LIST:
 | 37. Immune to captures powerup (Crazy Chess)                                  | ✔️   |
 | 38. Spawn friendly pawn (Crazy Chess)                                         | ✔️   |
 | 39. Omega piece upgrade (Crazy Chess)                                         | ✔️   |
+| 40. Fog of war (Crazy Chess)                                                  | ✔️   |
 
 **_---------------_**
 

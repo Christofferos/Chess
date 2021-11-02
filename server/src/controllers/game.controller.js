@@ -17,6 +17,8 @@ import {
   cutDownOpponentTime,
   spawnFriendlyPiece,
   omegaPieceUpgrade,
+  fogOfWar,
+  getFogOfWar,
 } from '../model.js';
 import { addLiveGameDB } from '../firestore.js';
 
@@ -157,4 +159,16 @@ gameRouter.post('/omegaPieceUpgrade', async (req, res) => {
   if (!req.session.userID) return res.status(401).end();
   omegaPieceUpgrade(req.body.gameId, req.session.userID);
   res.status(200).end();
+});
+
+gameRouter.post('/fogOfWar', async (req, res) => {
+  if (!req.session.userID) return res.status(401).end();
+  fogOfWar(req.body.gameId, req.session.userID);
+  res.status(200).end();
+});
+
+gameRouter.post('/checkFogOfWar', async (req, res) => {
+  if (!req.session.userID) return res.status(401).end();
+  const isReadyToRenderPieces = getFogOfWar(req.body.gameId, req.session.userID);
+  res.json({ isReadyToRenderPieces });
 });
