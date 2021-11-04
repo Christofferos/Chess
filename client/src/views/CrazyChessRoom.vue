@@ -135,6 +135,12 @@
               v-bind:style="{ width: `${deviceScale}px`, position: 'absolute' }"
             />
             <img
+              v-if="row === 5 && col === 5"
+              :src="goldBolt"
+              v-bind:style="{ width: `${deviceScale}px`, position: 'absolute' }"
+            />
+
+            <img
               v-if="disabledCells.includes(row + '' + col)"
               :src="roadblock"
               v-bind:style="{ width: `${deviceScale}px`, position: 'absolute' }"
@@ -215,28 +221,43 @@
 
       <div class="gameCodeSection">
         <p style="font-size: 36px; color: white">Powers</p>
-        <button v-on:click="opponentRandomMove()" class="well btn btn-default button gameCodeBtn">
+        <button
+          v-if="powersAvailable.includes('random')"
+          v-on:click="opponentRandomMove()"
+          class="well btn btn-default button gameCodeBtn"
+        >
           🔀 <span class="powerText">Random Opponent Move</span>
         </button>
-        <button v-on:click="undoMove()" class="well btn btn-default button gameCodeBtn">
+        <button
+          v-if="powersAvailable.includes('undo')"
+          v-on:click="undoMove()"
+          class="well btn btn-default button gameCodeBtn"
+        >
           🔙 <span class="powerText">Undo Move</span>
         </button>
         <button
+          v-if="powersAvailable.includes('disable')"
           v-on:click="() => (isDisableSelectEnabled = true)"
           class="well btn btn-default button gameCodeBtn"
         >
           🚧 <span class="powerText">Disable Selected Cell</span>
         </button>
         <button
+          v-if="powersAvailable.includes('immune')"
           v-on:click="activeCaptureImmunity()"
           class="well btn btn-default button gameCodeBtn"
         >
           💎 <span class="powerText">Immune to Captures</span>
         </button>
-        <button v-on:click="cutDownOpponentTime()" class="well btn btn-default button gameCodeBtn">
+        <button
+          v-if="powersAvailable.includes('cutdown')"
+          v-on:click="cutDownOpponentTime()"
+          class="well btn btn-default button gameCodeBtn"
+        >
           🛠️ <span class="powerText">Cut Down Opponent Time</span>
         </button>
         <button
+          v-if="powersAvailable.includes('spawn')"
           v-on:click="
             () => {
               isPieceSpawnEnabled = true;
@@ -248,39 +269,45 @@
           🧙 <span class="powerText">Spawn Friendly Piece</span>
         </button>
         <button
+          v-if="powersAvailable.includes('upgrade')"
           v-on:click="() => (isOmegaPieceUpgradeEnabled = true)"
           class="well btn btn-default button gameCodeBtn"
         >
           🧬 <span class="powerText">Omega Piece Upgrade</span>
         </button>
-        <button v-on:click="fogOfWar()" class="well btn btn-default button gameCodeBtn">
+        <button
+          v-if="powersAvailable.includes('fog')"
+          v-on:click="fogOfWar()"
+          class="well btn btn-default button gameCodeBtn"
+        >
           🔦 <span class="powerText">Fog of War</span>
           <!-- frontend -->
         </button>
-        <button v-on:click="playTwice()" class="well btn btn-default button gameCodeBtn">
+        <!-- <button v-on:click="playTwice()" class="well btn btn-default button gameCodeBtn">
           ⚡ <span class="powerText">Play Twice</span>
-          <!-- .load(fen) -->
-        </button>
+        </button> -->
+        <!-- .load(fen) -->
         <!-- 
           <<< Max 3 powers at a time >>>
         <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          ☠️ <span class="powerText">Kill Enemy Pawn</span>
+          🚀 <span class="powerText">Missle Launch</span>
+          (.load(fen))
         </button>
+        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
+          🕹️ <span class="powerText">Opponent Puzzle</span>
+        </button>
+        ---
         <button v-clipboard="() => chooseOnePawnOnEachSideToDie" class="well btn btn-default button gameCodeBtn">
           ⚔️ <span class="powerText">One Piece of Each Die</span>
         </button>
         <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          🚀 <span class="powerText">Missle Launch</span>
-          (.load(fen))
+          ☠️ <span class="powerText">Kill Enemy Pawn</span>
         </button>
         <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
           👾 <span class="powerText">Swap Piece Appearance</span>
         </button>
         <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
           🧭 <span class="powerText">Swap Orientation</span>
-        </button>
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          🕹️ <span class="powerText">Opponent Puzzle</span>
         </button>
         -->
       </div>
@@ -302,6 +329,7 @@ import b from '../assets/bb.png';
 import q from '../assets/bq.png';
 import k from '../assets/bk.png';
 import roadblock from '../assets/roadblock.png';
+import goldBolt from '../assets/goldBolt150.png';
 import { getBoardSize } from '../utils/getBoardSize';
 
 const TWENTY_PERCENT = 0.2;
@@ -400,6 +428,8 @@ export default {
       aunPassunAudio: new Audio(require('../assets/aunPassun.mp3')),
       captureImmunityAudio: new Audio(require('../assets/captureImmunity.mp3')),
       roadblock: roadblock,
+      goldBolt: goldBolt,
+      powersAvailable: [],
       cellWhiteColor: '#E2E5BE',
       cellGreenColor: '#58793B',
       isReadyToRenderPieces: false,
@@ -654,11 +684,32 @@ export default {
         .then((resp) => {
           return resp.json();
         })
-        .then(({ isReadyToRenderPieces }) => {
-          this.isReadyToRenderPieces = isReadyToRenderPieces;
+        .then(({ isFogOfWar }) => {
+          this.isFogOfWarEnabled = isFogOfWar;
+          this.isReadyToRenderPieces = true;
         })
         .catch((err) => {
           console.log('/checkFogOfWar failed', err);
+          return;
+        });
+
+      fetch(`/api/startingPowers`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: this.room,
+        }),
+      })
+        .then((resp) => {
+          return resp.json();
+        })
+        .then(({ powers }) => {
+          this.powersAvailable = powers;
+        })
+        .catch((err) => {
+          console.log('/startingPowers failed', err);
           return;
         });
 
@@ -733,6 +784,11 @@ export default {
       this.$store.state.socket.on('fogOfWarDisable', (color) => {
         if (this.black && color === 'b') this.isFogOfWarEnabled = false;
         if (!this.black && color === 'w') this.isFogOfWarEnabled = false;
+      });
+
+      this.$store.state.socket.on('updatedPowers', (powersP1, powersP2) => {
+        if (this.black) this.powersAvailable = powersP1;
+        else if (!this.black) this.powersAvailable = powersP2;
       });
 
       this.$store.state.socket.on(
@@ -1051,6 +1107,17 @@ export default {
     },
     playTwice() {
       console.log('Play Twice - Countered by undo move');
+      fetch(`/api/playTwice`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: this.room,
+        }),
+      }).catch((err) => {
+        console.log('/playTwice failed', err);
+      });
     },
     fogOfWar() {
       fetch(`/api/fogOfWar`, {
@@ -1157,6 +1224,7 @@ export default {
     this.socket.off('omegaPieceUpgrade');
     this.socket.off('fogOfWarEnable');
     this.socket.off('fogOfWarDisable');
+    this.socket.off('updatedPowers');
     this.socket.off('movePieceResponse');
     const isUserLeavingEmptyRoom = this.opponent === '';
     if (isUserLeavingEmptyRoom) {

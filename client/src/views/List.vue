@@ -334,7 +334,8 @@ export default {
           return resp.json();
         })
         .then((data) => {
-          if (data.success) this.redirect(this.gameCode);
+          if (data.success && !data.isCrazyChess) this.redirect(this.gameCode);
+          else if (data.success && data.isCrazyChess) this.crazyChessRedirect(this.gameCode);
         })
         .catch((error) => {
           console.log(error);

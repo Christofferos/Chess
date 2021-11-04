@@ -1,10 +1,20 @@
 import { Chess } from '../chess.js';
+import { randomizeNStartPowers } from '../model.js';
 
 /**
  * @class LiveGame
  */
 export class LiveGame {
-  constructor(id, fen, player1, player2, timeLeft1, timeLeft2, crazyChess = false) {
+  constructor(
+    id,
+    fen,
+    player1,
+    player2,
+    timeLeft1,
+    timeLeft2,
+    crazyChess = false,
+    crazyChessPowers,
+  ) {
     this.id = id; // (Number)
     if (fen === undefined || fen === '' || fen === null) {
       /*
@@ -44,14 +54,22 @@ export class LiveGame {
     this.timer2 = null;
     this.messages = []; // Not persistant
     this.isCrazyChess = crazyChess;
-    this.crazyChessPowers = {
-      randomMove: '',
-      undoMove: false,
-      disabledCells: [],
-      captureImmunity: '',
-      omegaUpgrade: '',
-      fogOfWarP1: 0,
-      fogOfWarP2: 0,
+    if (crazyChess && !crazyChessPowers) {
+      this.crazyChessPowers = {
+        randomMove: '',
+        undoMove: false,
+        disabledCells: [],
+        captureImmunity: '',
+        omegaUpgrade: '',
+        fogOfWarP1: 0,
+        fogOfWarP2: 0,
+      };
+    } else if (crazyChess && crazyChessPowers) {
+      this.crazyChessPowers = crazyChessPowers;
+    }
+    this.availablePowers = {
+      player1: randomizeNStartPowers(2),
+      player2: randomizeNStartPowers(2),
     };
   }
 

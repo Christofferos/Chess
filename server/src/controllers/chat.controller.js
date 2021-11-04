@@ -41,7 +41,7 @@ chatRouter.get('/room/:room/authorizedToJoin', (req, res) => {
     return;
   }
   const success = authorizedToJoinGame(req.session.userID, game.id);
-  res.json({ success });
+  res.json({ success, isCrazyChess: game.isCrazyChess });
 });
 
 const getJoinGameResponseObject = game => {

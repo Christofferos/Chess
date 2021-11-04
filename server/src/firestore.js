@@ -55,7 +55,16 @@ export const addUserExperiencePointDB = async userId => {
   });
 };
 
-export const addLiveGameDB = async (id, currentGame, player1, player2, timeLeft1, timeLeft2) => {
+export const addLiveGameDB = async (
+  id,
+  currentGame,
+  player1,
+  player2,
+  timeLeft1,
+  timeLeft2,
+  isCrazyChess,
+  crazyChessPowers,
+) => {
   const UNIX_SECONDS = Math.round(new Date().getTime() / 1000);
   await liveGamesCollection.doc(id).set({
     id,
@@ -65,11 +74,18 @@ export const addLiveGameDB = async (id, currentGame, player1, player2, timeLeft1
     timeLeft1,
     timeLeft2,
     unixTimeCreation: UNIX_SECONDS,
+    isCrazyChess,
+    ...(isCrazyChess && { crazyChessPowers }),
   });
 };
 
-export const setLiveGameStateDB = async (id, fen, timeLeft1, timeLeft2) => {
-  await liveGamesCollection.doc(id).update({ currentGame: fen, timeLeft1, timeLeft2 });
+export const setLiveGameStateDB = async (id, fen, timeLeft1, timeLeft2, crazyChessPowers) => {
+  await liveGamesCollection.doc(id).update({
+    currentGame: fen,
+    timeLeft1,
+    timeLeft2,
+    ...(crazyChessPowers && { crazyChessPowers }),
+  });
 };
 
 export const cleanOldLiveGamesDB = async () => {

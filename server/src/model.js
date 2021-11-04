@@ -14,6 +14,7 @@ import {
   setLiveGameStateDB,
 } from './firestore.js';
 import { currentDate } from './utils/getCurrentDate.js';
+import { POWER } from './utils/globalConstants.js';
 
 /**
  * games & users are effectively hash maps with the name of the entry serving as a unique key.
@@ -45,9 +46,29 @@ export const initSocketIOServerModel = ioParam => {
 export const liveGamesInit = async () => {
   games = {};
   const liveGames = await getLiveGamesDB();
-  liveGames.forEach(({ id, currentGame, player1, player2, timeLeft1, timeLeft2 }) => {
-    games[id] = new LiveGame(id, currentGame, player1, player2, timeLeft1, timeLeft2);
-  });
+  liveGames.forEach(
+    ({
+      id,
+      currentGame,
+      player1,
+      player2,
+      timeLeft1,
+      timeLeft2,
+      isCrazyChess,
+      crazyChessPowers,
+    }) => {
+      games[id] = new LiveGame(
+        id,
+        currentGame,
+        player1,
+        player2,
+        timeLeft1,
+        timeLeft2,
+        isCrazyChess,
+        crazyChessPowers,
+      );
+    },
+  );
   await cleanOldLiveGamesDB();
 };
 
@@ -200,6 +221,7 @@ export const addMessage = (roomName, message) => {
 export const addLiveGame = (id, player1, timeLimit, isCrazyChess) => {
   games[id] = new LiveGame(id, undefined, player1, undefined, timeLimit, timeLimit, isCrazyChess);
   io.emit('newRoom', games[id]);
+  return games[id];
 };
 
 /**
@@ -398,18 +420,14 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
     });
   }
   const flags = move ? move.flags : null;
-  if (isCaptureImmunity && isMoveCapture(flags)) {
-    game.gameState.undo();
-    io.in(game.id).emit('captureImmune');
-    return;
-  } else if (move && isCaptureImmunity) game.crazyChessPowers.captureImmunity = '';
+  if (isCaptureImmunity && isMoveCapture(flags)) return captureImmunityHandling(game);
+  else if (move && isCaptureImmunity) game.crazyChessPowers.captureImmunity = '';
   if (move) startOpposingTimer(game);
   game.fen = game.gameState.fen();
-  if (isOmegaUpgradeActive && move) {
-    const newFen = upgradePiece(gameId, endPos, username);
-    game.fen = newFen;
-  }
-  setLiveGameStateDB(gameId, game.fen, game.timeLeft1, game.timeLeft2);
+  if (isOmegaUpgradeActive && move) upgradePiece(gameId, endPos, username);
+  if (move) fogOfWarDurationHandling(game);
+  if (move && game.gameState.history().length % 5 === 0) generateNewPower(gameId);
+  setLiveGameStateDB(gameId, game.fen, game.timeLeft1, game.timeLeft2, game.crazyChessPowers);
   const isGameOver = game.gameState.game_over();
   if (isGameOver) gameOver(game);
   emitMovePiece(game, flags, isPlayer1);
@@ -474,10 +492,6 @@ export const crazyChessPower = (game, username, endPos) => {
   } else if (isUserMatchUpgrade) {
     isOmegaUpgrade = true;
   }
-  if (game.crazyChessPowers.fogOfWarP1 > 0) games[game.id].crazyChessPowers.fogOfWarP1 -= 1;
-  else if (game.crazyChessPowers.fogOfWarP1 <= 0) io.in(game.id).emit('fogOfWarDisable', 'b');
-  if (game.crazyChessPowers.fogOfWarP2 > 0) games[game.id].crazyChessPowers.fogOfWarP2 -= 1;
-  else if (game.crazyChessPowers.fogOfWarP2 <= 0) io.in(game.id).emit('fogOfWarDisable', 'w');
   const { row, col } = translateSelectedPiece(endPos);
   const rowColId = `${row}${col}`;
   const isCellBlocked = game.crazyChessPowers.disabledCells.includes(rowColId);
@@ -581,6 +595,11 @@ const isMoveCapture = flags => {
   return isCapture;
 };
 
+const captureImmunityHandling = game => {
+  game.gameState.undo();
+  io.in(game.id).emit('captureImmune');
+};
+
 export const cutDownOpponentTime = (gameId, username) => {
   const game = games[gameId];
   if (!game) return;
@@ -641,7 +660,7 @@ const upgradePiece = (gameId, upgradeCell, username) => {
   if (isPieceRemoved && isPiecePlaced) {
     io.in(gameId).emit('omegaPieceUpgrade', username);
     games[gameId].crazyChessPowers.omegaUpgrade = '';
-    return games[gameId].gameState.fen();
+    game.fen = games[gameId].gameState.fen();
   }
 };
 
@@ -653,10 +672,10 @@ export const fogOfWar = (gameId, username) => {
   const isPlayer1 = username === game.player1;
   const isPlayer2 = username === game.player2;
   if (isPlayer1 && !isPlayer1Turn) {
-    game.crazyChessPowers.fogOfWarP1 = 2;
+    game.crazyChessPowers.fogOfWarP1 = 3;
     io.in(gameId).emit('fogOfWarEnable', 'b');
   } else if (isPlayer2 && !isPlayer2Turn) {
-    game.crazyChessPowers.fogOfWarP2 = 2;
+    game.crazyChessPowers.fogOfWarP2 = 3;
     io.in(gameId).emit('fogOfWarEnable', 'w');
   }
 };
@@ -664,7 +683,71 @@ export const fogOfWar = (gameId, username) => {
 export const getFogOfWar = (gameId, username) => {
   const game = games[gameId];
   if (!game) return;
-  if (game.crazyChessPowers.fogOfWarP1 > 0) io.in(gameId).emit('fogOfWarEnable', 'b');
-  if (game.crazyChessPowers.fogOfWarP2 > 0) io.in(gameId).emit('fogOfWarEnable', 'w');
-  return true;
+  const isPlayer1 = username === game.player1;
+  const isPlayer2 = username === game.player2;
+  if (game.crazyChessPowers.fogOfWarP1 > 0 && isPlayer2) return true;
+  if (game.crazyChessPowers.fogOfWarP2 > 0 && isPlayer1) return true;
+  return false;
+};
+
+const fogOfWarDurationHandling = game => {
+  if (game.crazyChessPowers.fogOfWarP1 > 0) games[game.id].crazyChessPowers.fogOfWarP1 -= 1;
+  if (game.crazyChessPowers.fogOfWarP2 > 0) games[game.id].crazyChessPowers.fogOfWarP2 -= 1;
+  if (game.crazyChessPowers.fogOfWarP1 <= 0) io.in(game.id).emit('fogOfWarDisable', 'b');
+  if (game.crazyChessPowers.fogOfWarP2 <= 0) io.in(game.id).emit('fogOfWarDisable', 'w');
+};
+
+const generateNewPower = gameId => {
+  const game = games[gameId];
+  if (!game) return;
+  const newPower1 = getPower();
+  const newPower2 = getPower();
+  game.availablePowers.player1.push(newPower1);
+  game.availablePowers.player2.push(newPower2);
+  io.in(game.id).emit('updatedPowers', game.availablePowers.player1, game.availablePowers.player2);
+};
+
+export const getStartingPowers = (gameId, username) => {
+  const game = games[gameId];
+  if (!game) return;
+  const isPlayer1 = username === game.player1;
+  const isPlayer2 = username === game.player2;
+  if (isPlayer1) return game.availablePowers.player1;
+  else if (isPlayer2) return game.availablePowers.player2;
+};
+
+export const randomizeNStartPowers = nActivePowers => {
+  const powersGenerated = new Array(nActivePowers).fill(0);
+  let elementIndex = 0;
+  while (elementIndex < nActivePowers) {
+    const power = getPower();
+    if (!powersGenerated.includes(power)) {
+      powersGenerated[elementIndex] = power;
+      elementIndex += 1;
+    }
+  }
+  return powersGenerated;
+};
+
+const getPower = () => {
+  const randomVal = Math.random();
+  const totalPowers = Object.values(POWER).length;
+  const stepBound = 1 / totalPowers;
+  if (randomVal < stepBound) {
+    return POWER.RANDOM;
+  } else if (randomVal >= stepBound && randomVal < stepBound * 2) {
+    return POWER.UNDO;
+  } else if (randomVal >= stepBound * 2 && randomVal < stepBound * 3) {
+    return POWER.DISABLE;
+  } else if (randomVal >= stepBound * 3 && randomVal < stepBound * 4) {
+    return POWER.IMMUNE;
+  } else if (randomVal >= stepBound * 4 && randomVal < stepBound * 5) {
+    return POWER.CUTDOWN_TIME;
+  } else if (randomVal >= stepBound * 5 && randomVal < stepBound * 6) {
+    return POWER.SPAWN;
+  } else if (randomVal >= stepBound * 6 && randomVal < stepBound * 7) {
+    return POWER.UPGRADE;
+  } else if (randomVal >= stepBound * 7) {
+    return POWER.FOG;
+  }
 };

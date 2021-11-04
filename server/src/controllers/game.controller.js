@@ -19,6 +19,7 @@ import {
   omegaPieceUpgrade,
   fogOfWar,
   getFogOfWar,
+  getStartingPowers,
 } from '../model.js';
 import { addLiveGameDB } from '../firestore.js';
 
@@ -45,8 +46,17 @@ gameRouter.post('/newGame', (req, res) => {
   const minutes = req.body.minuteTimeLimit ? req.body.minuteTimeLimit : 5;
   const timeLimitSecs = minutes * 60;
   const isCrazyChess = req.body.crazyChess ? true : false;
-  addLiveGame(gameId, req.session.userID, timeLimitSecs, isCrazyChess);
-  addLiveGameDB(gameId, '', req.session.userID, '', timeLimitSecs, timeLimitSecs);
+  const game = addLiveGame(gameId, req.session.userID, timeLimitSecs, isCrazyChess);
+  addLiveGameDB(
+    gameId,
+    '',
+    req.session.userID,
+    '',
+    timeLimitSecs,
+    timeLimitSecs,
+    isCrazyChess,
+    game.crazyChessPowers,
+  );
   res.json({ gameId });
 });
 
@@ -169,6 +179,12 @@ gameRouter.post('/fogOfWar', async (req, res) => {
 
 gameRouter.post('/checkFogOfWar', async (req, res) => {
   if (!req.session.userID) return res.status(401).end();
-  const isReadyToRenderPieces = getFogOfWar(req.body.gameId, req.session.userID);
-  res.json({ isReadyToRenderPieces });
+  const isFogOfWar = getFogOfWar(req.body.gameId, req.session.userID);
+  res.json({ isFogOfWar });
+});
+
+gameRouter.post('/startingPowers', async (req, res) => {
+  if (!req.session.userID) return res.status(401).end();
+  const powers = getStartingPowers(req.body.gameId, req.session.userID);
+  res.json({ powers });
 });
