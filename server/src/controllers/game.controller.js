@@ -20,6 +20,8 @@ import {
   fogOfWar,
   getFogOfWar,
   getStartingPowers,
+  getGoldBolt,
+  incrementPowerFreq,
 } from '../model.js';
 import { addLiveGameDB } from '../firestore.js';
 
@@ -187,4 +189,16 @@ gameRouter.post('/startingPowers', async (req, res) => {
   if (!req.session.userID) return res.status(401).end();
   const powers = getStartingPowers(req.body.gameId, req.session.userID);
   res.json({ powers });
+});
+
+gameRouter.post('/goldBoltPlacement', async (req, res) => {
+  if (!req.session.userID) return res.status(401).end();
+  const goldBolt = getGoldBolt(req.body.gameId);
+  res.json({ goldBolt });
+});
+
+gameRouter.post('/incrementPowerFreq', async (req, res) => {
+  if (!req.session.userID) return res.status(401).end();
+  incrementPowerFreq(req.body.gameId, req.session.userID, req.body.powerIncrement);
+  res.status(200).end();
 });

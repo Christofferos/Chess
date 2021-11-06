@@ -135,7 +135,7 @@
               v-bind:style="{ width: `${deviceScale}px`, position: 'absolute' }"
             />
             <img
-              v-if="row === 5 && col === 5"
+              v-if="goldBoltPlacement === `${row}${col}`"
               :src="goldBolt"
               v-bind:style="{ width: `${deviceScale}px`, position: 'absolute' }"
             />
@@ -219,42 +219,86 @@
         </h1>
       </div>
 
-      <div class="gameCodeSection">
+      <div
+        class="gameCodeSection"
+        v-on:click="
+          (event) => {
+            if (isIncrementPowerFreq) incrementPowerFreq(event);
+          }
+        "
+      >
         <p style="font-size: 36px; color: white">Powers</p>
         <button
           v-if="powersAvailable.includes('random')"
           v-on:click="opponentRandomMove()"
           class="well btn btn-default button gameCodeBtn"
+          v-bind:style="{
+            backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
+          }"
+          id="random"
         >
-          🔀 <span class="powerText">Random Opponent Move</span>
+          🔀
+          <span class="powerText"
+            >Random Move ({{ powersAvailable.filter((x) => x === 'random').length }})</span
+          >
         </button>
         <button
           v-if="powersAvailable.includes('undo')"
           v-on:click="undoMove()"
           class="well btn btn-default button gameCodeBtn"
+          v-bind:style="{
+            backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
+          }"
+          id="undo"
         >
-          🔙 <span class="powerText">Undo Move</span>
+          🔙
+          <span class="powerText"
+            >Undo Move ({{ powersAvailable.filter((x) => x === 'undo').length }})</span
+          >
         </button>
         <button
           v-if="powersAvailable.includes('disable')"
           v-on:click="() => (isDisableSelectEnabled = true)"
           class="well btn btn-default button gameCodeBtn"
+          v-bind:style="{
+            backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
+          }"
+          id="disable"
         >
-          🚧 <span class="powerText">Disable Selected Cell</span>
+          🚧
+          <span class="powerText"
+            >Disable Selected Cell ({{
+              powersAvailable.filter((x) => x === 'disable').length
+            }})</span
+          >
         </button>
         <button
           v-if="powersAvailable.includes('immune')"
           v-on:click="activeCaptureImmunity()"
           class="well btn btn-default button gameCodeBtn"
+          v-bind:style="{
+            backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
+          }"
+          id="immune"
         >
-          💎 <span class="powerText">Immune to Captures</span>
+          💎
+          <span class="powerText"
+            >Immune to Captures ({{ powersAvailable.filter((x) => x === 'immune').length }})</span
+          >
         </button>
         <button
           v-if="powersAvailable.includes('cutdown')"
           v-on:click="cutDownOpponentTime()"
           class="well btn btn-default button gameCodeBtn"
+          v-bind:style="{
+            backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
+          }"
+          id="cutdown"
         >
-          🛠️ <span class="powerText">Cut Down Opponent Time</span>
+          🛠️
+          <span class="powerText"
+            >Cut Down Time ({{ powersAvailable.filter((x) => x === 'cutdown').length }})</span
+          >
         </button>
         <button
           v-if="powersAvailable.includes('spawn')"
@@ -265,23 +309,45 @@
             }
           "
           class="well btn btn-default button gameCodeBtn"
+          v-bind:style="{
+            backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
+          }"
+          id="spawn"
         >
-          🧙 <span class="powerText">Spawn Friendly Piece</span>
+          🧙
+          <span class="powerText"
+            >Spawn Friendly Piece ({{ powersAvailable.filter((x) => x === 'spawn').length }})</span
+          >
         </button>
         <button
           v-if="powersAvailable.includes('upgrade')"
           v-on:click="() => (isOmegaPieceUpgradeEnabled = true)"
           class="well btn btn-default button gameCodeBtn"
+          v-bind:style="{
+            backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
+          }"
+          id="upgrade"
         >
-          🧬 <span class="powerText">Omega Piece Upgrade</span>
+          🧬
+          <span class="powerText"
+            >Omega Piece Upgrade ({{
+              powersAvailable.filter((x) => x === 'upgrade').length
+            }})</span
+          >
         </button>
         <button
           v-if="powersAvailable.includes('fog')"
           v-on:click="fogOfWar()"
           class="well btn btn-default button gameCodeBtn"
+          v-bind:style="{
+            backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
+          }"
+          id="fog"
         >
-          🔦 <span class="powerText">Fog of War</span>
-          <!-- frontend -->
+          🔦
+          <span class="powerText"
+            >Fog of War ({{ powersAvailable.filter((x) => x === 'fog').length }})</span
+          >
         </button>
         <!-- <button v-on:click="playTwice()" class="well btn btn-default button gameCodeBtn">
           ⚡ <span class="powerText">Play Twice</span>
@@ -354,6 +420,7 @@ export default {
       isDisableSelectEnabled: false,
       isOmegaPieceUpgradeEnabled: false,
       isFogOfWarEnabled: false,
+      isIncrementPowerFreq: false,
       disabledCells: [],
       rows: [0, 1, 2, 3, 4, 5, 6, 7],
       columns: [0, 1, 2, 3, 4, 5, 6, 7],
@@ -429,6 +496,7 @@ export default {
       captureImmunityAudio: new Audio(require('../assets/captureImmunity.mp3')),
       roadblock: roadblock,
       goldBolt: goldBolt,
+      goldBoltPlacement: null,
       powersAvailable: [],
       cellWhiteColor: '#E2E5BE',
       cellGreenColor: '#58793B',
@@ -706,10 +774,34 @@ export default {
           return resp.json();
         })
         .then(({ powers }) => {
-          this.powersAvailable = powers;
+          if (this.powersAvailable) this.powersAvailable = powers;
         })
         .catch((err) => {
           console.log('/startingPowers failed', err);
+          return;
+        });
+
+      fetch(`/api/goldBoltPlacement`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: this.room,
+        }),
+      })
+        .then((resp) => {
+          return resp.json();
+        })
+        .then(({ goldBolt }) => {
+          if (!goldBolt || goldBolt === '') return;
+          const rowTemp = goldBolt[0];
+          const colTemp = goldBolt[1];
+          const { row, col } = this.translateIndices(rowTemp, colTemp);
+          this.goldBoltPlacement = `${row}${col}`;
+        })
+        .catch((err) => {
+          console.log('/goldBoltPlacement failed', err);
           return;
         });
 
@@ -787,8 +879,19 @@ export default {
       });
 
       this.$store.state.socket.on('updatedPowers', (powersP1, powersP2) => {
-        if (this.black) this.powersAvailable = powersP1;
-        else if (!this.black) this.powersAvailable = powersP2;
+        if (!this.black) this.powersAvailable = powersP1;
+        else if (this.black) this.powersAvailable = powersP2;
+      });
+
+      this.$store.state.socket.on('spawnGoldBolt', (rowTemp, colTemp) => {
+        const { row, col } = this.translateIndices(rowTemp, colTemp);
+        this.goldBoltPlacement = `${row}${col}`;
+      });
+
+      this.$store.state.socket.on('consumeGoldBolt', (isPlayer1, isPlayer2) => {
+        this.goldBoltPlacement = '';
+        if (this.black && isPlayer2) this.isIncrementPowerFreq = true;
+        else if (!this.black && isPlayer1) this.isIncrementPowerFreq = true;
       });
 
       this.$store.state.socket.on(
@@ -1168,8 +1271,32 @@ export default {
         else return this.cellGreenColor;
       }
     },
+    incrementPowerFreq(event) {
+      let id = event.target.id;
+      if (!event.target.id) id = event.target.parentElement.id;
+      if (!id) return;
+      console.log('EVENT: ', id);
+      this.isIncrementPowerFreq = false;
+      fetch(`/api/incrementPowerFreq`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: this.room,
+          powerIncrement: id,
+        }),
+      })
+        .then((resp) => {
+          if (resp.ok) this.powersAvailable.push(id);
+          return;
+        })
+        .catch((err) => {
+          console.log('/incrementPowerFreq failed', err);
+          return;
+        });
+    },
   },
-
   created() {
     this.reconnectionEvents();
     this.$store.state.socket.on('connect', this.eventListener);
@@ -1225,6 +1352,7 @@ export default {
     this.socket.off('fogOfWarEnable');
     this.socket.off('fogOfWarDisable');
     this.socket.off('updatedPowers');
+    this.socket.off('spawnGoldBolt');
     this.socket.off('movePieceResponse');
     const isUserLeavingEmptyRoom = this.opponent === '';
     if (isUserLeavingEmptyRoom) {

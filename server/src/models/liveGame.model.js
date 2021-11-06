@@ -71,6 +71,7 @@ export class LiveGame {
       player1: randomizeNStartPowers(2),
       player2: randomizeNStartPowers(2),
     };
+    this.goldBolt = '';
   }
 
   addMessage(message) {
