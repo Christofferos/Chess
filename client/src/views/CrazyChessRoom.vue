@@ -229,124 +229,142 @@
       >
         <p style="font-size: 36px; color: white">Powers</p>
         <button
-          v-if="powersAvailable.includes('random')"
+          v-if="powersAvailable.includes(RANDOM_KEY)"
           v-on:click="opponentRandomMove()"
           class="well btn btn-default button gameCodeBtn"
           v-bind:style="{
             backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
           }"
-          id="random"
+          v-bind:id="RANDOM_KEY"
         >
           🔀
           <span class="powerText"
-            >Random Move ({{ powersAvailable.filter((x) => x === 'random').length }})</span
+            >Random Move ({{ powersAvailable.filter((x) => x === RANDOM_KEY).length }})</span
           >
         </button>
         <button
-          v-if="powersAvailable.includes('undo')"
+          v-if="powersAvailable.includes(UNDO_KEY)"
           v-on:click="undoMove()"
           class="well btn btn-default button gameCodeBtn"
           v-bind:style="{
             backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
           }"
-          id="undo"
+          v-bind:id="UNDO_KEY"
         >
           🔙
           <span class="powerText"
-            >Undo Move ({{ powersAvailable.filter((x) => x === 'undo').length }})</span
+            >Undo Move ({{ powersAvailable.filter((x) => x === UNDO_KEY).length }})</span
           >
         </button>
         <button
-          v-if="powersAvailable.includes('disable')"
-          v-on:click="() => (isDisableSelectEnabled = true)"
-          class="well btn btn-default button gameCodeBtn"
-          v-bind:style="{
-            backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
-          }"
-          id="disable"
-        >
-          🚧
-          <span class="powerText"
-            >Disable Selected Cell ({{
-              powersAvailable.filter((x) => x === 'disable').length
-            }})</span
-          >
-        </button>
-        <button
-          v-if="powersAvailable.includes('immune')"
-          v-on:click="activeCaptureImmunity()"
-          class="well btn btn-default button gameCodeBtn"
-          v-bind:style="{
-            backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
-          }"
-          id="immune"
-        >
-          💎
-          <span class="powerText"
-            >Immune to Captures ({{ powersAvailable.filter((x) => x === 'immune').length }})</span
-          >
-        </button>
-        <button
-          v-if="powersAvailable.includes('cutdown')"
-          v-on:click="cutDownOpponentTime()"
-          class="well btn btn-default button gameCodeBtn"
-          v-bind:style="{
-            backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
-          }"
-          id="cutdown"
-        >
-          🛠️
-          <span class="powerText"
-            >Cut Down Time ({{ powersAvailable.filter((x) => x === 'cutdown').length }})</span
-          >
-        </button>
-        <button
-          v-if="powersAvailable.includes('spawn')"
+          v-if="powersAvailable.includes(DISABLE_KEY)"
           v-on:click="
             () => {
-              isPieceSpawnEnabled = true;
-              selectedPiece = '';
+              if (isIncrementPowerFreq) return;
+              isDisableSelectEnabled = true;
+              powersAvailable = removeItemOnce(powersAvailable, DISABLE_KEY);
             }
           "
           class="well btn btn-default button gameCodeBtn"
           v-bind:style="{
             backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
           }"
-          id="spawn"
+          v-bind:id="DISABLE_KEY"
         >
-          🧙
+          🚧
           <span class="powerText"
-            >Spawn Friendly Piece ({{ powersAvailable.filter((x) => x === 'spawn').length }})</span
-          >
-        </button>
-        <button
-          v-if="powersAvailable.includes('upgrade')"
-          v-on:click="() => (isOmegaPieceUpgradeEnabled = true)"
-          class="well btn btn-default button gameCodeBtn"
-          v-bind:style="{
-            backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
-          }"
-          id="upgrade"
-        >
-          🧬
-          <span class="powerText"
-            >Omega Piece Upgrade ({{
-              powersAvailable.filter((x) => x === 'upgrade').length
+            >Disable Selected Cell ({{
+              powersAvailable.filter((x) => x === DISABLE_KEY).length
             }})</span
           >
         </button>
         <button
-          v-if="powersAvailable.includes('fog')"
+          v-if="powersAvailable.includes(IMMUNE_KEY)"
+          v-on:click="activeCaptureImmunity()"
+          class="well btn btn-default button gameCodeBtn"
+          v-bind:style="{
+            backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
+          }"
+          v-bind:id="IMMUNE_KEY"
+        >
+          💎
+          <span class="powerText"
+            >Immune to Captures ({{
+              powersAvailable.filter((x) => x === IMMUNE_KEY).length
+            }})</span
+          >
+        </button>
+        <button
+          v-if="powersAvailable.includes(CUTDOWN_KEY)"
+          v-on:click="cutDownOpponentTime()"
+          class="well btn btn-default button gameCodeBtn"
+          v-bind:style="{
+            backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
+          }"
+          v-bind:id="CUTDOWN_KEY"
+        >
+          🛠️
+          <span class="powerText"
+            >Cut Down Time ({{ powersAvailable.filter((x) => x === CUTDOWN_KEY).length }})</span
+          >
+        </button>
+        <button
+          v-if="powersAvailable.includes(SPAWN_KEY)"
+          v-on:click="
+            () => {
+              if (isIncrementPowerFreq) return;
+              isPieceSpawnEnabled = true;
+              selectedPiece = '';
+              powersAvailable = removeItemOnce(powersAvailable, SPAWN_KEY);
+            }
+          "
+          class="well btn btn-default button gameCodeBtn"
+          v-bind:style="{
+            backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
+          }"
+          v-bind:id="SPAWN_KEY"
+        >
+          🧙
+          <span class="powerText"
+            >Spawn Friendly Piece ({{
+              powersAvailable.filter((x) => x === SPAWN_KEY).length
+            }})</span
+          >
+        </button>
+        <button
+          v-if="powersAvailable.includes(UPGRADE_KEY)"
+          v-on:click="
+            () => {
+              if (isIncrementPowerFreq) return;
+              isOmegaPieceUpgradeEnabled = true;
+              powersAvailable = removeItemOnce(powersAvailable, UPGRADE_KEY);
+            }
+          "
+          class="well btn btn-default button gameCodeBtn"
+          v-bind:style="{
+            backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
+          }"
+          v-bind:id="UPGRADE_KEY"
+        >
+          🧬
+          <span class="powerText"
+            >Omega Piece Upgrade ({{
+              powersAvailable.filter((x) => x === UPGRADE_KEY).length
+            }})</span
+          >
+        </button>
+        <button
+          v-if="powersAvailable.includes(FOG_KEY)"
           v-on:click="fogOfWar()"
           class="well btn btn-default button gameCodeBtn"
           v-bind:style="{
             backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
           }"
-          id="fog"
+          v-bind:id="FOG_KEY"
         >
           🔦
           <span class="powerText"
-            >Fog of War ({{ powersAvailable.filter((x) => x === 'fog').length }})</span
+            >Fog of War ({{ powersAvailable.filter((x) => x === FOG_KEY).length }})</span
           >
         </button>
         <!-- <button v-on:click="playTwice()" class="well btn btn-default button gameCodeBtn">
@@ -405,6 +423,7 @@ export default {
   components: {},
   data() {
     return {
+      powersAvailable: [],
       deviceScale: getBoardSize(),
       room: this.$route.params.roomName,
       game: null,
@@ -497,10 +516,17 @@ export default {
       roadblock: roadblock,
       goldBolt: goldBolt,
       goldBoltPlacement: null,
-      powersAvailable: [],
       cellWhiteColor: '#E2E5BE',
       cellGreenColor: '#58793B',
       isReadyToRenderPieces: false,
+      RANDOM_KEY: 'random',
+      UNDO_KEY: 'undo',
+      DISABLE_KEY: 'disable',
+      IMMUNE_KEY: 'immune',
+      CUTDOWN_KEY: 'cutdown',
+      SPAWN_KEY: 'spawn',
+      UPGRADE_KEY: 'upgrade',
+      FOG_KEY: 'fog',
     };
   },
   methods: {
@@ -709,34 +735,14 @@ export default {
             this.black = true;
             this.opponent = data.game.player1;
             this.updatePiecePlacement();
+            return;
           }
+        })
+        .then(() => {
+          this.getDisabledCells();
         })
         .catch((err) => {
           console.log('Joining game failed: ', err);
-          return;
-        });
-
-      fetch(`/api/disabledCells`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          gameId: this.room,
-        }),
-      })
-        .then((resp) => {
-          return resp.json();
-        })
-        .then((data) => {
-          data.roadblocks?.forEach((roadblock) => {
-            const rowMsg = roadblock.charAt(0);
-            const colMsg = roadblock.charAt(1);
-            this.addDisabledCells(rowMsg, colMsg);
-          });
-        })
-        .catch((err) => {
-          console.log('/disabledCells failed', err);
           return;
         });
 
@@ -774,6 +780,7 @@ export default {
           return resp.json();
         })
         .then(({ powers }) => {
+          if (!powers) return;
           if (this.powersAvailable) this.powersAvailable = powers;
         })
         .catch((err) => {
@@ -847,7 +854,8 @@ export default {
 
       this.$store.state.socket.on('disableSelectedCell', (rowMsg, colMsg) => {
         this.isDisableSelectEnabled = false;
-        this.addDisabledCells(rowMsg, colMsg);
+        const { row, col } = this.translateIndices(rowMsg, colMsg);
+        this.addDisabledCells(row, col);
       });
 
       this.$store.state.socket.on('captureImmune', () => {
@@ -869,8 +877,13 @@ export default {
       });
 
       this.$store.state.socket.on('fogOfWarEnable', (color) => {
-        if (color === 'b' && this.black) this.isFogOfWarEnabled = true;
-        else if (color === 'w' && !this.black) this.isFogOfWarEnabled = true;
+        if (color === 'b' && this.black) {
+          this.powersAvailable = this.removeItemOnce(this.powersAvailable, this.FOG_KEY);
+          this.isFogOfWarEnabled = true;
+        } else if (color === 'w' && !this.black) {
+          this.powersAvailable = this.removeItemOnce(this.powersAvailable, this.FOG_KEY);
+          this.isFogOfWarEnabled = true;
+        }
       });
 
       this.$store.state.socket.on('fogOfWarDisable', (color) => {
@@ -1098,6 +1111,8 @@ export default {
         .catch(console.error);
     },
     opponentRandomMove() {
+      if (this.isIncrementPowerFreq) return;
+      this.powersAvailable = this.removeItemOnce(this.powersAvailable, this.RANDOM_KEY);
       fetch(`/api/randomMoveOpponent`, {
         method: 'POST',
         headers: {
@@ -1111,6 +1126,9 @@ export default {
       });
     },
     undoMove() {
+      if (this.isIncrementPowerFreq) return;
+
+      this.powersAvailable = this.removeItemOnce(this.powersAvailable, this.UNDO_KEY);
       fetch(`/api/undoMove`, {
         method: 'POST',
         headers: {
@@ -1139,13 +1157,15 @@ export default {
         console.log('/disableSelectedCell failed', err);
       });
     },
-    addDisabledCells(rowMsg, colMsg) {
-      const { row, col } = this.translateIndices(rowMsg, colMsg);
+    addDisabledCells(row, col) {
       const rowColCombined = row + '' + col;
       const isUnique = this.disabledCells.indexOf(rowColCombined) === -1;
       if (isUnique) this.disabledCells.push(rowColCombined);
     },
     activeCaptureImmunity() {
+      if (this.isIncrementPowerFreq) return;
+
+      this.powersAvailable = this.removeItemOnce(this.powersAvailable, this.IMMUNE_KEY);
       fetch(`/api/captureImmunity`, {
         method: 'POST',
         headers: {
@@ -1159,6 +1179,8 @@ export default {
       });
     },
     cutDownOpponentTime() {
+      if (this.isIncrementPowerFreq) return;
+      this.powersAvailable = this.removeItemOnce(this.powersAvailable, this.CUTDOWN_KEY);
       fetch(`/api/cutDownOpponentTime`, {
         method: 'POST',
         headers: {
@@ -1223,6 +1245,8 @@ export default {
       });
     },
     fogOfWar() {
+      if (this.isIncrementPowerFreq) return;
+
       fetch(`/api/fogOfWar`, {
         method: 'POST',
         headers: {
@@ -1275,7 +1299,6 @@ export default {
       let id = event.target.id;
       if (!event.target.id) id = event.target.parentElement.id;
       if (!id) return;
-      console.log('EVENT: ', id);
       this.isIncrementPowerFreq = false;
       fetch(`/api/incrementPowerFreq`, {
         method: 'POST',
@@ -1293,6 +1316,39 @@ export default {
         })
         .catch((err) => {
           console.log('/incrementPowerFreq failed', err);
+          return;
+        });
+    },
+    removeItemOnce(arr, value) {
+      var index = arr.indexOf(value);
+      if (index > -1) {
+        arr.splice(index, 1);
+      }
+      return arr;
+    },
+    getDisabledCells() {
+      fetch(`/api/disabledCells`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: this.room,
+        }),
+      })
+        .then((resp) => {
+          return resp.json();
+        })
+        .then((data) => {
+          data.roadblocks?.forEach((roadblock) => {
+            const rowMsg = roadblock.charAt(0);
+            const colMsg = roadblock.charAt(1);
+            const { row, col } = this.translateIndices(rowMsg, colMsg);
+            this.addDisabledCells(row, col);
+          });
+        })
+        .catch((err) => {
+          console.log('/disabledCells failed', err);
           return;
         });
     },

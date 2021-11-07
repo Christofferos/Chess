@@ -49,6 +49,7 @@ gameRouter.post('/newGame', (req, res) => {
   const timeLimitSecs = minutes * 60;
   const isCrazyChess = req.body.crazyChess ? true : false;
   const game = addLiveGame(gameId, req.session.userID, timeLimitSecs, isCrazyChess);
+  console.log('GAME: ', game.availablePowers);
   addLiveGameDB(
     gameId,
     '',
@@ -58,6 +59,7 @@ gameRouter.post('/newGame', (req, res) => {
     timeLimitSecs,
     isCrazyChess,
     game.crazyChessPowers,
+    game.availablePowers,
   );
   res.json({ gameId });
 });
@@ -127,13 +129,14 @@ gameRouter.post('/stockfishGetHistory', async (req, res) => {
 
 gameRouter.post('/randomMoveOpponent', async (req, res) => {
   if (!req.session.userID) return res.status(401).end();
+  console.log('?????????????');
   nextOpponentMoveRandom(req.body.gameId, req.session.userID);
   res.status(200).end();
 });
 
 gameRouter.post('/undoMove', async (req, res) => {
   if (!req.session.userID) return res.status(401).end();
-  undoMove(req.body.gameId);
+  undoMove(req.body.gameId, req.session.userID);
   res.status(200).end();
 });
 
@@ -145,7 +148,7 @@ gameRouter.post('/disabledCells', async (req, res) => {
 
 gameRouter.post('/disableSelectedCell', async (req, res) => {
   if (!req.session.userID) return res.status(401).end();
-  disableSelectedCell(req.body.gameId, req.body.row, req.body.col);
+  disableSelectedCell(req.body.gameId, req.session.userID, req.body.row, req.body.col);
   res.status(200).end();
 });
 

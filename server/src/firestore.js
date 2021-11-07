@@ -64,6 +64,7 @@ export const addLiveGameDB = async (
   timeLeft2,
   isCrazyChess,
   crazyChessPowers,
+  availablePowers,
 ) => {
   const UNIX_SECONDS = Math.round(new Date().getTime() / 1000);
   await liveGamesCollection.doc(id).set({
@@ -76,15 +77,24 @@ export const addLiveGameDB = async (
     unixTimeCreation: UNIX_SECONDS,
     isCrazyChess,
     ...(isCrazyChess && { crazyChessPowers }),
+    ...(availablePowers && { availablePowers }),
   });
 };
 
-export const setLiveGameStateDB = async (id, fen, timeLeft1, timeLeft2, crazyChessPowers) => {
+export const setLiveGameStateDB = async (
+  id,
+  fen,
+  timeLeft1,
+  timeLeft2,
+  crazyChessPowers,
+  availablePowers,
+) => {
   await liveGamesCollection.doc(id).update({
     currentGame: fen,
     timeLeft1,
     timeLeft2,
     ...(crazyChessPowers && { crazyChessPowers }),
+    ...(availablePowers && { availablePowers }),
   });
 };
 

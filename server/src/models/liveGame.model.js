@@ -14,6 +14,7 @@ export class LiveGame {
     timeLeft2,
     crazyChess = false,
     crazyChessPowers,
+    availablePowers,
   ) {
     this.id = id; // (Number)
     if (fen === undefined || fen === '' || fen === null) {
@@ -54,24 +55,30 @@ export class LiveGame {
     this.timer2 = null;
     this.messages = []; // Not persistant
     this.isCrazyChess = crazyChess;
-    if (crazyChess && !crazyChessPowers) {
-      this.crazyChessPowers = {
-        randomMove: '',
-        undoMove: false,
-        disabledCells: [],
-        captureImmunity: '',
-        omegaUpgrade: '',
-        fogOfWarP1: 0,
-        fogOfWarP2: 0,
-      };
-    } else if (crazyChess && crazyChessPowers) {
-      this.crazyChessPowers = crazyChessPowers;
+    if (crazyChess) {
+      if (!crazyChessPowers) {
+        this.crazyChessPowers = {
+          randomMove: '',
+          undoMove: false,
+          disabledCells: [],
+          captureImmunity: '',
+          omegaUpgrade: '',
+          fogOfWarP1: 0,
+          fogOfWarP2: 0,
+        };
+      } else if (crazyChessPowers) {
+        this.crazyChessPowers = crazyChessPowers;
+      }
+      if (availablePowers) {
+        this.availablePowers = availablePowers;
+      } else if (!availablePowers) {
+        this.availablePowers = {
+          player1: randomizeNStartPowers(2),
+          player2: randomizeNStartPowers(2),
+        };
+      }
+      this.goldBolt = '';
     }
-    this.availablePowers = {
-      player1: randomizeNStartPowers(2),
-      player2: randomizeNStartPowers(2),
-    };
-    this.goldBolt = '';
   }
 
   addMessage(message) {

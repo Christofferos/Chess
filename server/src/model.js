@@ -15,7 +15,6 @@ import {
 } from './firestore.js';
 import { currentDate } from './utils/getCurrentDate.js';
 import { POWER } from './utils/globalConstants.js';
-import { removeItemOnce } from './utils/removeItemOnce.js';
 
 /**
  * games & users are effectively hash maps with the name of the entry serving as a unique key.
@@ -57,6 +56,7 @@ export const liveGamesInit = async () => {
       timeLeft2,
       isCrazyChess,
       crazyChessPowers,
+      availablePowers,
     }) => {
       games[id] = new LiveGame(
         id,
@@ -67,6 +67,7 @@ export const liveGamesInit = async () => {
         timeLeft2,
         isCrazyChess,
         crazyChessPowers,
+        availablePowers,
       );
     },
   );
@@ -436,7 +437,14 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
   if (isValidMove && gameHistoryLength % 5 === 0) generateNewPower(gameId);
   if (isValidMove && gameHistoryLength % 10 === 0) spawnGoldBolt(gameId);
   if (isValidMove && isGoldBoltMove) consumeGoldBolt(gameId, username);
-  setLiveGameStateDB(gameId, game.fen, game.timeLeft1, game.timeLeft2, game.crazyChessPowers);
+  setLiveGameStateDB(
+    gameId,
+    game.fen,
+    game.timeLeft1,
+    game.timeLeft2,
+    game.crazyChessPowers,
+    game.availablePowers,
+  );
   const isGameOver = game.gameState.game_over();
   if (isGameOver) gameOver(game);
   emitMovePiece(game, flags, isPlayer1);
@@ -518,14 +526,14 @@ export const nextOpponentMoveRandom = (gameId, username) => {
   const isPlayer2 = username === games[gameId].player2;
   if (isPlayer1) {
     game.crazyChessPowers.randomMove = games[gameId].player2;
-    game.availablePowers.player1 = removeItemOnce(game.availablePowers.player1, POWER.RANDOM);
+    removeUserPowerOnce(POWER.RANDOM, username, game);
   } else if (isPlayer2) {
     game.crazyChessPowers.randomMove = games[gameId].player1;
-    game.availablePowers.player2 = removeItemOnce(game.availablePowers.player2, POWER.RANDOM);
+    removeUserPowerOnce(POWER.RANDOM, username, game);
   }
 };
 
-export const undoMove = gameId => {
+export const undoMove = (gameId, username) => {
   const game = games[gameId];
   if (!game) return;
   const undoData = game.gameState.undo();
@@ -533,7 +541,14 @@ export const undoMove = gameId => {
   const flags = undoData.flags;
   startOpposingTimer(game);
   game.fen = game.gameState.fen();
-  setLiveGameStateDB(gameId, game.fen, game.timeLeft1, game.timeLeft2);
+  setLiveGameStateDB(
+    gameId,
+    game.fen,
+    game.timeLeft1,
+    game.timeLeft2,
+    game.crazyChessPowers,
+    game.availablePowers,
+  );
   const isCastle = flags === 'k' || flags === 'q';
   const isEnPassant = flags === 'e';
   const isPromotion = flags === 'p' || flags === 'cp';
@@ -547,9 +562,10 @@ export const undoMove = gameId => {
     isPromotion,
     isCapture,
   );
+  removeUserPowerOnce(POWER.UNDO, username, game);
 };
 
-export const disableSelectedCell = (gameId, row, col) => {
+export const disableSelectedCell = (gameId, username, row, col) => {
   const game = games[gameId];
   if (!game) return;
   const pieces = game.fen.split(' ')[0];
@@ -570,7 +586,10 @@ export const disableSelectedCell = (gameId, row, col) => {
           io.in(game.id).emit('disableSelectedCell', row, col);
           const rowColId = `${row}${col}`;
           const isUnique = game.crazyChessPowers.disabledCells.indexOf(rowColId) === -1;
-          if (isUnique) game.crazyChessPowers.disabledCells.push(rowColId);
+          if (isUnique) {
+            game.crazyChessPowers.disabledCells.push(rowColId);
+            removeUserPowerOnce(POWER.DISABLE, username, game);
+          }
           return;
         }
         colIter += 1;
@@ -600,6 +619,7 @@ export const activateCaptureImmunity = (gameId, username) => {
   const isPlayer2 = username === game.player2;
   if (isPlayer1) game.crazyChessPowers.captureImmunity = game.player2;
   else if (isPlayer2) game.crazyChessPowers.captureImmunity = game.player1;
+  removeUserPowerOnce(POWER.IMMUNE, username, game);
 };
 
 const isMoveCapture = flags => {
@@ -625,6 +645,7 @@ export const cutDownOpponentTime = (gameId, username) => {
     game.timeLeft2 = game.timeLeft2 - Math.trunc(game.timeLeft2 / twentyPercentCutOff);
   else if (isPlayer2)
     game.timeLeft1 = game.timeLeft1 - Math.trunc(game.timeLeft1 / twentyPercentCutOff);
+  removeUserPowerOnce(POWER.CUTDOWN_TIME, username, game);
 };
 
 export const spawnFriendlyPiece = (gameId, username, spawnCell) => {
@@ -648,6 +669,7 @@ export const spawnFriendlyPiece = (gameId, username, spawnCell) => {
     );
   game.fen = game.gameState.fen();
   if (isSpawnValid) io.in(gameId).emit('pieceSpawn', game.fen, username);
+  removeUserPowerOnce(POWER.SPAWN, username, game);
 };
 
 export const omegaPieceUpgrade = (gameId, username) => {
@@ -657,6 +679,7 @@ export const omegaPieceUpgrade = (gameId, username) => {
   const isPlayer2 = username === game.player2;
   if (isPlayer1) game.crazyChessPowers.omegaUpgrade = game.player1;
   else if (isPlayer2) game.crazyChessPowers.omegaUpgrade = game.player2;
+  removeUserPowerOnce(POWER.UPGRADE, username, game);
 };
 
 const upgradePiece = (gameId, upgradeCell, username) => {
@@ -689,9 +712,11 @@ export const fogOfWar = (gameId, username) => {
   if (isPlayer1 && !isPlayer1Turn) {
     game.crazyChessPowers.fogOfWarP1 = 3;
     io.in(gameId).emit('fogOfWarEnable', 'b');
+    removeUserPowerOnce(POWER.FOG, username, game);
   } else if (isPlayer2 && !isPlayer2Turn) {
     game.crazyChessPowers.fogOfWarP2 = 3;
     io.in(gameId).emit('fogOfWarEnable', 'w');
+    removeUserPowerOnce(POWER.FOG, username, game);
   }
 };
 
@@ -726,9 +751,11 @@ export const getStartingPowers = (gameId, username) => {
   const game = games[gameId];
   if (!game) return;
   const isPlayer1 = username === game.player1;
-  const isPlayer2 = username === game.player2;
-  if (isPlayer1) return game.availablePowers.player1;
-  else if (isPlayer2) return game.availablePowers.player2;
+  if (isPlayer1) {
+    return game.availablePowers.player1;
+  } else {
+    return game.availablePowers.player2;
+  }
 };
 
 export const randomizeNStartPowers = nActivePowers => {
@@ -826,5 +853,20 @@ export const incrementPowerFreq = (gameId, username, powerIncrement) => {
     game.availablePowers.player1.push(powerIncrement);
   } else if (isPlayer2) {
     game.availablePowers.player2.push(powerIncrement);
+  }
+};
+
+const removeUserPowerOnce = (powerType, username, game) => {
+  const isPlayer1 = username === game.player1;
+  const isPlayer2 = username === game.player2;
+  let arr = [];
+  if (isPlayer1) {
+    arr = game.availablePowers.player1;
+  } else if (isPlayer2) {
+    arr = game.availablePowers.player2;
+  }
+  const index = arr.indexOf(powerType);
+  if (index > -1) {
+    arr.splice(index, 1);
   }
 };
