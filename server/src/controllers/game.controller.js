@@ -129,7 +129,6 @@ gameRouter.post('/stockfishGetHistory', async (req, res) => {
 
 gameRouter.post('/randomMoveOpponent', async (req, res) => {
   if (!req.session.userID) return res.status(401).end();
-  console.log('?????????????');
   nextOpponentMoveRandom(req.body.gameId, req.session.userID);
   res.status(200).end();
 });

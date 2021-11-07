@@ -140,9 +140,9 @@
             :key="timeOption"
             @click="
               () => {
+                isGameModeSelection = true;
                 isGameSettingsModal = false;
-                isInviteModalUp = false;
-                newGame(timeOption, selectedOpponent);
+                timeSelected = timeOption;
               }
             "
           >
@@ -152,6 +152,30 @@
               v-bind:value="timeOption + ' minutes'"
             />
           </div>
+        </div>
+        <div
+          v-if="isGameModeSelection"
+          @click="
+            () => {
+              isGameModeSelection = false;
+              isInviteModalUp = false;
+              newGame(timeSelected, selectedOpponent);
+            }
+          "
+        >
+          <input class="well btn btn-default button" type="button" value="Chess" />
+        </div>
+        <div
+          v-if="isGameModeSelection"
+          @click="
+            () => {
+              isGameModeSelection = false;
+              isInviteModalUp = false;
+              newGameCrazyChess(timeSelected, selectedOpponent);
+            }
+          "
+        >
+          <input class="well btn btn-default button" type="button" value="Crazy Chess" />
         </div>
         <h2 v-if="isJoinGameModalVisible">{{ selectedOpponent }}</h2>
         <h2 v-if="isJoinGameModalVisible">has invited you</h2>
@@ -201,8 +225,10 @@ export default {
     isInviteModalUp: false,
     isChallengeBtnVisible: false,
     isGameSettingsModal: false,
+    isGameModeSelection: false,
     selectedOpponent: null,
     minuteOptions: [10, 5, 3, 1],
+    timeSelected: undefined,
     isJoinGameModalVisible: false,
     matchHistoryLen: 0,
   }),
@@ -284,6 +310,9 @@ export default {
       });
   },
   methods: {
+    debug(msg) {
+      console.log('MSG', msg);
+    },
     redirect(roomName) {
       this.$router.push(`/room/${roomName}`);
     },

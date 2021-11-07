@@ -434,8 +434,8 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
   if (isOmegaUpgradeActive && isValidMove) upgradePiece(gameId, endPos, username);
   if (isValidMove) fogOfWarDurationHandling(game);
   const gameHistoryLength = game.gameState.history().length;
-  if (isValidMove && gameHistoryLength % 5 === 0) generateNewPower(gameId);
-  if (isValidMove && gameHistoryLength % 10 === 0) spawnGoldBolt(gameId);
+  if (isValidMove && gameHistoryLength % 7 === 0) generateNewPower(gameId);
+  if (isValidMove && gameHistoryLength % 15 === 0) spawnGoldBolt(gameId);
   if (isValidMove && isGoldBoltMove) consumeGoldBolt(gameId, username);
   setLiveGameStateDB(
     gameId,
@@ -524,10 +524,10 @@ export const nextOpponentMoveRandom = (gameId, username) => {
   if (!game) return;
   const isPlayer1 = username === games[gameId].player1;
   const isPlayer2 = username === games[gameId].player2;
-  if (isPlayer1) {
+  if (isPlayer1 && game.availablePowers.player1.includes(POWER.RANDOM)) {
     game.crazyChessPowers.randomMove = games[gameId].player2;
     removeUserPowerOnce(POWER.RANDOM, username, game);
-  } else if (isPlayer2) {
+  } else if (isPlayer2 && game.availablePowers.player2.includes(POWER.RANDOM)) {
     game.crazyChessPowers.randomMove = games[gameId].player1;
     removeUserPowerOnce(POWER.RANDOM, username, game);
   }
@@ -536,6 +536,10 @@ export const nextOpponentMoveRandom = (gameId, username) => {
 export const undoMove = (gameId, username) => {
   const game = games[gameId];
   if (!game) return;
+  const isPlayer1 = username === games[gameId].player1;
+  const isPlayer2 = username === games[gameId].player2;
+  if (isPlayer1 && !game.availablePowers.player1.includes(POWER.UNDO)) return;
+  else if (isPlayer2 && !game.availablePowers.player2.includes(POWER.UNDO)) return;
   const undoData = game.gameState.undo();
   if (!undoData) return;
   const flags = undoData.flags;
@@ -568,6 +572,10 @@ export const undoMove = (gameId, username) => {
 export const disableSelectedCell = (gameId, username, row, col) => {
   const game = games[gameId];
   if (!game) return;
+  const isPlayer1 = username === games[gameId].player1;
+  const isPlayer2 = username === games[gameId].player2;
+  if (isPlayer1 && !game.availablePowers.player1.includes(POWER.DISABLE)) return;
+  else if (isPlayer2 && !game.availablePowers.player2.includes(POWER.DISABLE)) return;
   const pieces = game.fen.split(' ')[0];
   let rowIter = 0;
   let colIter = 0;
@@ -617,8 +625,10 @@ export const activateCaptureImmunity = (gameId, username) => {
   if (!game) return;
   const isPlayer1 = username === game.player1;
   const isPlayer2 = username === game.player2;
-  if (isPlayer1) game.crazyChessPowers.captureImmunity = game.player2;
-  else if (isPlayer2) game.crazyChessPowers.captureImmunity = game.player1;
+  if (isPlayer1 && !game.availablePowers.player1.includes(POWER.IMMUNE))
+    game.crazyChessPowers.captureImmunity = game.player2;
+  else if (isPlayer2 && !game.availablePowers.player2.includes(POWER.IMMUNE))
+    game.crazyChessPowers.captureImmunity = game.player1;
   removeUserPowerOnce(POWER.IMMUNE, username, game);
 };
 
@@ -638,8 +648,10 @@ const captureImmunityHandling = game => {
 export const cutDownOpponentTime = (gameId, username) => {
   const game = games[gameId];
   if (!game) return;
-  const isPlayer1 = username === games[gameId].player1;
-  const isPlayer2 = username === games[gameId].player2;
+  const isPlayer1 = username === game.player1;
+  const isPlayer2 = username === game.player2;
+  if (isPlayer1 && !game.availablePowers.player1.includes(POWER.CUTDOWN_TIME)) return;
+  else if (isPlayer2 && !game.availablePowers.player2.includes(POWER.CUTDOWN_TIME)) return;
   const twentyPercentCutOff = 5;
   if (isPlayer1)
     game.timeLeft2 = game.timeLeft2 - Math.trunc(game.timeLeft2 / twentyPercentCutOff);
@@ -651,8 +663,10 @@ export const cutDownOpponentTime = (gameId, username) => {
 export const spawnFriendlyPiece = (gameId, username, spawnCell) => {
   const game = games[gameId];
   if (!game) return;
-  const isPlayer1 = username === games[gameId].player1;
-  const isPlayer2 = username === games[gameId].player2;
+  const isPlayer1 = username === game.player1;
+  const isPlayer2 = username === game.player2;
+  if (isPlayer1 && !game.availablePowers.player1.includes(POWER.SPAWN)) return;
+  else if (isPlayer2 && !game.availablePowers.player2.includes(POWER.SPAWN)) return;
   const isAllowedRow =
     (spawnCell.charAt(1) === '3' && isPlayer1) || (spawnCell.charAt(1) === '6' && isPlayer2);
   if (!isAllowedRow) return;
@@ -677,6 +691,8 @@ export const omegaPieceUpgrade = (gameId, username) => {
   if (!game) return;
   const isPlayer1 = username === game.player1;
   const isPlayer2 = username === game.player2;
+  if (isPlayer1 && !game.availablePowers.player1.includes(POWER.UPGRADE)) return;
+  else if (isPlayer2 && !game.availablePowers.player2.includes(POWER.UPGRADE)) return;
   if (isPlayer1) game.crazyChessPowers.omegaUpgrade = game.player1;
   else if (isPlayer2) game.crazyChessPowers.omegaUpgrade = game.player2;
   removeUserPowerOnce(POWER.UPGRADE, username, game);
@@ -709,6 +725,8 @@ export const fogOfWar = (gameId, username) => {
   const isPlayer2Turn = game.gameState.turn() === 'b';
   const isPlayer1 = username === game.player1;
   const isPlayer2 = username === game.player2;
+  if (isPlayer1 && !game.availablePowers.player1.includes(POWER.FOG)) return;
+  else if (isPlayer2 && !game.availablePowers.player2.includes(POWER.FOG)) return;
   if (isPlayer1 && !isPlayer1Turn) {
     game.crazyChessPowers.fogOfWarP1 = 3;
     io.in(gameId).emit('fogOfWarEnable', 'b');
