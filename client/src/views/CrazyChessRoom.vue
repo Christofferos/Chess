@@ -3,10 +3,10 @@
     <div class="flexCenterCol">
       <div class="row" style="text-align: center">
         <h1 v-if="this.opponent === ''">Join code: {{ room }}</h1>
-        <h1 v-else>
+        <h2 v-else>
           {{ this.black ? this.whiteTime : this.blackTime }} | {{ this.opponent }} |
           {{ this.black ? piecePointsWhite : piecePointsBlack }}
-        </h1>
+        </h2>
       </div>
 
       <div
@@ -211,23 +211,24 @@
       />
 
       <div class="row" style="text-align: center">
-        <h1 style="margin-top: 10px">
+        <h2 style="margin-top: 10px">
           {{ this.black ? this.blackTime : this.whiteTime }} |
           {{ this.$store.state.cookie.username }} |
           {{ this.black ? piecePointsBlack : piecePointsWhite }}
           <span v-on:click="surrender()" style="cursor: pointer">🏳️</span>
-        </h1>
+        </h2>
       </div>
 
       <div
-        class="gameCodeSection"
+        class="powerUpSection"
         v-on:click="
           (event) => {
             if (isIncrementPowerFreq) incrementPowerFreq(event);
           }
         "
       >
-        <p style="font-size: 36px; color: white">Powers</p>
+        <!-- <p style="font-size: 24px; color: white">Powers</p> -->
+        <p stlye="height: 3px"></p>
         <button
           v-if="powersAvailable.includes(RANDOM_KEY)"
           v-on:click="opponentRandomMove()"
@@ -1461,9 +1462,9 @@ h2 {
   color: white;
 }
 
-.gameCodeSection {
+.powerUpSection {
   text-align: center;
-  padding: 20px;
+  padding: 10px 20px;
   border-radius: 10px;
   background: #41403d;
   width: 450px;
@@ -1533,11 +1534,12 @@ h2 {
 }
 
 @media screen and (max-width: 600px) {
-  .gameCodeSection {
+  .powerUpSection {
     width: 325px;
   }
   .gameCodeBtn {
     width: 280px;
+    margin-bottom: 8px;
   }
   .powerText {
     font-size: 18px;

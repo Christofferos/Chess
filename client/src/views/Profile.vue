@@ -88,6 +88,7 @@
       class="modal"
       v-bind:style="{
         display: this.isInviteModalUp ? 'flex' : 'none',
+        justifyContent: 'flex-start',
       }"
       type="text"
     >
@@ -127,30 +128,23 @@
 </template>
 
 <script>
-import { mapState } from 'vuex';
 import { setExtraSoundEffectsKey } from '../store';
 import { preFetchSocket } from '../utils/preFetchSocket';
 
 export default {
   name: 'Profile',
   components: {},
-  computed: {
-    ...mapState({
-      usersOnline: 'usersOnline',
-    }),
-  },
   data() {
     return {
       isExtraSoundEffectsEnabled: this.$store.state.extraSoundEffects,
       currentlyLoggedIn: '',
       success: true,
       matches: [],
-      onlineUsers: [],
       socket: null,
-      selectedOpponent: null,
       gameCode: null,
       isJoinGameModalVisible: false,
       isInviteModalUp: false,
+      selectedOpponent: '',
     };
   },
   mounted() {
@@ -177,6 +171,7 @@ export default {
       .catch((error) => {
         throw new Error(`Match History request failed ${error}`);
       });
+    console.log('!INITIATED');
     this.$store.state.socket.on('inviteToGame', (userToInvite, gameCode, opponentName) => {
       const isInvitedUser = userToInvite === this.$store.state.cookie.username;
       if (isInvitedUser) {
@@ -188,6 +183,7 @@ export default {
     });
   },
   beforeDestroy() {
+    console.log('!REMOVED');
     this.socket.off('inviteToGame');
   },
   methods: {

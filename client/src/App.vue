@@ -11,6 +11,7 @@
               ><img src="../public/logoNavbar.png" style="height: 27px"
             /></a>
           </li>
+          <!-- && !this.$route.path.includes('crazyroom') -->
           <li v-on:click="redirect('/profile')" v-if="this.$store.state.isAuthenticated">
             <a style="cursor: pointer; line-height: 2">Profile</a>
           </li>
