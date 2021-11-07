@@ -8,6 +8,14 @@
       <div class="row">
         <div class="row" style="text-align: center;">
           <input
+            class="well btn btn-default button"
+            v-on:click="newGame()"
+            type="button"
+            value="Normal Chess"
+          />
+        </div>
+        <div class="row" style="text-align: center;">
+          <input
             :disabled="matchHistoryLen < 5"
             class="well btn btn-warning button"
             v-on:click="newGameCrazyChess()"
@@ -15,20 +23,8 @@
             value="Crazy Chess"
           />
         </div>
-        <div class="row" style="text-align: center;">
-          <input
-            class="well btn btn-default button"
-            v-on:click="newGame()"
-            type="button"
-            value="Create Game"
-          />
-        </div>
 
-        <!-- Find Opponent, Invite Opponent, Play Locally, Crazy Chess -->
-        <!-- <div class="row" style="text-align: center; ">
-            <input class="well btn btn-default button" type="button" value="Find Opponent" />
-          </div> -->
-        <h3 style="text-align: center; color: white">OR</h3>
+        <h4 style="text-align: center; color: white">OR</h4>
 
         <form v-on:submit.prevent="join()">
           <div class="row" style="text-align: center;">
@@ -47,8 +43,12 @@
           </div>
         </form>
 
+        <!-- <div class="row" style="text-align: center;">
+          <h1 style="color: white">Challenge Player</h1>
+        </div> -->
+
         <div class="row" style="text-align: center; margin-top: 10px;">
-          <h3 style="color: white">Players Online: {{ usersOnline.length + 2 }}</h3>
+          <h1 style="color: white">Challenge Players</h1>
           <div
             v-for="userOnline in usersOnline"
             @click="
@@ -202,6 +202,7 @@
               isJoinGameModalVisible = false;
               gameCode = '';
               selectedOpponent = null;
+              isGameModeSelection = false;
             }
           "
           type="button"
@@ -231,6 +232,7 @@ export default {
     timeSelected: undefined,
     isJoinGameModalVisible: false,
     matchHistoryLen: 0,
+    socket: null,
   }),
   computed: {
     roomsList: function() {
@@ -240,7 +242,19 @@ export default {
       usersOnline: 'usersOnline',
     }),
   },
+  mounted() {
+    this.$store.state.socket.on('inviteToGame', (userToInvite, gameCode, opponentName) => {
+      const isInvitedUser = userToInvite === this.$store.state.cookie.username;
+      if (isInvitedUser) {
+        this.selectedOpponent = opponentName;
+        this.gameCode = gameCode;
+        this.isJoinGameModalVisible = true;
+        this.isInviteModalUp = true;
+      }
+    });
+  },
   created() {
+    this.socket = this.$store.state.socket;
     this.$store.state.socket.on('newRoom', (newRoom) => {
       const isUserPartOfNewRoom =
         newRoom.player1 === this.$store.state.cookie.username ||
@@ -264,15 +278,6 @@ export default {
         return;
       }
       this.$store.commit(removeOnlineUser, userId);
-    });
-    this.$store.state.socket.on('inviteToGame', (userToInvite, gameCode, opponentName) => {
-      const isInvitedUser = userToInvite === this.$store.state.cookie.username;
-      if (isInvitedUser) {
-        this.selectedOpponent = opponentName;
-        this.gameCode = gameCode;
-        this.isJoinGameModalVisible = true;
-        this.isInviteModalUp = true;
-      }
     });
     fetch('/api/userOnlineInitialize')
       .then((res) => res.json())
@@ -308,6 +313,12 @@ export default {
       .catch((error) => {
         throw new Error(`Match History request failed ${error}`);
       });
+  },
+  beforeDestroy() {
+    this.socket.off('newRoom');
+    this.socket.off('remainingRooms');
+    this.socket.off('userOnlineUpdate');
+    this.socket.off('inviteToGame');
   },
   methods: {
     debug(msg) {

@@ -83,16 +83,62 @@
         </template>
       </table>
     </div>
+
+    <div
+      class="modal"
+      v-bind:style="{
+        display: this.isInviteModalUp ? 'flex' : 'none',
+      }"
+      type="text"
+    >
+      <h2 v-if="isJoinGameModalVisible">{{ selectedOpponent }}</h2>
+      <h2 v-if="isJoinGameModalVisible">has invited you</h2>
+      <input
+        v-if="isJoinGameModalVisible"
+        v-bind:value="'Join Game'"
+        class="well btn btn-default button"
+        @click="
+          () => {
+            isJoinGameModalVisible = false;
+            isInviteModalUp = false;
+            join();
+          }
+        "
+        type="button"
+      />
+      <input
+        class="well btn btn-default button"
+        @click="
+          () => {
+            isInviteModalUp = false;
+            isChallengeBtnVisible = false;
+            isGameSettingsModal = false;
+            isJoinGameModalVisible = false;
+            gameCode = '';
+            selectedOpponent = null;
+            isGameModeSelection = false;
+          }
+        "
+        type="button"
+        value="Cancel"
+      />
+    </div>
   </div>
 </template>
 
 <script>
+import { mapState } from 'vuex';
 import { setExtraSoundEffectsKey } from '../store';
 import { preFetchSocket } from '../utils/preFetchSocket';
 
 export default {
   name: 'Profile',
   components: {},
+  computed: {
+    ...mapState({
+      usersOnline: 'usersOnline',
+    }),
+  },
   data() {
     return {
       isExtraSoundEffectsEnabled: this.$store.state.extraSoundEffects,
@@ -100,9 +146,15 @@ export default {
       success: true,
       matches: [],
       onlineUsers: [],
+      socket: null,
+      selectedOpponent: null,
+      gameCode: null,
+      isJoinGameModalVisible: false,
+      isInviteModalUp: false,
     };
   },
-  created() {
+  mounted() {
+    this.socket = this.$store.state.socket;
     this.currentlyLoggedIn = this.$store.state.cookie.username;
     fetch(`/api/matchHistory/${this.currentlyLoggedIn}`, {
       method: 'GET',
@@ -125,11 +177,21 @@ export default {
       .catch((error) => {
         throw new Error(`Match History request failed ${error}`);
       });
+    this.$store.state.socket.on('inviteToGame', (userToInvite, gameCode, opponentName) => {
+      const isInvitedUser = userToInvite === this.$store.state.cookie.username;
+      if (isInvitedUser) {
+        this.selectedOpponent = opponentName;
+        this.gameCode = gameCode;
+        this.isJoinGameModalVisible = true;
+        this.isInviteModalUp = true;
+      }
+    });
+  },
+  beforeDestroy() {
+    this.socket.off('inviteToGame');
   },
   methods: {
     debug() {
-      console.log('Matches length: ', this.matches.length);
-      console.log(this.isExtraSoundEffectsEnabled);
       this.$store.commit(setExtraSoundEffectsKey, this.isExtraSoundEffectsEnabled);
     },
     capitalizeFirstLetter(inputStr) {
@@ -153,6 +215,31 @@ export default {
         .catch((error) => {
           throw new Error(`SignOut request failed ${error}`);
         });
+    },
+    join() {
+      fetch(`/api/room/${this.gameCode}/authorizedToJoin`)
+        .then((resp) => {
+          if (resp.status === 401) {
+            alert('Your session is expired. Log in again');
+            this.$router.go();
+          }
+          if (!resp.ok)
+            throw new Error(`Unexpected failure when authorizing joining room: ${this.gameCode}`);
+          return resp.json();
+        })
+        .then((data) => {
+          if (data.success && !data.isCrazyChess) this.redirect(this.gameCode);
+          else if (data.success && data.isCrazyChess) this.crazyChessRedirect(this.gameCode);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    redirect(roomName) {
+      this.$router.push(`/room/${roomName}`);
+    },
+    crazyChessRedirect(roomName) {
+      this.$router.push(`/crazyroom/${roomName}`);
     },
   },
 };

@@ -426,17 +426,21 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
     });
   }
   const isValidMove = move;
+  const isValidMoveInCrazyChess = move && isCrazyChessGame;
   const flags = isValidMove ? move.flags : null;
-  if (isCaptureImmunity && isMoveCapture(flags)) return captureImmunityHandling(game);
-  else if (isValidMove && isCaptureImmunity) game.crazyChessPowers.captureImmunity = '';
+  if (isCaptureImmunity && isMoveCapture(flags)) {
+    return captureImmunityHandling(game);
+  } else if (isValidMoveInCrazyChess && isCaptureImmunity) {
+    game.crazyChessPowers.captureImmunity = '';
+  }
   if (isValidMove) startOpposingTimer(game);
   game.fen = game.gameState.fen();
-  if (isOmegaUpgradeActive && isValidMove) upgradePiece(gameId, endPos, username);
-  if (isValidMove) fogOfWarDurationHandling(game);
+  if (isValidMoveInCrazyChess && isOmegaUpgradeActive) upgradePiece(gameId, endPos, username);
+  if (isValidMoveInCrazyChess) fogOfWarDurationHandling(game);
   const gameHistoryLength = game.gameState.history().length;
-  if (isValidMove && gameHistoryLength % 7 === 0) generateNewPower(gameId);
-  if (isValidMove && gameHistoryLength % 15 === 0) spawnGoldBolt(gameId);
-  if (isValidMove && isGoldBoltMove) consumeGoldBolt(gameId, username);
+  if (isValidMoveInCrazyChess && gameHistoryLength % 7 === 0) generateNewPower(gameId);
+  if (isValidMoveInCrazyChess && gameHistoryLength % 15 === 0) spawnGoldBolt(gameId);
+  if (isValidMoveInCrazyChess && isGoldBoltMove) consumeGoldBolt(gameId, username);
   setLiveGameStateDB(
     gameId,
     game.fen,
@@ -625,9 +629,9 @@ export const activateCaptureImmunity = (gameId, username) => {
   if (!game) return;
   const isPlayer1 = username === game.player1;
   const isPlayer2 = username === game.player2;
-  if (isPlayer1 && !game.availablePowers.player1.includes(POWER.IMMUNE))
+  if (isPlayer1 && game.availablePowers.player1.includes(POWER.IMMUNE))
     game.crazyChessPowers.captureImmunity = game.player2;
-  else if (isPlayer2 && !game.availablePowers.player2.includes(POWER.IMMUNE))
+  else if (isPlayer2 && game.availablePowers.player2.includes(POWER.IMMUNE))
     game.crazyChessPowers.captureImmunity = game.player1;
   removeUserPowerOnce(POWER.IMMUNE, username, game);
 };

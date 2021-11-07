@@ -2,7 +2,7 @@
   <div class="flexCenter">
     <div class="flexCenterCol">
       <div class="row" style="text-align: center">
-        <h1 v-if="this.opponent === ''">Waiting for an opponent...</h1>
+        <h1 v-if="this.opponent === ''">Join code: {{ room }}</h1>
         <h1 v-else>
           {{ this.black ? this.whiteTime : this.blackTime }} | {{ this.opponent }} |
           {{ this.black ? piecePointsWhite : piecePointsBlack }}
@@ -877,12 +877,14 @@ export default {
       });
 
       this.$store.state.socket.on('fogOfWarEnable', (color) => {
-        if (color === 'b' && this.black) {
+        if (color === 'b' && this.black) this.isFogOfWarEnabled = true;
+        else if (color === 'w' && !this.black) this.isFogOfWarEnabled = true;
+        const isPlayer1Initiated = color === 'b' && !this.black;
+        const isPlayer2Initiated = color === 'w' && this.black;
+        if (isPlayer1Initiated) {
           this.powersAvailable = this.removeItemOnce(this.powersAvailable, this.FOG_KEY);
-          this.isFogOfWarEnabled = true;
-        } else if (color === 'w' && !this.black) {
+        } else if (isPlayer2Initiated) {
           this.powersAvailable = this.removeItemOnce(this.powersAvailable, this.FOG_KEY);
-          this.isFogOfWarEnabled = true;
         }
       });
 
@@ -969,7 +971,7 @@ export default {
       } else if (isEnPassant && this.extraAudio) {
         this.aunPassunAudio.src = '/media/aunPassun.b2755919.mp3';
         this.aunPassunAudio.play();
-      } else if (isCapture) {
+      } else if (isCapture || isEnPassant) {
         this.captureAudio.src = '/media/capture.ef8074e3.mp3';
         this.captureAudio.play();
       } else if (isCastle) {
@@ -1246,7 +1248,6 @@ export default {
     },
     fogOfWar() {
       if (this.isIncrementPowerFreq) return;
-
       fetch(`/api/fogOfWar`, {
         method: 'POST',
         headers: {

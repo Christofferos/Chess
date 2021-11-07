@@ -16,6 +16,46 @@
         </h4>
       </div>
     </div>
+
+    <div
+      class="modal"
+      v-bind:style="{
+        display: this.isInviteModalUp ? 'flex' : 'none',
+      }"
+      type="text"
+    >
+      <h2 v-if="isJoinGameModalVisible">{{ selectedOpponent }}</h2>
+      <h2 v-if="isJoinGameModalVisible">has invited you</h2>
+      <input
+        v-if="isJoinGameModalVisible"
+        v-bind:value="'Join Game'"
+        class="well btn btn-default button"
+        @click="
+          () => {
+            isJoinGameModalVisible = false;
+            isInviteModalUp = false;
+            join();
+          }
+        "
+        type="button"
+      />
+      <input
+        class="well btn btn-default button"
+        @click="
+          () => {
+            isInviteModalUp = false;
+            isChallengeBtnVisible = false;
+            isGameSettingsModal = false;
+            isJoinGameModalVisible = false;
+            gameCode = '';
+            selectedOpponent = null;
+            isGameModeSelection = false;
+          }
+        "
+        type="button"
+        value="Cancel"
+      />
+    </div>
   </div>
 </template>
 
@@ -26,20 +66,63 @@ export default {
   data() {
     return {
       playerLeaderboard: [],
+      socket: null,
+      gameCode: null,
+      isJoinGameModalVisible: false,
+      isInviteModalUp: false,
+      selectedOpponent: '',
     };
   },
-  created() {
+  mounted() {
+    this.socket = this.$store.state.socket;
     this.currentlyLoggedIn = this.$store.state.cookie.username;
     fetch('/api/leaderboard')
       .then((res) => res.json())
       .then(({ sortedLeaderboard }) => {
-        this.playerLeaderboard = sortedLeaderboard;
+        this.playerLeaderboard = sortedLeaderboard?.slice(0, 10);
       })
       .catch(console.error);
+    this.$store.state.socket.on('inviteToGame', (userToInvite, gameCode, opponentName) => {
+      const isInvitedUser = userToInvite === this.$store.state.cookie.username;
+      if (isInvitedUser) {
+        this.selectedOpponent = opponentName;
+        this.gameCode = gameCode;
+        this.isJoinGameModalVisible = true;
+        this.isInviteModalUp = true;
+      }
+    });
+  },
+  beforeDestroy() {
+    this.socket.off('inviteToGame');
   },
   methods: {
     capitalizeFirstLetter(inputStr) {
       return inputStr.charAt(0).toUpperCase() + inputStr.slice(1);
+    },
+    join() {
+      fetch(`/api/room/${this.gameCode}/authorizedToJoin`)
+        .then((resp) => {
+          if (resp.status === 401) {
+            alert('Your session is expired. Log in again');
+            this.$router.go();
+          }
+          if (!resp.ok)
+            throw new Error(`Unexpected failure when authorizing joining room: ${this.gameCode}`);
+          return resp.json();
+        })
+        .then((data) => {
+          if (data.success && !data.isCrazyChess) this.redirect(this.gameCode);
+          else if (data.success && data.isCrazyChess) this.crazyChessRedirect(this.gameCode);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    redirect(roomName) {
+      this.$router.push(`/room/${roomName}`);
+    },
+    crazyChessRedirect(roomName) {
+      this.$router.push(`/crazyroom/${roomName}`);
     },
   },
 };

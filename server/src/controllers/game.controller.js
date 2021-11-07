@@ -49,7 +49,6 @@ gameRouter.post('/newGame', (req, res) => {
   const timeLimitSecs = minutes * 60;
   const isCrazyChess = req.body.crazyChess ? true : false;
   const game = addLiveGame(gameId, req.session.userID, timeLimitSecs, isCrazyChess);
-  console.log('GAME: ', game.availablePowers);
   addLiveGameDB(
     gameId,
     '',

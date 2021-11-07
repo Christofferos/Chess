@@ -93,8 +93,8 @@ export const setLiveGameStateDB = async (
     currentGame: fen,
     timeLeft1,
     timeLeft2,
-    ...(crazyChessPowers && { crazyChessPowers }),
-    ...(availablePowers && { availablePowers }),
+    crazyChessPowers: crazyChessPowers ?? {},
+    availablePowers: availablePowers ?? {},
   });
 };
 
