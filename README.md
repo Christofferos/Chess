@@ -23,7 +23,7 @@ TODO-LIST:
 | 6. Add timers in game                                                         | ✔️   |
 | 7. Fix re-routing to correct http/https link after connection loss            | ✔️   |
 | 8. Fix bug that cause no live updates to happen in game                       | ✔️   |
-| 9. Add a new game mode - Crazy Chess                                          | WIP  |
+| 9. Add a new game mode - Crazy Chess                                          | ✔️   |
 | 10. Points you have during a match                                            | ✔️   |
 | 11. Make web app a Progressive Web App (PWA)                                  | ✔️   |
 | 12. Add surrender button                                                      | ✔️   |
