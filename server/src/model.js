@@ -707,6 +707,7 @@ const upgradePiece = (gameId, upgradeCell, username) => {
   if (!game) return;
   const color = game.gameState.turn() === 'w' ? game.gameState.BLACK : game.gameState.WHITE;
   const piecePreUpgrade = game.gameState.get(upgradeCell);
+  if (!piecePreUpgrade.type === 'n' || !piecePreUpgrade.type === 'N') return;
   let piecePostUpgrade = game.gameState.KNIGHT;
   if (piecePreUpgrade.type === 'n' || piecePreUpgrade.type === 'N')
     piecePostUpgrade = game.gameState.BISHOP;

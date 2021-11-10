@@ -368,10 +368,6 @@
             >Fog of War ({{ powersAvailable.filter((x) => x === FOG_KEY).length }})</span
           >
         </button>
-        <!-- <button v-on:click="playTwice()" class="well btn btn-default button gameCodeBtn">
-          ⚡ <span class="powerText">Play Twice</span>
-        </button> -->
-        <!-- .load(fen) -->
         <!-- 
           <<< Max 3 powers at a time >>>
         <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
@@ -379,9 +375,26 @@
           (.load(fen))
         </button>
         <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
+          🥶❄️ <span class="powerText">Freeze Piece (opponent not able to kill that piece) - or - all opponent pieces can only move one step </span>
+        </button>
+        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
+          🏎️ <span class="powerText">Move Pawn (/King) 2 steps</span>
+        </button>
+        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
+          🏗️ <span class="powerText">Put up a giant wall (no one can move past)</span>
+        </button>
+        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
+          🌌🚁 <span class="powerText">Teleport king to new destination (Teleport three steps away)</span>
+        </button>
+        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
+          💣 <span class="powerText">Explosive Pawn (explodes on death kills surrounding pieces)</span>
+        </button>
+
+        ---
+        
+        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
           🕹️ <span class="powerText">Opponent Puzzle</span>
         </button>
-        ---
         <button v-clipboard="() => chooseOnePawnOnEachSideToDie" class="well btn btn-default button gameCodeBtn">
           ⚔️ <span class="powerText">One Piece of Each Die</span>
         </button>
@@ -394,7 +407,9 @@
         <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
           🧭 <span class="powerText">Swap Orientation</span>
         </button>
-        -->
+        <button v-on:click="playTwice()" class="well btn btn-default button gameCodeBtn">
+          ⚡ <span class="powerText">Play Twice</span>
+        </button>
       </div>
     </div>
   </div>

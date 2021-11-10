@@ -163,7 +163,7 @@
             }
           "
         >
-          <input class="well btn btn-default button" type="button" value="Chess" />
+          <input class="well btn btn-default button" type="button" value="Normal Chess" />
         </div>
         <div
           v-if="isGameModeSelection"
