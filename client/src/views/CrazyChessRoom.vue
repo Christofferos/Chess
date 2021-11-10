@@ -368,8 +368,10 @@
             >Fog of War ({{ powersAvailable.filter((x) => x === FOG_KEY).length }})</span
           >
         </button>
+        <!-- MAX 3 POWERS AT A TIME - LIMIT WHAT POWERS CAN BE USED TWICE WITH GOLD BOLTS -->
         <!-- 
-          <<< Max 3 powers at a time >>>
+        ---
+        
         <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
           🚀 <span class="powerText">Missle Launch</span>
           (.load(fen))
@@ -391,7 +393,7 @@
         </button>
 
         ---
-        
+
         <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
           🕹️ <span class="powerText">Opponent Puzzle</span>
         </button>
@@ -409,7 +411,7 @@
         </button>
         <button v-on:click="playTwice()" class="well btn btn-default button gameCodeBtn">
           ⚡ <span class="powerText">Play Twice</span>
-        </button>
+        </button> -->
       </div>
     </div>
   </div>
