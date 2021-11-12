@@ -673,7 +673,8 @@ export const spawnFriendlyPiece = (gameId, username, spawnCell) => {
   else if (isPlayer2 && !game.availablePowers.player2.includes(POWER.SPAWN)) return;
   const isAllowedRow =
     (spawnCell.charAt(1) === '3' && isPlayer1) || (spawnCell.charAt(1) === '6' && isPlayer2);
-  if (!isAllowedRow) return;
+  const isCellOccupied = game.gameState.get(spawnCell);
+  if (!isAllowedRow || isCellOccupied) return;
   let isSpawnValid = false;
   if (isPlayer1)
     isSpawnValid = game.gameState.put(

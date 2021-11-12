@@ -1394,8 +1394,8 @@ export default {
     toggleTurn(isWhiteTurn) {
       if (isWhiteTurn && !this.black) this.isClientTurn = true;
       else if (!isWhiteTurn && !this.black) this.isClientTurn = false;
-      if (isWhiteTurn && this.black) this.isClientTurn = true;
-      else if (!isWhiteTurn && this.black) this.isClientTurn = false;
+      if (isWhiteTurn && this.black) this.isClientTurn = false;
+      else if (!isWhiteTurn && this.black) this.isClientTurn = true;
     },
   },
   created() {
