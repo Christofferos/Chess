@@ -171,7 +171,6 @@ export default {
       .catch((error) => {
         throw new Error(`Match History request failed ${error}`);
       });
-    console.log('!INITIATED');
     this.$store.state.socket.on('inviteToGame', (userToInvite, gameCode, opponentName) => {
       const isInvitedUser = userToInvite === this.$store.state.cookie.username;
       if (isInvitedUser) {
@@ -183,7 +182,6 @@ export default {
     });
   },
   beforeDestroy() {
-    console.log('!REMOVED');
     this.socket.off('inviteToGame');
   },
   methods: {

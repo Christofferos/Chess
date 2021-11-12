@@ -360,6 +360,7 @@
           class="well btn btn-default button gameCodeBtn"
           v-bind:style="{
             backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
+            boxShadow: isClientTurn ? `inset 0px 0px 0px 1px #8E000B` : null,
           }"
           v-bind:id="FOG_KEY"
         >
@@ -412,6 +413,21 @@
         <button v-on:click="playTwice()" class="well btn btn-default button gameCodeBtn">
           ⚡ <span class="powerText">Play Twice</span>
         </button> -->
+
+        <div v-for="id in [3, 2, 1]" :key="id">
+          <button
+            v-if="powersAvailable.length < id"
+            class="well btn btn-default button gameCodeBtn"
+            v-bind:style="{
+              backgroundColor: powerUpBackgroundGrayColor,
+              boxShadow: `inset 0px 0px 0px 5px ${powerUpButtonBlackColor}`,
+              boxSizing: 'border-box',
+            }"
+          >
+            <!-- Thanks to Freepik for providing this png below -->
+            <img src="../assets/emptyPower.png" style="width: 25px; cursor: pointer" />
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -432,7 +448,7 @@ import q from '../assets/bq.png';
 import k from '../assets/bk.png';
 import roadblock from '../assets/roadblock.png';
 import goldBolt from '../assets/goldBolt150.png';
-import { getBoardSize } from '../utils/getBoardSize';
+import { getBoardSizeCrazyChess } from '../utils/getBoardSize';
 
 const TWENTY_PERCENT = 0.2;
 
@@ -442,7 +458,7 @@ export default {
   data() {
     return {
       powersAvailable: [],
-      deviceScale: getBoardSize(),
+      deviceScale: getBoardSizeCrazyChess(),
       room: this.$route.params.roomName,
       game: null,
       entries: [],
@@ -450,6 +466,7 @@ export default {
       input: '',
       opponent: '',
       black: false,
+      isClientTurn: true,
       startPos: '',
       endPos: '',
       selectedPiece: '',
@@ -536,6 +553,8 @@ export default {
       goldBoltPlacement: null,
       cellWhiteColor: '#E2E5BE',
       cellGreenColor: '#58793B',
+      powerUpBackgroundGrayColor: '#41403d',
+      powerUpButtonBlackColor: '#353432',
       isReadyToRenderPieces: false,
       RANDOM_KEY: 'random',
       UNDO_KEY: 'undo',
@@ -974,6 +993,7 @@ export default {
           if (disableSelectedPieceColor) this.selectedPiece = '';
           this.startOpposingTimer(isWhiteTurn);
           this.playAudio(isCheck, isCastle, isEnPassant, isPromotion, isCapture);
+          this.toggleTurn(isWhiteTurn);
         },
       );
     },
@@ -1001,7 +1021,7 @@ export default {
       }
     },
     onResize() {
-      this.deviceScale = getBoardSize();
+      this.deviceScale = getBoardSizeCrazyChess();
     },
     startTimerWarningSound() {
       if (!this.gameOver) {
@@ -1370,6 +1390,12 @@ export default {
           console.log('/disabledCells failed', err);
           return;
         });
+    },
+    toggleTurn(isWhiteTurn) {
+      if (isWhiteTurn && !this.black) this.isClientTurn = true;
+      else if (!isWhiteTurn && !this.black) this.isClientTurn = false;
+      if (isWhiteTurn && this.black) this.isClientTurn = true;
+      else if (!isWhiteTurn && this.black) this.isClientTurn = false;
     },
   },
   created() {

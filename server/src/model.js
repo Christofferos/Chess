@@ -707,7 +707,12 @@ const upgradePiece = (gameId, upgradeCell, username) => {
   if (!game) return;
   const color = game.gameState.turn() === 'w' ? game.gameState.BLACK : game.gameState.WHITE;
   const piecePreUpgrade = game.gameState.get(upgradeCell);
-  if (!piecePreUpgrade.type === 'n' || !piecePreUpgrade.type === 'N') return;
+  const isKnightOrPawn =
+    piecePreUpgrade.type === 'n' ||
+    piecePreUpgrade.type === 'N' ||
+    piecePreUpgrade.type === 'p' ||
+    piecePreUpgrade.type === 'P';
+  if (!isKnightOrPawn) return;
   let piecePostUpgrade = game.gameState.KNIGHT;
   if (piecePreUpgrade.type === 'n' || piecePreUpgrade.type === 'N')
     piecePostUpgrade = game.gameState.BISHOP;
@@ -716,6 +721,7 @@ const upgradePiece = (gameId, upgradeCell, username) => {
     { type: piecePostUpgrade, color: color },
     upgradeCell,
   );
+  console.log('POST UPGRADE ', isPieceRemoved, isPiecePlaced, piecePreUpgrade.type);
   if (isPieceRemoved && isPiecePlaced) {
     io.in(gameId).emit('omegaPieceUpgrade', username);
     games[gameId].crazyChessPowers.omegaUpgrade = '';
@@ -763,10 +769,14 @@ const fogOfWarDurationHandling = game => {
 const generateNewPower = gameId => {
   const game = games[gameId];
   if (!game) return;
-  const newPower1 = getPower(game.availablePowers.player1);
-  const newPower2 = getPower(game.availablePowers.player2);
-  game.availablePowers.player1.push(newPower1);
-  game.availablePowers.player2.push(newPower2);
+  if (game.availablePowers.player1.length < 3) {
+    const newPower1 = getPower(game.availablePowers.player1);
+    game.availablePowers.player1.push(newPower1);
+  }
+  if (game.availablePowers.player2.length < 3) {
+    const newPower2 = getPower(game.availablePowers.player2);
+    game.availablePowers.player2.push(newPower2);
+  }
   io.in(game.id).emit('updatedPowers', game.availablePowers.player1, game.availablePowers.player2);
 };
 
