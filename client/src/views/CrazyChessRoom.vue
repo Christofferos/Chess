@@ -474,6 +474,7 @@ export default {
       isDisableSelectEnabled: false,
       isOmegaPieceUpgradeEnabled: false,
       isFogOfWarEnabled: false,
+      displayFogOfWarShadowing: false,
       isIncrementPowerFreq: false,
       disabledCells: [],
       rows: [0, 1, 2, 3, 4, 5, 6, 7],
@@ -919,8 +920,10 @@ export default {
         const isPlayer1Initiated = color === 'b' && !this.black;
         const isPlayer2Initiated = color === 'w' && this.black;
         if (isPlayer1Initiated) {
+          if (!this.black) this.displayFogOfWarShadowing = true;
           this.powersAvailable = this.removeItemOnce(this.powersAvailable, this.FOG_KEY);
         } else if (isPlayer2Initiated) {
+          if (this.black) this.displayFogOfWarShadowing = true;
           this.powersAvailable = this.removeItemOnce(this.powersAvailable, this.FOG_KEY);
         }
       });
@@ -928,6 +931,8 @@ export default {
       this.$store.state.socket.on('fogOfWarDisable', (color) => {
         if (this.black && color === 'b') this.isFogOfWarEnabled = false;
         if (!this.black && color === 'w') this.isFogOfWarEnabled = false;
+        if (!this.black && color === 'b') this.displayFogOfWarShadowing = false;
+        else if (this.black && color === 'w') this.displayFogOfWarShadowing = false;
       });
 
       this.$store.state.socket.on('updatedPowers', (powersP1, powersP2) => {
@@ -1326,11 +1331,13 @@ export default {
         if (this.isPieceSpawnEnabled && row === 5) return omegaUpgradeWhiteGreen;
         else if (this.isFogOfWarEnabled && !isOwnerOfPiece && isOpponentSide)
           return fogOfWarDarkWhite;
+        else if (this.displayFogOfWarShadowing && !isOpponentSide) return fogOfWarDarkWhite;
         else return this.cellWhiteColor;
       } else {
         if (this.isPieceSpawnEnabled && row === 5) return omegaUpgradeLightGreen;
         else if (this.isFogOfWarEnabled && !isOwnerOfPiece && isOpponentSide)
           return fogOfWarDarkGreen;
+        else if (this.displayFogOfWarShadowing && !isOpponentSide) return fogOfWarDarkGreen;
         else return this.cellGreenColor;
       }
     },
