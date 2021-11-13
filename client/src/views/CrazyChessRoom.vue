@@ -228,6 +228,7 @@
         "
       >
         <!-- <p style="font-size: 24px; color: white">Powers</p> -->
+        <!-- MAX 3 POWERS AT A TIME - LIMIT WHAT POWERS CAN BE USED TWICE WITH GOLD BOLTS -->
         <p stlye="height: 3px"></p>
         <button
           v-if="powersAvailable.includes(RANDOM_KEY)"
@@ -369,32 +370,32 @@
             >Fog of War ({{ powersAvailable.filter((x) => x === FOG_KEY).length }})</span
           >
         </button>
-        <!-- MAX 3 POWERS AT A TIME - LIMIT WHAT POWERS CAN BE USED TWICE WITH GOLD BOLTS -->
+        <!-- <button v-on:click="fogOfWar()" class="well btn btn-default button gameCodeBtn">
+          💣 <span class="powerText">Explosive Pawn</span> (Explodes on death - kills capturing
+          piece - except king)
+        </button>
+        <button v-on:click="fogOfWar()" class="well btn btn-default button gameCodeBtn">
+          🌌 <span class="powerText">Teleport King</span> (Teleport two steps in any direction)
+        </button> -->
+
         <!-- 
-        ---
-        
+        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
+          🏎️ <span class="powerText">Fast Pawn</span> (Cannot move past enemy pieces - with this)
+        </button>
         <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
           🚀 <span class="powerText">Missle Launch</span>
           (.load(fen))
         </button>
         <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          🥶❄️ <span class="powerText">Freeze Piece (opponent not able to kill that piece) - or - all opponent pieces can only move one step </span>
+          🥶 <span class="powerText">Freeze Piece</span> (enemy piece invincible until unfrozen)
         </button>
         <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          🏎️ <span class="powerText">Move Pawn (/King) 2 steps</span>
+          ❄️ <span class="powerText">Snow Storm</span> (all pieces can move max one step - except horses)
         </button>
         <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          🏗️ <span class="powerText">Put up a giant wall (no one can move past)</span>
+          🏗️ <span class="powerText">Put up a giant wall</span> (no one can move past it)
         </button>
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          🌌🚁 <span class="powerText">Teleport king to new destination (Teleport three steps away)</span>
-        </button>
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          💣 <span class="powerText">Explosive Pawn (explodes on death kills surrounding pieces)</span>
-        </button>
-
         ---
-
         <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
           🕹️ <span class="powerText">Opponent Puzzle</span>
         </button>
@@ -412,7 +413,11 @@
         </button>
         <button v-on:click="playTwice()" class="well btn btn-default button gameCodeBtn">
           ⚡ <span class="powerText">Play Twice</span>
-        </button> -->
+        </button> 
+        <button v-on:click="" class="well btn btn-default button gameCodeBtn">
+          🚁 <span class="powerText">---</span>
+        </button> 
+        -->
 
         <div v-for="id in [3, 2, 1]" :key="id">
           <button
