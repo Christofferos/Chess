@@ -127,3 +127,7 @@ in Room.vue
 
 - If the server crashes or goes down, your game will persist and you can return to the game as it
   was when the server goes back online.
+
+**Note:**
+(1) Chess logic made possible through Chess.js by Jeff Hlywa (jhlywa@gmail.com) Copyright (c) 2021, All rights reserved.
+(2) Chess engine, Stockfish.js made possibly through (http://github.com/nmrugg/stockfish.js) licensed GPL.
