@@ -60,7 +60,7 @@ TODO-LIST:
 
 <details>
 <summary>
-Extra Notes:
+***Extra Notes***:
 </summary>
   
 Easter egg: Powers that were planned to be included in the game
