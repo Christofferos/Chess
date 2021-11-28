@@ -63,6 +63,15 @@ TODO-LIST:
 Extra Notes:
 </summary>
   
+Easter egg: Powers that were planned to be included in the game
+* 💣 Explosive Pawn - Explodes on death, kills capturing piece, except king
+* 🌌 King Teleportation - Teleport two steps in any direction
+* 🏎️ Racecar Pawn - Permanent 2 step ability on one pawn, cannot move past enemy pieces
+* 🚀 Missle Launch - Select target square for explosion in 3 turns, can only select unoccupied squares
+* 🥶 Piece Freeze - Freeze piece for 2 turns, selected piece is invincible until unfrozen
+* ❄️ Snow Storm - All pieces can move a maximum of 1 square except horses - duration is 3 turns
+
+  
 [9]. (Squares fall off the board, disco board, rotating board, have to solve puzzles before you can
 move - Mario Cart mechanics if ahead it gets more difficult, if you are behind you get one square
 where you can upgrade the horse to Bishop/Rook)
