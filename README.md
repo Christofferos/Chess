@@ -12,7 +12,8 @@ Play the Game: https://chessbattle.herokuapp.com
   <img src="https://user-images.githubusercontent.com/42782387/134975449-b8f8cd94-a71d-4b41-8454-29e3197b6ab7.png" width="430" /> 
 </p>
 
-GCP has been used to deploy the app too. The App Engine with other services on GCP enable more scalability of the product going forward:
+GCP has also been used to deploy the frontend & backend. The App Engine together with other services offer more scalability than Heroku can. 
+* Link to deployed GCP version:
 https://eitcbmdemotest-63867.ew.r.appspot.com/#/login   
 
 TODO-LIST:
