@@ -111,6 +111,8 @@ Sound effect for doing En Passant
 
 <img src="assets/UndoMove.png" alt="UndoMove" style="width: 200px">
 
+<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:share:6869033040551661569" allowfullscreen="" title="Inbäddat inlägg" width="504" height="649" frameborder="0"></iframe>
+
 # Technical Details
 
 Deployed with Public Cloud provider (hyperscaler) GCP via App Engine on this link
