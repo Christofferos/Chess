@@ -1,9 +1,8 @@
-<h1 font-weight="bold" font-size="28px" align="center">
+<h1 align="center">
     ChessOnline ♟️
 </h1>
-
-Play the Game: https://chessbattle.herokuapp.com
-(CrazyChess is powerups + chess)
+<p align="center">I use it to challenge my friends in chess</p>
+<p align="center"><b><a href="https://chessbattle.herokuapp.com">Play the game</a></b></p>
 
 ![bild](https://user-images.githubusercontent.com/42782387/134075059-34b31eac-2c56-4468-8585-f90f7980e200.png)
 
