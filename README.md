@@ -14,7 +14,7 @@
 
 Platforms: Mobile, Desktop, Projector
 
-Start Game: Click opponent to challenge
+Start Game: Click opponent
 
 <img src="assets/OnlinePlay.png" alt="onlinePlay" style="width: 200px">
 
