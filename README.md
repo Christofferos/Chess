@@ -1,7 +1,12 @@
-# Chess
+<h1 align="center">
+    ChessOnline ♟️
+</h1>
+<p align="center">I use it to challenge my friends in chess</p>
+<p align="center"><b><a href="https://chessbattle.herokuapp.com">Play the game</a></b></p>
 
-Play the Game: https://chessbattle.herokuapp.com
-(CrazyChess is chess with powerups)
+<p align="center">
+	![chessOnlineInAction](https://user-images.githubusercontent.com/42782387/151063507-78661cad-f10b-4aa3-b159-38c54da6d5be.jpg)
+</p>
 
 ![bild](https://user-images.githubusercontent.com/42782387/134075059-34b31eac-2c56-4468-8585-f90f7980e200.png)
 
