@@ -1,6 +1,6 @@
-<p font-weight="800" font-size="28px" align="center">
+<h1 font-weight="bold" font-size="28px" align="center">
     ChessOnline ♟️
-</p>
+</h1>
 
 Play the Game: https://chessbattle.herokuapp.com
 (CrazyChess is powerups + chess)
