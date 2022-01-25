@@ -5,7 +5,7 @@
 <p align="center"><b><a href="https://chessbattle.herokuapp.com">Play the game</a></b></p>
 
 <p align="center">
-	<img src="assets/chessOnlineInAction.jpg" alt="screenshot">
+	<img src="assets/chessOnlineInAction.jpg" alt="screenshot" style="width: 250px">
 </p>
 
 ![bild](https://user-images.githubusercontent.com/42782387/134075059-34b31eac-2c56-4468-8585-f90f7980e200.png)
