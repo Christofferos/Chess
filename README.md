@@ -15,7 +15,7 @@
 Platforms: Mobile, Desktop, Projector
 
 Start Game: Invitation code. Click opponent to challenge
-<img src="assets/onlinePlay.png" alt="onlinePlay" style="width: 200px">
+<img src="assets/OnlinePlay.png" alt="onlinePlay" style="width: 200px">
 
 ## Local Play
 
