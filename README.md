@@ -1,4 +1,4 @@
-<p align="center" style="font-weight: bold; font-size: 2.8rem">
+<p align="center" style="font-weight: 800; font-size: 28px;">
     ChessOnline ♟️
 </p>
 
