@@ -60,12 +60,15 @@ Top 10 players. Scores = Victories
 ## Extra Sound Effects
 
 Sound effect for checking
-
 Sound effect for doing En Passant
 
 <img src="assets/BonusFeatures.png" alt="BonusFeatures" style="width: 200px">
 
 ## In-Game Chat
+Time
+Player Name
+Points
+Surrender Flag
 
 <img src="assets/Chat.png" alt="Chat" style="width: 200px">
 
