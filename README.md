@@ -43,13 +43,15 @@ Game start by: Click Stockfish (AI)
 
 ## Leaderboard
 
-Top ten players
+Top 10 players. Scores = Victories
 
-Scores gained through victory
+<img src="assets/Leaderboard.png" alt="Leaderboard" style="width: 200px">
 
 ## Match History
 
  View 20+ games
+ 
+<img src="assets/MatchHistory.png" alt="MatchHistory" style="width: 200px">
 
 ## Extra Sound Effects
 
@@ -57,7 +59,11 @@ Sound effect for checking
 
 Sound effect for doing En Passant
 
+<img src="assets/BonusFeatures.png" alt="BonusFeatures" style="width: 200px">
+
 ## In-Game Chat
+
+<img src="assets/Chat.png" alt="Chat" style="width: 200px">
 
 # Powerups
 
