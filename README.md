@@ -111,7 +111,7 @@ Sound effect for doing En Passant
 
 <img src="assets/UndoMove.png" alt="UndoMove" style="width: 200px">
 
-<iframe src="https://www.linkedin.com/embed/feed/update/urn:li:share:6869033040551661569" allowfullscreen="" title="Inbäddat inlägg" width="504" height="649" frameborder="0"></iframe>
+Blog Post: https://www.linkedin.com/posts/kristopher-werlinder-a9b265192_creative-project-chess-activity-6869033041528938496-58Mf
 
 # Technical Details
 
