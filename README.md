@@ -70,6 +70,11 @@ Sound effect for doing En Passant
 
 <img src="assets/Chat.png" alt="Chat" style="width: 200px">
 
+## Pawn Promotion
+
+<img src="https://user-images.githubusercontent.com/42782387/134975449-b8f8cd94-a71d-4b41-8454-29e3197b6ab7.png" width="200" /> 
+
+
 # Powerups
 
 ## Fog of War
@@ -82,6 +87,8 @@ Sound effect for doing En Passant
 
 <img src="assets/RoadBlock.png" alt="RoadBlock" style="width: 200px">
 
+<img src="assets/RoadBlock2.png" alt="RoadBlock2" style="width: 200px">
+
 ## Capture Immunity
 
 <img src="assets/ImmuneToCaptures.png" alt="ImmuneToCaptures" style="width: 200px">
@@ -89,6 +96,8 @@ Sound effect for doing En Passant
 ## Piece Evolve
 
 <img src="assets/OmegaPieceUpgrade.png" alt="OmegaPieceUpgrade" style="width: 200px">
+
+<img src="assets/Evolve2.png" alt="Evolve2" style="width: 200px">
 
 ## Time Attack
 
@@ -102,24 +111,12 @@ Sound effect for doing En Passant
 
 <img src="assets/UndoMove.png" alt="UndoMove" style="width: 200px">
 
+# Technical Details
 
+Deployed with Public Cloud provider (hyperscaler) GCP via App Engine on this link
+- https://eitcbmdemotest-63867.ew.r.appspot.com/ (Posted 25th Jan)
 
-![bild](https://user-images.githubusercontent.com/42782387/134075059-34b31eac-2c56-4468-8585-f90f7980e200.png)
-
-<p float="left">
-<img src="https://user-images.githubusercontent.com/42782387/134075012-e344be22-49fc-4d95-aed9-8b064a79909a.png" width="342" />
-  <img src="https://user-images.githubusercontent.com/42782387/134074848-bc23ccf3-c178-4333-b256-6e02fc0b4898.png" width="390" />
-  <img src="https://user-images.githubusercontent.com/42782387/134074992-e7e3917c-96cf-4ef8-8fd6-145501b22711.png" width="345" /> 
-  <img src="https://user-images.githubusercontent.com/42782387/134975449-b8f8cd94-a71d-4b41-8454-29e3197b6ab7.png" width="430" /> 
-</p>
-
-GCP has also been used to deploy the frontend & backend. The App Engine together with other services offer more scalability than Heroku can. 
-* Link to deployed GCP version:
-https://eitcbmdemotest-63867.ew.r.appspot.com/#/login   
-
-
-
-**TODO-LIST**:
+## TODO-LIST (TRACE PROGRESS):
 
 | Tasks                                                                         | Done |
 | ----------------------------------------------------------------------------- | ---- |
@@ -207,7 +204,7 @@ in Room.vue
 
 **_---------------_**
 
-### The application consists of the following screens:
+### Views/Pages/Screens:
 
 - Sign in/Sign up screen
 - Profile screen (match history)
@@ -218,29 +215,29 @@ in Room.vue
 - Local 2 player game screen
 - Crazy chess game screen
 
-### The application database is:
+### Database:
 
 - Firebase (persistance)
 
-### The application server host is:
+### Server:
 
-- Heroku
+- NodeJS
 
-### The application frontend is served by:
+### Frontend served by Server via:
 
-- Express (in NodeJs)
+- Express
 
-### The application websocket library is:
+### Websocket library:
 
-- SocketIO (enables near real time updates ~50-150ms)
+- SocketIO (latency ~50-250ms. NOTE: Not sufficient for real time games)
 
-### The application uses server side authentication with:
+### Server authentication with:
 
 - CA-signed certificate (Secure connection with HTTPS)
 - Article to help you make your own certificate:
   https://flaviocopes.com/express-https-self-signed-certificate/
 
-### The application remembers your game:
+### Game Status Persistance:
 
 - If the server crashes or goes down, your game will persist and you can return to the game as it
   was when the server goes back online.
