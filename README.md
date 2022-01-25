@@ -14,7 +14,7 @@
 
 Platforms: Mobile, Desktop, Projector
 
-Start Game: Invitation code. Click opponent to challenge
+Start Game: Click opponent to challenge
 
 <img src="assets/OnlinePlay.png" alt="onlinePlay" style="width: 200px">
 
@@ -22,16 +22,18 @@ Start Game: Invitation code. Click opponent to challenge
 
 Platforms: Mobile, Desktop, Projector
 
-Start Game: _Clicking Player 2 (Friend)_
-![LocalPlay](https://user-images.githubusercontent.com/42782387/151067473-dcdf83cc-fb31-4ec8-9988-bb9d9517f4fc.png)
+Start Game: Click Player 2 (Friend)
+
+<img src="assets/LocalPlay.png" alt="LocalPlay" style="width: 200px">
 
 
 ## AI Challenger - Stockfish
 
 Platforms: Desktop, Projector
 
-Game start by: _Clicking Stockfish (AI)_
-![StockfishPlay](https://user-images.githubusercontent.com/42782387/151067477-a127171d-5da8-421f-bcf1-61db634d8d7b.png)
+Game start by: Click Stockfish (AI)
+
+<img src="assets/StockfishPlay.png" alt="StockfishPlay" style="width: 200px">
 
 
 ## Game Variants
