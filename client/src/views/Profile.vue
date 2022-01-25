@@ -12,6 +12,15 @@
     <input
       class="btn btn-default login-button"
       type="button"
+      value="Instructions"
+      style="margin-top: 10px; margin-bottom: 10px"
+      v-on:click="instructions()"
+    />
+    <br />
+
+    <input
+      class="btn btn-default login-button"
+      type="button"
       value="Sign out"
       style="margin-top: 10px; margin-bottom: 10px"
       v-on:click="signOut()"
@@ -190,6 +199,9 @@ export default {
     },
     capitalizeFirstLetter(inputStr) {
       return inputStr.charAt(0).toUpperCase() + inputStr.slice(1);
+    },
+    instructions() {
+      window.location.href = 'https://github.com/Christofferos/Chess';
     },
     signOut() {
       fetch('/api/signOut', {
