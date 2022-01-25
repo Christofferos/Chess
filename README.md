@@ -74,15 +74,27 @@ Sound effect for doing En Passant
 
 ## Fog of War
 
+<img src="assets/FogOfWar.png" alt="FogOfWar" style="width: 200px">
+
+<img src="assets/FogOfWar2.png" alt="FogOfWar2" style="width: 200px">
+
 ## Roadblock
 
 ## Capture Immunity
 
+<img src="assets/ImmuneToCaptures.png" alt="ImmuneToCaptures" style="width: 200px">
+
 ## Piece Evolve
+
+<img src="assets/OmegaPieceUpgrade.png" alt="OmegaPieceUpgrade" style="width: 200px">
 
 ## Time Attack
 
+<img src="assets/CutDownTime.png" alt="CutDownTime" style="width: 200px">
+
 ## Forced Random Move
+
+<img src="assets/RandomMove.png" alt="RandomMove" style="width: 200px">
 
 ## Undo Move
 
