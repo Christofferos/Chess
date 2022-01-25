@@ -38,8 +38,12 @@ Game start by: Click Stockfish (AI)
 
 ## Game Variants
 
-- (1) Crazy Chess (normal chess + powerups)
-- (2) Regular Chess 
+- **Crazy Chess** (normal chess + powerups)
+- Regular Chess 
+
+## In Game Status Bar
+
+<img src="assets/StatusBar.png" alt="StatusBar" style="width: 200px">
 
 ## Leaderboard
 
