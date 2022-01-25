@@ -1,6 +1,7 @@
 # https://cloud.google.com/appengine/docs/flexible/nodejs/configuring-your-app-with-app-yaml
 runtime: nodejs
 env: flex
+entrypoint: cd client && yarn build:prod && cd ../server && yarn start
 
 manual_scaling:
   instances: 1
@@ -10,8 +11,8 @@ resources:
   disk_size_gb: 10
 
 network:
-  instance_tag: chess-online
-  name: chess-online
+  instance_tag: scott2vpc
+  name: scott2vpc
 
 env_variables:
-  test: "test"
+  PORT: "8989"
