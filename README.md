@@ -14,15 +14,11 @@
 
 Platforms: Mobile, Desktop, Projector
 
-Start Game: Click opponent
-
 <img src="assets/OnlinePlay.png" alt="onlinePlay" style="width: 200px">
 
 ## Local Play
 
 Platforms: Mobile, Desktop, Projector
-
-Start Game: Click Player 2 (Friend)
 
 <img src="assets/LocalPlay.png" alt="LocalPlay" style="width: 200px">
 
@@ -30,8 +26,6 @@ Start Game: Click Player 2 (Friend)
 ## AI Challenger - Stockfish
 
 Platforms: Desktop, Projector
-
-Game start by: Click Stockfish (AI)
 
 <img src="assets/StockfishPlay.png" alt="StockfishPlay" style="width: 200px">
 
