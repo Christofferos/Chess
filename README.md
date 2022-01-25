@@ -8,6 +8,67 @@
 	<img src="assets/chessOnlineInAction.jpg" alt="screenshot" style="width: 450px">
 </p>
 
+# Features
+
+## 1-to-1 Online Play
+
+Platforms: Mobile, Desktop, Projector
+
+Game start by: (1) Invitation code, (2) Click opponent to challenge 
+
+## Local Play
+
+Platforms: Mobile, Desktop, Projector
+
+Game start by: _Clicking Player 2 (Friend)_
+
+## AI Challenger - Stockfish
+
+Platforms: Desktop, Projector
+
+Game start by: _Clicking Stockfish (AI)_
+
+## Game Variants
+
+- (1) Crazy Chess (normal chess + powerups)
+- (2) Regular Chess 
+
+## Leaderboard
+
+Top ten players
+
+Scores gained through victory
+
+## Match History
+
+ View 20+ games
+
+## Extra Sound Effects
+
+Sound effect for checking
+
+Sound effect for doing En Passant
+
+## In-Game Chat
+
+# Powerups
+
+## Fog of War
+
+## Roadblock
+
+## Capture Immunity
+
+## Piece Evolve
+
+## Time Attack
+
+## Forced Random Move
+
+## Undo Move
+
+
+
 ![bild](https://user-images.githubusercontent.com/42782387/134075059-34b31eac-2c56-4468-8585-f90f7980e200.png)
 
 <p float="left">
