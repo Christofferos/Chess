@@ -1,7 +1,7 @@
 <h1 align="center">
     ChessOnline ♟️
 </h1>
-<p align="center">I use it to challenge my friends in chess</p>
+<p align="center">I use this to challenge my friends in chess</p>
 <p align="center"><b><a href="https://chessbattle.herokuapp.com">Play the game</a></b></p>
 
 <p align="center">
