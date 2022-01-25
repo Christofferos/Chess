@@ -1,6 +1,6 @@
 # https://cloud.google.com/appengine/docs/flexible/nodejs/configuring-your-app-with-app-yaml
 runtime: nodejs
-env: production
+env: flex
 
 manual_scaling:
   instances: 1
@@ -8,3 +8,6 @@ resources:
   cpu: 1
   memory_gb: 0.5
   disk_size_gb: 10
+
+env_variables:
+  test: "test"
