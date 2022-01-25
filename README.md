@@ -66,6 +66,8 @@ Sound effect for doing En Passant
 
 ## In-Game Chat
 
+- Game Code (used to join game)
+
 <img src="assets/Chat.png" alt="Chat" style="width: 200px">
 
 # Powerups
