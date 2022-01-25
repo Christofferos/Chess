@@ -16,7 +16,9 @@ GCP has also been used to deploy the frontend & backend. The App Engine together
 * Link to deployed GCP version:
 https://eitcbmdemotest-63867.ew.r.appspot.com/#/login   
 
-TODO-LIST:
+
+
+**TODO-LIST**:
 
 | Tasks                                                                         | Done |
 | ----------------------------------------------------------------------------- | ---- |
