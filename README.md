@@ -8,10 +8,10 @@
 	<img src="assets/chessOnlineInAction.jpg" alt="screenshot" style="width: 450px">
 </p>
 
-<hr style="border: 1px"/>
+<hr style="height: 1px"/>
 <p align="center"><img src="https://user-images.githubusercontent.com/42782387/151075499-f62ced16-266f-4c07-8196-c52aa4ab1711.png" width="200" /></p>
 <p align="center"><b><a href="https://www.linkedin.com/posts/kristopher-werlinder-a9b265192_creative-project-chess-activity-6869033041528938496-58Mf">Blog Post</a></b></p>
-<hr style="border: 1px" />
+<hr style="height: 1px" />
 
 # Features
 
