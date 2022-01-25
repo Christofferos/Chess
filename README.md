@@ -114,7 +114,7 @@ Sound effect for doing En Passant
 # Technical Details
 
 Deployed with Public Cloud provider (hyperscaler) GCP via App Engine on this link
-- https://eitcbmdemotest-63867.ew.r.appspot.com/
+- https://eitcbmdemotest-63867.ew.r.appspot.com/ (Posted 25th Jan)
 
 ## TODO-LIST (TRACE PROGRESS):
 
