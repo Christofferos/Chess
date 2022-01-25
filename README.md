@@ -8,6 +8,8 @@
 	<img src="assets/chessOnlineInAction.jpg" alt="screenshot" style="width: 450px">
 </p>
 
+<p align="center"><b><a href="https://www.linkedin.com/posts/kristopher-werlinder-a9b265192_creative-project-chess-activity-6869033041528938496-58Mf">Blog Post</a></b></p>
+
 # Features
 
 ## 1-to-1 Online Play
@@ -110,8 +112,6 @@ Sound effect for doing En Passant
 ## Undo Move
 
 <img src="assets/UndoMove.png" alt="UndoMove" style="width: 200px">
-
-Blog Post: https://www.linkedin.com/posts/kristopher-werlinder-a9b265192_creative-project-chess-activity-6869033041528938496-58Mf
 
 # Technical Details
 
