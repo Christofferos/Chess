@@ -9,7 +9,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "start": "cd client && yarn build:prod && cd ../server && yarn start",
+    "start": "cd ../server && yarn start",
     "heroku-postbuild": "cd client && yarn build:prod"
   },
   "dependencies": {
