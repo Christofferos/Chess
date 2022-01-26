@@ -431,9 +431,10 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
   const isValidMoveInCrazyChess = move && isCrazyChessGame;
   const flags = isValidMove ? move.flags : null;
   if (isCaptureImmunity && isMoveCapture(flags)) {
-    return captureImmunityHandling(game);
+    return captureImmunityHandling(game, isPlayer1);
   } else if (isValidMoveInCrazyChess && isCaptureImmunity) {
     game.crazyChessPowers.captureImmunity = '';
+    captureImmunityRemoved(game);
   }
   if (isValidMove) startOpposingTimer(game);
   game.fen = game.gameState.fen();
@@ -647,9 +648,13 @@ const isMoveCapture = flags => {
   return isCapture;
 };
 
-const captureImmunityHandling = game => {
+const captureImmunityHandling = (game, isPlayer1) => {
   game.gameState.undo();
-  io.in(game.id).emit('captureImmune');
+  io.in(game.id).emit('captureImmune', isPlayer1);
+};
+
+const captureImmunityRemoved = game => {
+  io.in(game.id).emit('captureImmunityRemoved');
 };
 
 export const cutDownOpponentTime = (gameId, username) => {

@@ -158,8 +158,14 @@
             <span
               v-bind:style="{
                 display: 'flex',
-                alignItems: isOmegaPieceUpgradeEnabled ? 'space-between' : 'flex-end',
-                justifyContent: isOmegaPieceUpgradeEnabled ? 'space-between' : 'flex-end',
+                alignItems:
+                  isOmegaPieceUpgradeEnabled || whiteCaptureImmune || blackCaptureImmune
+                    ? 'space-between'
+                    : 'flex-end',
+                justifyContent:
+                  isOmegaPieceUpgradeEnabled || whiteCaptureImmune || blackCaptureImmune
+                    ? 'space-between'
+                    : 'flex-end',
                 flexDirection: 'column',
               }"
             >
@@ -169,6 +175,13 @@
                   fontSize: '13px',
                 }"
                 >🧬</span
+              >
+              <span
+                v-else-if="isPieceCaptureImmune(row, col)"
+                v-bind:style="{
+                  fontSize: '13px',
+                }"
+                >💎</span
               >
               <span v-else></span>
               <span
@@ -476,6 +489,8 @@ export default {
       endPos: '',
       selectedPiece: '',
       highlightLastMove: { from: '', to: '' },
+      whiteCaptureImmune: false,
+      blackCaptureImmune: false,
       isPieceSpawnEnabled: false,
       isDisableSelectEnabled: false,
       isOmegaPieceUpgradeEnabled: false,
@@ -907,9 +922,16 @@ export default {
         this.addDisabledCells(row, col);
       });
 
-      this.$store.state.socket.on('captureImmune', () => {
+      this.$store.state.socket.on('captureImmune', (isPlayer1) => {
         this.captureImmunityAudio.src = '/media/captureImmunity.62ef9201.mp3';
         this.captureImmunityAudio.play();
+        if (isPlayer1) this.whiteCaptureImmune = true;
+        else this.blackCaptureImmune = true;
+      });
+
+      this.$store.state.socket.on('captureImmunityRemoved', () => {
+        this.whiteCaptureImmune = false;
+        this.blackCaptureImmune = false;
       });
 
       this.$store.state.socket.on('pieceSpawn', (newFen, username) => {
@@ -1295,6 +1317,12 @@ export default {
       const isPieceEligibleForUpgrade = this.isOmegaPieceUpgradeEnabled && isCorrectPiecesMarked;
       return isPieceEligibleForUpgrade;
     },
+    isPieceCaptureImmune(row, col) {
+      const isCorrectPieceMarked =
+        (this.whiteCaptureImmune && this.piecePlacement[row][col].match('[rnbqkp]')) ||
+        (this.blackCaptureImmune && this.piecePlacement[row][col].match('[RNBQKP]'));
+      return isCorrectPieceMarked;
+    },
     playTwice() {
       console.log('Play Twice - Countered by undo move');
       fetch(`/api/playTwice`, {
@@ -1482,6 +1510,7 @@ export default {
     this.socket.off('undoMove');
     this.socket.off('disableSelectedCell');
     this.socket.off('captureImmune');
+    this.socket.off('captureImmunityRemoved');
     this.socket.off('pieceSpawn');
     this.socket.off('omegaPieceUpgrade');
     this.socket.off('fogOfWarEnable');
