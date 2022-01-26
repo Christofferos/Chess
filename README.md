@@ -96,7 +96,7 @@ Sound effect for doing En Passant
 
 <img src="assets/ImmuneToCaptures.png" alt="ImmuneToCaptures" style="width: 200px">
 
-<img src="assets/CaptureImmunity.png" alt="CaptureImmunity" style="width: 200px">
+<img src="assets/CaptureImmune.png" alt="CaptureImmune" style="width: 200px">
 
 ## Piece Evolve
 
