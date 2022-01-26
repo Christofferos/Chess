@@ -155,7 +155,7 @@ Deployed with Public Cloud provider (hyperscaler) GCP via App Engine on this lin
 | 30. Pre-moving                                                                | -    |
 | 31. Move animation                                                            | -    |
 | 32. Add an invite opponent/player process after creating game                 | ✔️   |
-| 33. Color the last move piece from and to squares                             | -    |
+| 33. Color the last move piece from and to squares                             | ✔️    |
 | 34. Local 2 player chess                                                      | ✔️   |
 | 35. Roadblock powerup (Crazy Chess)                                           | ✔️   |
 | 36. Time cut off powerup (Crazy Chess)                                        | ✔️   |
