@@ -284,7 +284,7 @@ const emitTimerGameOver = game => {
   io.in(game.id).emit('timerGameOver', game.fen, game.gameState.game_over());
 };
 
-const emitMovePiece = (game, flag, isPlayer1) => {
+const emitMovePiece = (game, flag, isPlayer1, moveFromTo) => {
   const isGameOver = game.gameState.game_over() || game.timeLeft1 <= 0 || game.timeLeft2 <= 0;
   const isCastle = flag === 'k' || flag === 'q';
   const isEnPassant = flag === 'e';
@@ -306,6 +306,7 @@ const emitMovePiece = (game, flag, isPlayer1) => {
     isPromotion,
     isCapture,
     isPlayer1,
+    moveFromTo,
   );
 };
 
@@ -389,6 +390,7 @@ const gameOver = async game => {
  * Updates the piece placement
  */
 export const movePiece = async (gameId, startPos, endPos, username, promotionPiece) => {
+  const moveFromTo = { from: startPos, to: endPos };
   const isPlayer1 = username === games[gameId].player1;
   const isUserAllowedToMove = isPlayer1 || username === games[gameId].player2;
   if (!isUserAllowedToMove) return;
@@ -412,7 +414,7 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
     isOmegaUpgradeActive = isOmegaUpgrade;
     isGoldBoltMove = isEndPosOnGoldBolt;
     if (isRoadblock) {
-      emitMovePiece(game, null, isPlayer1);
+      emitMovePiece(game, null, isPlayer1, moveFromTo);
       return;
     }
     move = randomMove;
@@ -451,7 +453,7 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
   );
   const isGameOver = game.gameState.game_over();
   if (isGameOver) gameOver(game);
-  emitMovePiece(game, flags, isPlayer1);
+  emitMovePiece(game, flags, isPlayer1, moveFromTo);
 };
 
 export const backToMenu = gameId => {
@@ -464,6 +466,7 @@ export const getMatchHistory = userId => matchHistory[userId];
 /* ---           --- */
 /* --- STOCKFISH --- */
 export const stockfishMovePiece = async (gameId, from, to, username, promotionPiece) => {
+  const moveFromTo = { from, to };
   const isPlayer1 = username === games[gameId].player1;
   const isUserAllowedToMove = isPlayer1 || username === games[gameId].player2;
   if (!isUserAllowedToMove) return;
@@ -479,7 +482,7 @@ export const stockfishMovePiece = async (gameId, from, to, username, promotionPi
   const isGameOver = game.gameState.game_over();
   if (isGameOver) gameOver(game);
   const flags = move ? move.flags : null;
-  emitMovePiece(game, flags, !isPlayer1);
+  emitMovePiece(game, flags, !isPlayer1, moveFromTo);
 };
 
 export const stockfishGetHistory = (gameId, username) => {

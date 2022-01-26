@@ -475,6 +475,7 @@ export default {
       startPos: '',
       endPos: '',
       selectedPiece: '',
+      highlightLastMove: { from: '', to: '' },
       isPieceSpawnEnabled: false,
       isDisableSelectEnabled: false,
       isOmegaPieceUpgradeEnabled: false,
@@ -674,6 +675,11 @@ export default {
       const rank = this.black ? 1 + Number(row) : 8 - Number(row);
       const file = this.black ? this.letters[Number(7 - col)] : this.letters[Number(col)];
       return file.toString() + rank.toString();
+    },
+    getFileRankIndex(rank, file) {
+      const row = this.black ? Number(rank) - 1 : 8 - Number(rank);
+      const col = this.black ? 7 - this.letters.indexOf(file) : this.letters.indexOf(file);
+      return row.toString() + col.toString();
     },
     checkSelectedPiece(row, col) {
       if (this.opponent === '') return;
@@ -973,6 +979,7 @@ export default {
           isPromotion,
           isCapture,
           isPlayer1MovingPiece,
+          moveFromTo,
         ) => {
           if (isGameOver) {
             this.stopPlayerTimes();
@@ -1004,6 +1011,14 @@ export default {
           this.startOpposingTimer(isWhiteTurn);
           this.playAudio(isCheck, isCastle, isEnPassant, isPromotion, isCapture);
           this.toggleTurn(isWhiteTurn);
+          const fromCol = moveFromTo.from.charAt(0);
+          const fromRow = moveFromTo.from.charAt(1);
+          const toCol = moveFromTo.to.charAt(0);
+          const toRow = moveFromTo.to.charAt(1);
+          const fromIndex = this.getFileRankIndex(fromRow, fromCol);
+          const toIndex = this.getFileRankIndex(toRow, toCol);
+          this.highlightLastMove.from = fromIndex;
+          this.highlightLastMove.to = toIndex;
         },
       );
     },
@@ -1325,6 +1340,11 @@ export default {
       const omegaUpgradeLightGreen = '#58B23B';
       const fogOfWarDarkGreen = '#3B4B2B';
       const fogOfWarDarkWhite = '#777769';
+      const highlightYellowWhite = '#F4F483';
+      const highlightYellowGreen = '#BAC948';
+      const isHighlightLastMoveCell =
+        this.highlightLastMove.from === row.toString() + col.toString() ||
+        this.highlightLastMove.to === row.toString() + col.toString();
       const isOpponentSide = row <= 3;
       const isOwnerOfPiece =
         (this.black && this.piecePlacement[row][col].match('[rnbqkp]')) ||
@@ -1337,12 +1357,14 @@ export default {
         else if (this.isFogOfWarEnabled && !isOwnerOfPiece && isOpponentSide)
           return fogOfWarDarkWhite;
         else if (this.displayFogOfWarShadowing && !isOpponentSide) return fogOfWarDarkWhite;
+        else if (isHighlightLastMoveCell) return highlightYellowWhite;
         else return this.cellWhiteColor;
       } else {
         if (this.isPieceSpawnEnabled && row === 5) return omegaUpgradeLightGreen;
         else if (this.isFogOfWarEnabled && !isOwnerOfPiece && isOpponentSide)
           return fogOfWarDarkGreen;
         else if (this.displayFogOfWarShadowing && !isOpponentSide) return fogOfWarDarkGreen;
+        else if (isHighlightLastMoveCell) return highlightYellowGreen;
         else return this.cellGreenColor;
       }
     },

@@ -131,7 +131,10 @@
             v-on:click="() => checkSelectedPiece(row, col)"
             v-bind:style="{
               background:
-                selectedPiece === row.toString() + col.toString()
+                highlightLastMove.from === row.toString() + col.toString() ||
+                highlightLastMove.to === row.toString() + col.toString()
+                  ? cellBackgroundColor(row, col)
+                  : selectedPiece === row.toString() + col.toString()
                   ? 'yellow'
                   : (col + row) % 2 === 0
                   ? '#E2E5BE'
@@ -267,6 +270,7 @@ export default {
       startPos: '',
       endPos: '',
       selectedPiece: '',
+      highlightLastMove: { from: '', to: '' },
       rows: [0, 1, 2, 3, 4, 5, 6, 7],
       columns: [0, 1, 2, 3, 4, 5, 6, 7],
       letters: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
@@ -438,6 +442,20 @@ export default {
       const file = this.black ? this.letters[Number(7 - col)] : this.letters[Number(col)];
       return file.toString() + rank.toString();
     },
+    getFileRankIndex(rank, file) {
+      const row = this.black ? Number(rank) - 1 : 8 - Number(rank);
+      const col = this.black ? 7 - this.letters.indexOf(file) : this.letters.indexOf(file);
+      return row.toString() + col.toString();
+    },
+    cellBackgroundColor(row, col) {
+      const yellowWhite = '#F4F483';
+      const yellowGreen = '#BAC948';
+      if ((col + row) % 2 === 0) {
+        return yellowWhite;
+      } else {
+        return yellowGreen;
+      }
+    },
     checkSelectedPiece(row, col) {
       if (this.opponent === '') return;
       if (this.piecePlacement[row][col].match('[rnbqkp]') && this.black) {
@@ -593,6 +611,7 @@ export default {
           isPromotion,
           isCapture,
           isPlayer1MovingPiece,
+          moveFromTo,
         ) => {
           if (isGameOver) {
             this.stopPlayerTimes();
@@ -643,6 +662,14 @@ export default {
             this.moveAudio.src = '/media/move.9707c466.mp3';
             this.moveAudio.play();
           }
+          const fromCol = moveFromTo.from.charAt(0);
+          const fromRow = moveFromTo.from.charAt(1);
+          const toCol = moveFromTo.to.charAt(0);
+          const toRow = moveFromTo.to.charAt(1);
+          const fromIndex = this.getFileRankIndex(fromRow, fromCol);
+          const toIndex = this.getFileRankIndex(toRow, toCol);
+          this.highlightLastMove.from = fromIndex;
+          this.highlightLastMove.to = toIndex;
         },
       );
     },
