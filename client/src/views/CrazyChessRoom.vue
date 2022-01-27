@@ -35,7 +35,6 @@
           />
         </div>
       </div>
-
       <div
         class="endGameMessageModal"
         v-bind:style="{
@@ -103,6 +102,9 @@
           }
         "
       >
+        <div class="snowStormContainer" v-if="false">
+          <div class="snowStorm" type="text"><span>❄️</span></div>
+        </div>
         <div
           class="row"
           v-for="row in rows"
@@ -145,14 +147,24 @@
               :src="roadblock"
               v-bind:style="{ width: `${deviceScale}px`, position: 'absolute' }"
             />
-            <span
-              v-bind:style="{
-                opacity: col === 0 ? 1 : 0,
-                color: row % 2 === 0 ? cellGreenColor : cellWhiteColor,
-                fontWeight: 800,
-                zIndex: 10,
-              }"
-              >{{ black ? row + 1 : 8 - row }}
+            <span>
+              <span
+                v-if="false"
+                v-bind:style="{
+                  fontSize: '13px',
+                }"
+                >🏎️</span
+              >
+              <span
+                v-if="col === 0"
+                v-bind:style="{
+                  display: 'flex',
+                  color: row % 2 === 0 ? cellGreenColor : cellWhiteColor,
+                  fontWeight: 800,
+                  zIndex: 10,
+                }"
+                >{{ black ? row + 1 : 8 - row }}</span
+              >
             </span>
 
             <span
@@ -177,11 +189,32 @@
                 >🧬</span
               >
               <span
+                v-else-if="false"
+                v-bind:style="{
+                  fontSize: '10px',
+                }"
+                >🥶</span
+              >
+              <span
+                v-else-if="false"
+                v-bind:style="{
+                  fontSize: '12px',
+                }"
+                >🌌</span
+              >
+              <span
                 v-else-if="isPieceCaptureImmune(row, col)"
                 v-bind:style="{
                   fontSize: '13px',
                 }"
                 >💎</span
+              >
+              <span
+                v-else-if="false"
+                v-bind:style="{
+                  fontSize: '13px',
+                }"
+                >💣</span
               >
               <span v-else></span>
               <span
@@ -1600,6 +1633,28 @@ h2 {
 
 #board {
   touch-action: pan-y;
+}
+
+.snowStormContainer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100px;
+  height: 100px;
+}
+
+.snowStorm {
+  transform: translate(-50%, -50%);
+  width: 100px;
+  height: 100px;
+  font-size: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(105, 234, 244, 0.6);
+  border-radius: 5px;
+  position: absolute;
+  z-index: 10;
 }
 
 .endGameMessageModal {
