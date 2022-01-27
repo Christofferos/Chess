@@ -180,6 +180,7 @@ Easter egg: Powers that were planned to be included in the game
 * 🚀 Missle Launch - Select target square for explosion in 3 turns, can only select unoccupied squares
 * 🥶 Piece Freeze - Freeze piece for 2 turns, selected piece is invincible until unfrozen
 * ❄️ Snow Storm - All pieces can move a maximum of 1 square except horses - duration is 3 turns
+* 🪞 Mirror Move - Y-axis mirror the steps you just did with the piece
 
   
 [9]. (Squares fall off the board, disco board, rotating board, have to solve puzzles before you can
