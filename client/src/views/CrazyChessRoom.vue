@@ -97,8 +97,9 @@
               columnId = event.target.parentElement.id;
             }
             if (isPieceSpawnEnabled && selectedPiece === '') spawnFriendlyPiece(rowId, columnId);
-            if (!isDisableSelectEnabled) return;
+            if (!isPieceSelectionDisabled) return;
             disableSelectedCell(rowId, columnId);
+            selectExplosivePawn(rowId, columnId);
           }
         "
       >
@@ -170,14 +171,8 @@
             <span
               v-bind:style="{
                 display: 'flex',
-                alignItems:
-                  isOmegaPieceUpgradeEnabled || whiteCaptureImmune || blackCaptureImmune
-                    ? 'space-between'
-                    : 'flex-end',
-                justifyContent:
-                  isOmegaPieceUpgradeEnabled || whiteCaptureImmune || blackCaptureImmune
-                    ? 'space-between'
-                    : 'flex-end',
+                alignItems: 'space-between',
+                justifyContent: 'space-between',
                 flexDirection: 'column',
               }"
             >
@@ -210,7 +205,7 @@
                 >💎</span
               >
               <span
-                v-else-if="false"
+                v-else-if="explosivePawns.includes(`${row}${col}`)"
                 v-bind:style="{
                   fontSize: '13px',
                 }"
@@ -309,7 +304,7 @@
           v-on:click="
             () => {
               if (isIncrementPowerFreq) return;
-              isDisableSelectEnabled = true;
+              isPieceSelectionDisabled = true;
               powersAvailable = removeItemOnce(powersAvailable, DISABLE_KEY);
             }
           "
@@ -416,13 +411,30 @@
             >Fog of War ({{ powersAvailable.filter((x) => x === FOG_KEY).length }})</span
           >
         </button>
-        <!-- <button v-on:click="fogOfWar()" class="well btn btn-default button gameCodeBtn">
-          💣 <span class="powerText">Explosive Pawn</span> (Explodes on death - kills capturing
-          piece - except king)
+        <button
+          v-if="powersAvailable.includes(EXPLOSIVE_KEY)"
+          v-on:click="
+            () => {
+              isPieceSelectionDisabled = true;
+              powersAvailable = removeItemOnce(powersAvailable, EXPLOSIVE_KEY);
+            }
+          "
+          class="well btn btn-default button gameCodeBtn"
+          v-bind:style="{
+            backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
+          }"
+        >
+          💣
+          <span class="powerText"
+            >Explosive Pawn ({{ powersAvailable.filter((x) => x === EXPLOSIVE_KEY).length }})</span
+          >
         </button>
+        <!-- (Explodes on death - kills capturing piece - except king)
+
         <button v-on:click="fogOfWar()" class="well btn btn-default button gameCodeBtn">
           🌌 <span class="powerText">Teleport King</span> (Teleport two steps in any direction)
-        </button> -->
+        </button>
+        -->
 
         <!-- 
         <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
@@ -525,12 +537,13 @@ export default {
       whiteCaptureImmune: false,
       blackCaptureImmune: false,
       isPieceSpawnEnabled: false,
-      isDisableSelectEnabled: false,
+      isPieceSelectionDisabled: false,
       isOmegaPieceUpgradeEnabled: false,
       isFogOfWarEnabled: false,
       displayFogOfWarShadowing: false,
       isIncrementPowerFreq: false,
       disabledCells: [],
+      explosivePawns: [],
       rows: [0, 1, 2, 3, 4, 5, 6, 7],
       columns: [0, 1, 2, 3, 4, 5, 6, 7],
       letters: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
@@ -619,6 +632,7 @@ export default {
       SPAWN_KEY: 'spawn',
       UPGRADE_KEY: 'upgrade',
       FOG_KEY: 'fog',
+      EXPLOSIVE_KEY: 'explosive',
     };
   },
   methods: {
@@ -950,9 +964,25 @@ export default {
       );
 
       this.$store.state.socket.on('disableSelectedCell', (rowMsg, colMsg) => {
-        this.isDisableSelectEnabled = false;
+        this.isPieceSelectionDisabled = false;
         const { row, col } = this.translateIndices(rowMsg, colMsg);
         this.addDisabledCells(row, col);
+      });
+
+      this.$store.state.socket.on('selectExplosivePawn', (rowMsg, colMsg) => {
+        this.isPieceSelectionDisabled = false;
+        const { row, col } = this.translateIndices(rowMsg, colMsg);
+        this.explosivePawns.push(`${row}${col}`);
+      });
+
+      this.$store.state.socket.on('explosivePawnPosition', (explosivePawnPositions) => {
+        this.explosivePawns = explosivePawnPositions.map((explosivePawn) => {
+          const { row, col } = this.translateIndices(
+            explosivePawn.charAt(0),
+            explosivePawn.charAt(1),
+          );
+          return `${row}${col}`;
+        });
       });
 
       this.$store.state.socket.on('captureImmune', (isPlayer1) => {
@@ -1384,6 +1414,23 @@ export default {
         console.log('/fogOfWar failed', err);
       });
     },
+    selectExplosivePawn(rowTemp, colTemp) {
+      const { row, col } = this.translateIndices(rowTemp, colTemp);
+      if (this.isIncrementPowerFreq) return;
+      fetch(`/api/explosivePawn`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: this.room,
+          row,
+          col,
+        }),
+      }).catch((err) => {
+        console.log('/explosivePawn failed', err);
+      });
+    },
     conditionallyRenderPiece(row, col) {
       const isPieceOnCell = this.piecePlacement[row][col] !== '';
       const isOwnerOfPiece =
@@ -1542,6 +1589,7 @@ export default {
     this.socket.off('surrenderGameOver');
     this.socket.off('undoMove');
     this.socket.off('disableSelectedCell');
+    this.socket.off('selectExplosivePawn');
     this.socket.off('captureImmune');
     this.socket.off('captureImmunityRemoved');
     this.socket.off('pieceSpawn');

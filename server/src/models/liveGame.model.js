@@ -65,6 +65,7 @@ export class LiveGame {
           omegaUpgrade: '',
           fogOfWarP1: 0,
           fogOfWarP2: 0,
+          explosivePawns: [],
         };
       } else if (crazyChessPowers) {
         this.crazyChessPowers = crazyChessPowers;

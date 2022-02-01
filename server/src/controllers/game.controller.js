@@ -22,6 +22,7 @@ import {
   getStartingPowers,
   getGoldBolt,
   incrementPowerFreq,
+  selectExplosivePawn,
 } from '../model.js';
 import { addLiveGameDB } from '../firestore.js';
 
@@ -171,6 +172,12 @@ gameRouter.post('/spawnFriendlyPiece', async (req, res) => {
 gameRouter.post('/omegaPieceUpgrade', async (req, res) => {
   if (!req.session.userID) return res.status(401).end();
   omegaPieceUpgrade(req.body.gameId, req.session.userID);
+  res.status(200).end();
+});
+
+gameRouter.post('/explosivePawn', async (req, res) => {
+  if (!req.session.userID) return res.status(401).end();
+  selectExplosivePawn(req.body.gameId, req.session.userID, req.body.row, req.body.col);
   res.status(200).end();
 });
 

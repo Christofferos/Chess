@@ -7,4 +7,5 @@ export const POWER = {
   SPAWN: 'spawn',
   UPGRADE: 'upgrade',
   FOG: 'fog',
+  EXPLOSIVE: 'explosive',
 };

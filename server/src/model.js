@@ -386,6 +386,15 @@ const gameOver = async game => {
   removeLiveGame(game.id);
 };
 
+String.prototype.replaceAt = function(index, replacement) {
+  if (index >= this.length) {
+    return this.valueOf();
+  }
+  var chars = this.split('');
+  chars[index] = replacement;
+  return chars.join('');
+};
+
 /**
  * Updates the piece placement
  */
@@ -398,7 +407,7 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
   if (!game) return;
   if (game.gameState.fen() !== game.fen) game.gameState.load(game.fen);
   let move;
-  let isCaptureImmunity = false;
+  let isCaptureImmunityEnabled = false;
   let isOmegaUpgradeActive = false;
   let isGoldBoltMove = false;
   const isCrazyChessGame = games[gameId].isCrazyChess;
@@ -410,7 +419,7 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
       isOmegaUpgrade,
       isEndPosOnGoldBolt,
     } = crazyChessPower(game, username, endPos);
-    isCaptureImmunity = isCaptureImmune;
+    isCaptureImmunityEnabled = isCaptureImmune;
     isOmegaUpgradeActive = isOmegaUpgrade;
     isGoldBoltMove = isEndPosOnGoldBolt;
     if (isRoadblock) {
@@ -430,16 +439,64 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
   const isValidMove = move;
   const isValidMoveInCrazyChess = move && isCrazyChessGame;
   const flags = isValidMove ? move.flags : null;
-  if (isCaptureImmunity && isMoveCapture(flags)) {
+  if (isCaptureImmunityEnabled && isMoveCapture(flags)) {
     return captureImmunityHandling(game, isPlayer1);
-  } else if (isValidMoveInCrazyChess && isCaptureImmunity) {
+  } else if (isCaptureImmunityEnabled && isValidMoveInCrazyChess) {
     game.crazyChessPowers.captureImmunity = '';
     captureImmunityRemoved(game);
   }
   if (isValidMove) startOpposingTimer(game);
   game.fen = game.gameState.fen();
   if (isValidMoveInCrazyChess && isOmegaUpgradeActive) upgradePiece(gameId, endPos, username);
-  if (isValidMoveInCrazyChess) fogOfWarDurationHandling(game);
+  if (isValidMoveInCrazyChess) {
+    fogOfWarDurationHandling(game);
+    const { row: startRow, col: startCol } = translateSelectedPiece(startPos);
+    const { row: endRow, col: endCol } = translateSelectedPiece(endPos);
+    const explosivePawnIndex = game.crazyChessPowers.explosivePawns.indexOf(
+      `${startRow}${startCol}`,
+    );
+    const isExplosivePawnFound = explosivePawnIndex !== -1;
+    const killExplosivePawnIndex = game.crazyChessPowers.explosivePawns.indexOf(
+      `${endRow}${endCol}`,
+    );
+    const isExplosivePawnKilled = killExplosivePawnIndex !== -1;
+    if (isMoveCapture(flags) && isExplosivePawnKilled) {
+      game.crazyChessPowers.explosivePawns.splice(explosivePawnIndex, 1);
+      /* let rowTemp = 0;
+      let colTemp = 0;
+      const pieces = game.fen.split(' ')[0];
+      let piecesCopy = pieces;
+      for (let i = 0; i < pieces.length; i += 1) {
+        if (pieces.charAt(i) === '/') {
+          rowTemp += 1;
+          colTemp = 0;
+        } else if (pieces.charAt(i).match('[rnbqkpRNBQKP]')) {
+          console.log('STATUS:', endRow, endCol, rowTemp, colTemp, pieces);
+          if (endRow === rowTemp && endCol === colTemp) {
+            const signBefore = pieces.charAt(i - 1);
+            const signAfter = pieces.charAt(i + 1);
+            if (!isNaN(signBefore) && !isNaN(signAfter))
+              piecesCopy.replaceAt(i, Number(signBefore) + Number(signAfter) + 1);
+            else if (isNaN(signBefore) && !isNaN(signAfter))
+              piecesCopy.replaceAt(i, Number(signAfter) + 1);
+            else if (!isNaN(signBefore) && isNaN(signAfter))
+              piecesCopy.replaceAt(i, Number(signBefore) + 1);
+            else if (isNaN(signBefore) && isNaN(signAfter)) piecesCopy.replaceAt(i, 1);
+            console.log('BEFORE ', game.fen);
+            game.fen = piecesCopy;
+            console.log('AFTER ', game.fen);
+          }
+          colTemp += 1;
+        } else {
+          colTemp += Number(pieces.charAt(i));
+        }
+      } */
+      io.in(gameId).emit('explosivePawnPosition', game.crazyChessPowers.explosivePawns);
+    } else if (isExplosivePawnFound) {
+      game.crazyChessPowers.explosivePawns[explosivePawnIndex] = `${endRow}${endCol}`;
+      io.in(gameId).emit('explosivePawnPosition', game.crazyChessPowers.explosivePawns);
+    }
+  }
   const gameHistoryLength = game.gameState.history().length;
   if (isValidMoveInCrazyChess && gameHistoryLength % 7 === 0) generateNewPower(gameId);
   if (isValidMoveInCrazyChess && gameHistoryLength % 15 === 0) spawnGoldBolt(gameId);
@@ -738,6 +795,45 @@ const upgradePiece = (gameId, upgradeCell, username) => {
   }
 };
 
+export const selectExplosivePawn = (gameId, username, row, col) => {
+  const game = games[gameId];
+  if (!game) return;
+  const isPlayer1 = username === game.player1;
+  const isPlayer2 = username === game.player2;
+  if (isPlayer1 && !game.availablePowers.player1.includes(POWER.EXPLOSIVE)) return;
+  else if (isPlayer2 && !game.availablePowers.player2.includes(POWER.EXPLOSIVE)) return;
+  const pieces = game.fen.split(' ')[0];
+  let rowIter = 0;
+  let colIter = 0;
+  for (let i = 0; i < pieces.length; i += 1) {
+    const isSelectedCell = row === rowIter && col === colIter;
+    const rowColId = `${row}${col}`;
+    const isUnique = game.crazyChessPowers.explosivePawns.indexOf(rowColId) === -1;
+    if (pieces.charAt(i) === '/') {
+      rowIter += 1;
+      colIter = 0;
+    } else if (isSelectedCell && isUnique && isPlayer1 && pieces.charAt(i).match('[P]')) {
+      removeUserPowerOnce(POWER.EXPLOSIVE, username, game);
+      io.in(gameId).emit('selectExplosivePawn', row, col);
+      game.crazyChessPowers.explosivePawns.push(`${row}${col}`);
+      return;
+    } else if (isSelectedCell && isUnique && isPlayer2 && pieces.charAt(i).match('[p]')) {
+      removeUserPowerOnce(POWER.EXPLOSIVE, username, game);
+      io.in(gameId).emit('selectExplosivePawn', row, col);
+      game.crazyChessPowers.explosivePawns.push(`${row}${col}`);
+      return;
+    } else if (pieces.charAt(i).match('[rnbqkpRNBQKP]')) {
+      colIter += 1;
+    } else {
+      for (let j = 0; j < Number(pieces.charAt(i)); j += 1) {
+        colIter += 1;
+      }
+    }
+  }
+};
+
+export const pawnExplode = () => {};
+
 export const fogOfWar = (gameId, username) => {
   const game = games[gameId];
   if (!game) return;
@@ -821,9 +917,10 @@ const getPower = playerPowers => {
     POWER.SPAWN,
     POWER.UPGRADE,
     POWER.FOG,
+    POWER.EXPLOSIVE,
   ];
   const filteredPowers = allPowers.filter(power => !playerPowers.includes(power));
-  const uniquePower = filteredPowers[Math.floor(Math.random() * filteredPowers.length)];
+  const uniquePower = filteredPowers[filteredPowers.length - 1]; // filteredPowers[Math.floor(Math.random() * filteredPowers.length)];
   return uniquePower;
 };
 
