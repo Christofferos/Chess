@@ -1,5 +1,5 @@
 # Choose the Image which has Node installed already
-FROM node:alpine
+FROM node:10
 
 # Create app directory
 WORKDIR /usr/src/chess-app
