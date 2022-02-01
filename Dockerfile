@@ -8,6 +8,8 @@ WORKDIR /usr/src/chess-app
 COPY package*.json ./
 COPY yarn.lock ./
 RUN yarn
+RUN cd client && yarn
+RUN cd server && yarn
 
 # COPY all the files from Current Directory into the Container
 COPY . .
