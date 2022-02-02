@@ -12,9 +12,8 @@ steps:
     args: [app, deploy]
   - name: gcr.io/cloud-builders/yarn
     args: [start]
-
-images: ["gcr.io/${PROJECT_ID}/chess-gcp-image"]
-timeout: "1600s"
+# images: ["gcr.io/${PROJECT_ID}/chess-gcp-image"]
+# timeout: "1600s"
 #- name: "gcr.io/cloud-builders/gcloud"
 #  args: [
 #      "app",
