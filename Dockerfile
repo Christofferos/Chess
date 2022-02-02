@@ -1,5 +1,6 @@
 # Choose the Image which has Node installed already
 FROM node:10
+# Change node version in GCP (with nvm) to 16
 
 # Create app directory
 WORKDIR /usr/src/chess-app
