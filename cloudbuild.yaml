@@ -7,7 +7,8 @@ steps:
     args: [
         "app",
         "deploy",
-        "--image-url=europe-west-docker.pkg.dev/${PROJECT_ID}/chess-gcp-image:16a652cdd060",
+        "--image-url=gcr.io/${PROJECT_ID}/chess-gcp-image:16a652cdd060",
       ] # TAG: 16a652cdd060
+# "--image-url=europe-west-docker.pkg.dev/${PROJECT_ID}/chess-gcp-image:16a652cdd060",
 images: ["gcr.io/${PROJECT_ID}/chess-gcp-image"]
 timeout: "1600s"
