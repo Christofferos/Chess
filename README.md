@@ -83,6 +83,12 @@ Sound effect for doing En Passant
 
 <img src="assets/FogOfWar2.png" alt="FogOfWar2" style="width: 200px">
 
+## Snow Storm
+
+<img src="assets/SnowStorm.png" alt="SnowStorm" style="width: 200px">
+
+<img src="assets/SnowStorm2.png" alt="SnowStorm2" style="width: 200px">
+
 ## Roadblock
 
 <img src="assets/RoadBlock.png" alt="RoadBlock" style="width: 200px">
@@ -106,12 +112,6 @@ Sound effect for doing En Passant
 <img src="assets/ExplosivePawn.png" alt="explosivePawn" style="width: 200px">
 
 <img src="assets/ExplosivePawn2.png" alt="explosivePawn2" style="width: 200px">
-
-## Snow Storm
-
-<img src="assets/SnowStorm.png" alt="SnowStorm" style="width: 200px">
-
-<img src="assets/SnowStorm2.png" alt="SnowStorm2" style="width: 200px">
 
 ## Time Attack
 
@@ -178,6 +178,9 @@ Deployed with Public Cloud provider (hyperscaler) GCP via App Engine on this lin
 
 **_---------------_**
 
+* 🥶 Piece Freeze - Freeze pawn for 2 turns, which is invincible until unfrozen
+* ❄️ Snow Storm - All pieces can move a maximum of 1 square except horses & king- duration is 2 turns
+
 <details>
 <summary>
 <strong>Extra Notes: (Click here)</strong>
@@ -187,8 +190,6 @@ Easter egg: Powers that were planned to be included in the game
 * 🌌 King Teleportation - Teleport two steps in any direction
 * 🏎️ Racecar Pawn - Permanent 2 step ability on one pawn, cannot move past enemy pieces
 * 🚀 Missle Launch - Select target square for explosion in 3 turns, can only select unoccupied squares
-* 🥶 Piece Freeze - Freeze piece for 2 turns, selected piece is invincible until unfrozen
-* ❄️ Snow Storm - All pieces can move a maximum of 1 square except horses - duration is 3 turns
 * 🪞 Mirror Move - Y-axis mirror the steps you just did with the piece
 
 [9]. (Squares fall off the board, disco board, rotating board, have to solve puzzles before you can
