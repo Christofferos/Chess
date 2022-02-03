@@ -454,7 +454,6 @@
             >Snow Freeze ({{ powersAvailable.filter((x) => x === SNOW_FREEZE_KEY).length }})</span
           >
         </button>
-
         <!-- 
           <button v-if="powersAvailable.includes(...)" 
         v-on:click="kingTeleportation()" class="well btn btn-default button gameCodeBtn" v-bind:style="{
@@ -463,7 +462,6 @@
           🌌 <span class="powerText">King Teleportation</span> (Teleport two steps in any direction)
         </button> 
         -->
-
         <!-- 
         <button v-if="powersAvailable.includes(...)" 
         v-on:click="racecarPawn()" class="well btn btn-default button gameCodeBtn" v-bind:style="{
@@ -472,38 +470,6 @@
           🏎️ <span class="powerText">Racecar Pawn</span> (2 step pawn. Cannot move past enemy pieces)
         </button> 
         -->
-
-        <!--
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          🚀 <span class="powerText">Missle Launch</span>
-          (.load(fen))
-        </button>
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          🏗️ <span class="powerText">Put up a giant wall</span> (no one can move past it)
-        </button>
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          🕹️ <span class="powerText">Opponent Puzzle</span>
-        </button>
-        <button v-clipboard="() => chooseOnePawnOnEachSideToDie" class="well btn btn-default button gameCodeBtn">
-          ⚔️ <span class="powerText">One Piece of Each Die</span>
-        </button>
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          ☠️ <span class="powerText">Kill Enemy Pawn</span>
-        </button>
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          👾 <span class="powerText">Swap Piece Appearance</span>
-        </button>
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          🧭 <span class="powerText">Swap Orientation</span>
-        </button>
-        <button v-on:click="playTwice()" class="well btn btn-default button gameCodeBtn">
-          ⚡ <span class="powerText">Play Twice</span>
-        </button> 
-        <button v-on:click="" class="well btn btn-default button gameCodeBtn">
-          🚁 <span class="powerText">---</span>
-        </button> 
-        -->
-
         <div v-for="id in [3, 2, 1]" :key="id">
           <button
             v-if="powersAvailable.length < id"
