@@ -1,5 +1,5 @@
 # https://cloud.google.com/appengine/docs/flexible/nodejs/configuring-your-app-with-app-yaml
-runtime: custom # nodejs
+runtime: nodejs
 env: flex
 entrypoint: yarn start
 

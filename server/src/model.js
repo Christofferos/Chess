@@ -386,15 +386,6 @@ const gameOver = async game => {
   removeLiveGame(game.id);
 };
 
-String.prototype.replaceAt = function(index, replacement) {
-  if (index >= this.length) {
-    return this.valueOf();
-  }
-  var chars = this.split('');
-  chars[index] = replacement;
-  return chars.join('');
-};
-
 /**
  * Updates the piece placement
  */
@@ -462,12 +453,14 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
     const isExplosivePawnKilled = killExplosivePawnIndex !== -1;
     if (isMoveCapture(flags) && isExplosivePawnKilled) {
       game.crazyChessPowers.explosivePawns.splice(explosivePawnIndex, 1);
-      /* let rowTemp = 0;
+      let rowTemp = 0;
       let colTemp = 0;
+      let newFen = '';
       const pieces = game.fen.split(' ')[0];
-      let piecesCopy = pieces;
+      const fenMetaData = game.fen.split(' ')[1];
       for (let i = 0; i < pieces.length; i += 1) {
         if (pieces.charAt(i) === '/') {
+          newFen = `${newFen}/`;
           rowTemp += 1;
           colTemp = 0;
         } else if (pieces.charAt(i).match('[rnbqkpRNBQKP]')) {
@@ -475,22 +468,29 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
           if (endRow === rowTemp && endCol === colTemp) {
             const signBefore = pieces.charAt(i - 1);
             const signAfter = pieces.charAt(i + 1);
-            if (!isNaN(signBefore) && !isNaN(signAfter))
-              piecesCopy.replaceAt(i, Number(signBefore) + Number(signAfter) + 1);
-            else if (isNaN(signBefore) && !isNaN(signAfter))
-              piecesCopy.replaceAt(i, Number(signAfter) + 1);
-            else if (!isNaN(signBefore) && isNaN(signAfter))
-              piecesCopy.replaceAt(i, Number(signBefore) + 1);
-            else if (isNaN(signBefore) && isNaN(signAfter)) piecesCopy.replaceAt(i, 1);
-            console.log('BEFORE ', game.fen);
-            game.fen = piecesCopy;
-            console.log('AFTER ', game.fen);
+            if (!isNaN(signBefore) && !isNaN(signAfter)) {
+              newFen = `${newFen}${Number(signBefore) + Number(signAfter) + 1}`;
+              i += 1;
+            } else if (isNaN(signBefore) && !isNaN(signAfter)) {
+              newFen = `${newFen}${Number(signAfter) + 1}`;
+              i += 1;
+            } else if (!isNaN(signBefore) && isNaN(signAfter)) {
+              newFen = `${newFen}${Number(signBefore) + 1}`;
+            } else if (isNaN(signBefore) && isNaN(signAfter)) {
+              newFen = `${newFen}1`;
+            }
+          } else {
+            newFen = `${newFen}${pieces.charAt(i)}`;
           }
           colTemp += 1;
         } else {
+          newFen = `${newFen}${pieces.charAt(i)}`;
           colTemp += Number(pieces.charAt(i));
         }
-      } */
+      }
+      console.log('BEFORE ', game.fen);
+      game.fen = `${newFen}${fenMetaData}`;
+      console.log('AFTER ', game.fen);
       io.in(gameId).emit('explosivePawnPosition', game.crazyChessPowers.explosivePawns);
     } else if (isExplosivePawnFound) {
       game.crazyChessPowers.explosivePawns[explosivePawnIndex] = `${endRow}${endCol}`;
