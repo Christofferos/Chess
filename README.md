@@ -178,7 +178,6 @@ Deployed with Public Cloud provider (hyperscaler) GCP via App Engine on this lin
 </summary>
   
 Easter egg: Powers that were planned to be included in the game
-* 💣 Explosive Pawn - Explodes on death, kills capturing piece, except king
 * 🌌 King Teleportation - Teleport two steps in any direction
 * 🏎️ Racecar Pawn - Permanent 2 step ability on one pawn, cannot move past enemy pieces
 * 🚀 Missle Launch - Select target square for explosion in 3 turns, can only select unoccupied squares
