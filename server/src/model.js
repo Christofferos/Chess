@@ -386,6 +386,56 @@ const gameOver = async game => {
   removeLiveGame(game.id);
 };
 
+const removePieceFromFenString = (FEN, endRow, endCol) => {
+  let rowTemp = 0;
+  let colTemp = 0;
+  let newFenPieceLocation = '';
+  const pieces = FEN.slice(0, FEN.indexOf(' '));
+  const fenMetaData = FEN.slice(FEN.indexOf(' ') + 1);
+  console.log('HERE: ', fenMetaData);
+  console.log('HERE2: ', FEN);
+  for (let i = 0; i < pieces.length; i += 1) {
+    if (pieces.charAt(i) === '/') {
+      newFenPieceLocation = `${newFenPieceLocation}/`;
+      rowTemp += 1;
+      colTemp = 0;
+    } else if (pieces.charAt(i).match('[rnbqkpRNBQKP]')) {
+      if (endRow === rowTemp && endCol === colTemp) {
+        console.log('STATUS:', endRow, endCol, rowTemp, colTemp, pieces);
+        const signBefore = pieces.charAt(i - 1);
+        const signAfter = pieces.charAt(i + 1);
+        if (!isNaN(signBefore) && !isNaN(signAfter)) {
+          newFenPieceLocation = `${newFenPieceLocation.slice(
+            0,
+            newFenPieceLocation.length - 1,
+          )}${Number(signBefore) + Number(signAfter) + 1}`;
+          i += 1;
+        } else if (isNaN(signBefore) && !isNaN(signAfter)) {
+          newFenPieceLocation = `${newFenPieceLocation}${Number(signAfter) + 1}`;
+          i += 1;
+        } else if (!isNaN(signBefore) && isNaN(signAfter)) {
+          newFenPieceLocation = `${newFenPieceLocation.slice(
+            0,
+            newFenPieceLocation.length - 1,
+          )}${Number(signBefore) + 1}`;
+        } else if (isNaN(signBefore) && isNaN(signAfter)) {
+          newFenPieceLocation = `${newFenPieceLocation}1`;
+        }
+      } else {
+        newFenPieceLocation = `${newFenPieceLocation}${pieces.charAt(i)}`;
+      }
+      colTemp += 1;
+    } else {
+      newFenPieceLocation = `${newFenPieceLocation}${pieces.charAt(i)}`;
+      colTemp += Number(pieces.charAt(i));
+    }
+  }
+  console.log('FEN BEFORE ', FEN);
+  const newGameFEN = `${newFenPieceLocation} ${fenMetaData}`;
+  console.log('FEN AFTER ', newGameFEN);
+  return newGameFEN;
+};
+
 /**
  * Updates the piece placement
  */
@@ -452,45 +502,8 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
     );
     const isExplosivePawnKilled = killExplosivePawnIndex !== -1;
     if (isMoveCapture(flags) && isExplosivePawnKilled) {
+      game.fen = removePieceFromFenString(game.fen, endRow, endCol);
       game.crazyChessPowers.explosivePawns.splice(explosivePawnIndex, 1);
-      let rowTemp = 0;
-      let colTemp = 0;
-      let newFen = '';
-      const pieces = game.fen.split(' ')[0];
-      const fenMetaData = game.fen.split(' ')[1];
-      for (let i = 0; i < pieces.length; i += 1) {
-        if (pieces.charAt(i) === '/') {
-          newFen = `${newFen}/`;
-          rowTemp += 1;
-          colTemp = 0;
-        } else if (pieces.charAt(i).match('[rnbqkpRNBQKP]')) {
-          console.log('STATUS:', endRow, endCol, rowTemp, colTemp, pieces);
-          if (endRow === rowTemp && endCol === colTemp) {
-            const signBefore = pieces.charAt(i - 1);
-            const signAfter = pieces.charAt(i + 1);
-            if (!isNaN(signBefore) && !isNaN(signAfter)) {
-              newFen = `${newFen}${Number(signBefore) + Number(signAfter) + 1}`;
-              i += 1;
-            } else if (isNaN(signBefore) && !isNaN(signAfter)) {
-              newFen = `${newFen}${Number(signAfter) + 1}`;
-              i += 1;
-            } else if (!isNaN(signBefore) && isNaN(signAfter)) {
-              newFen = `${newFen}${Number(signBefore) + 1}`;
-            } else if (isNaN(signBefore) && isNaN(signAfter)) {
-              newFen = `${newFen}1`;
-            }
-          } else {
-            newFen = `${newFen}${pieces.charAt(i)}`;
-          }
-          colTemp += 1;
-        } else {
-          newFen = `${newFen}${pieces.charAt(i)}`;
-          colTemp += Number(pieces.charAt(i));
-        }
-      }
-      console.log('BEFORE ', game.fen);
-      game.fen = `${newFen}${fenMetaData}`;
-      console.log('AFTER ', game.fen);
       io.in(gameId).emit('explosivePawnPosition', game.crazyChessPowers.explosivePawns);
     } else if (isExplosivePawnFound) {
       game.crazyChessPowers.explosivePawns[explosivePawnIndex] = `${endRow}${endCol}`;
