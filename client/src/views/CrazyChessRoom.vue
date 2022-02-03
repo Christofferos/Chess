@@ -103,8 +103,8 @@
           }
         "
       >
-        <div class="snowStormContainer" v-if="false">
-          <div class="snowStorm" type="text"><span>❄️</span></div>
+        <div class="snowStormContainer" v-if="isSnowFreezeIconDisplayed">
+          <div class="snowStorm" type="text"><span>❄️🥶</span></div>
         </div>
         <div
           class="row"
@@ -415,6 +415,7 @@
           v-if="powersAvailable.includes(EXPLOSIVE_KEY)"
           v-on:click="
             () => {
+              if (isIncrementPowerFreq) return;
               if (!isClientTurn) return;
               isPieceSelectionDisabled = true;
               powersAvailable = removeItemOnce(powersAvailable, EXPLOSIVE_KEY);
@@ -426,37 +427,60 @@
             backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
             boxShadow: isClientTurn ? null : `inset 0px 0px 0px 1px #8E000B`,
           }"
+          v-bind:id="EXPLOSIVE_KEY"
         >
+          <!-- (Explodes on death - kills capturing piece - except king) -->
           💣
           <span class="powerText"
             >Explosive Pawn ({{ powersAvailable.filter((x) => x === EXPLOSIVE_KEY).length }})</span
           >
         </button>
-        <!-- (Explodes on death - kills capturing piece - except king)
-
-        <button v-on:click="fogOfWar()" class="well btn btn-default button gameCodeBtn">
-          🌌 <span class="powerText">Teleport King</span> (Teleport two steps in any direction)
+        <button
+          v-if="powersAvailable.includes(SNOW_FREEZE_KEY)"
+          v-on:click="
+            () => {
+              snowFreeze();
+            }
+          "
+          class="well btn btn-default button gameCodeBtn"
+          v-bind:style="{
+            backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
+          }"
+          v-bind:id="SNOW_FREEZE_KEY"
+        >
+          <!-- All pieces can move max one step, except horses. Freeze one pawn for 2 turns (invincible until unfrozen). -->
+          ❄️🥶
+          <span class="powerText"
+            >Snow Freeze ({{ powersAvailable.filter((x) => x === SNOW_FREEZE_KEY).length }})</span
+          >
         </button>
+
+        <!-- 
+          <button v-if="powersAvailable.includes(...)" 
+        v-on:click="kingTeleportation()" class="well btn btn-default button gameCodeBtn" v-bind:style="{
+            backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
+          }" v-bind:id="...">
+          🌌 <span class="powerText">King Teleportation</span> (Teleport two steps in any direction)
+        </button> 
         -->
 
         <!-- 
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          🏎️ <span class="powerText">Fast Pawn</span> (Cannot move past enemy pieces - with this)
-        </button>
+        <button v-if="powersAvailable.includes(...)" 
+        v-on:click="racecarPawn()" class="well btn btn-default button gameCodeBtn" v-bind:style="{
+            backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
+          }" v-bind:id="...">
+          🏎️ <span class="powerText">Racecar Pawn</span> (2 step pawn. Cannot move past enemy pieces)
+        </button> 
+        -->
+
+        <!--
         <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
           🚀 <span class="powerText">Missle Launch</span>
           (.load(fen))
         </button>
         <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          🥶 <span class="powerText">Freeze Piece</span> (enemy piece invincible until unfrozen)
-        </button>
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          ❄️ <span class="powerText">Snow Storm</span> (all pieces can move max one step - except horses)
-        </button>
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
           🏗️ <span class="powerText">Put up a giant wall</span> (no one can move past it)
         </button>
-        ---
         <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
           🕹️ <span class="powerText">Opponent Puzzle</span>
         </button>
@@ -543,6 +567,9 @@ export default {
       isPieceSelectionDisabled: false,
       isOmegaPieceUpgradeEnabled: false,
       isFogOfWarEnabled: false,
+      isSnowFreezeEnabled: false,
+      isSnowFreezeIconDisplayed: false,
+      isPieceFreezeSelection: false,
       displayFogOfWarShadowing: false,
       isIncrementPowerFreq: false,
       disabledCells: [],
@@ -637,6 +664,7 @@ export default {
       UPGRADE_KEY: 'upgrade',
       FOG_KEY: 'fog',
       EXPLOSIVE_KEY: 'explosive',
+      SNOW_FREEZE_KEY: 'snowfreeze',
     };
   },
   methods: {
@@ -882,6 +910,27 @@ export default {
           return;
         });
 
+      fetch(`/api/checkSnowFreeze`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: this.room,
+        }),
+      })
+        .then((resp) => {
+          return resp.json();
+        })
+        .then(({ isSnowFreeze }) => {
+          this.isSnowFreezeEnabled = isSnowFreeze;
+          this.isReadyToRenderPieces = true;
+        })
+        .catch((err) => {
+          console.log('/checkSnowFreeze failed', err);
+          return;
+        });
+
       fetch(`/api/startingPowers`, {
         method: 'POST',
         headers: {
@@ -1027,6 +1076,25 @@ export default {
           if (this.black) this.displayFogOfWarShadowing = true;
           this.powersAvailable = this.removeItemOnce(this.powersAvailable, this.FOG_KEY);
         }
+      });
+
+      this.$store.state.socket.on('snowFreezeEnable', (color) => {
+        this.isSnowFreezeEnabled = true;
+        const isPlayer1Initiated = color === 'b' && !this.black;
+        const isPlayer2Initiated = color === 'w' && this.black;
+        if (isPlayer1Initiated) {
+          this.isPieceFreezeSelection = true;
+          this.powersAvailable = this.removeItemOnce(this.powersAvailable, this.SNOW_FREEZE_KEY);
+        } else if (isPlayer2Initiated) {
+          this.isPieceFreezeSelection = true;
+          this.powersAvailable = this.removeItemOnce(this.powersAvailable, this.SNOW_FREEZE_KEY);
+        }
+        this.isSnowFreezeIconDisplayed = true;
+        setTimeout(() => (this.isSnowFreezeIconDisplayed = false), 2000);
+      });
+
+      this.$store.state.socket.on('snowFreezeDisable', () => {
+        this.isSnowFreezeEnabled = false;
       });
 
       this.$store.state.socket.on('fogOfWarDisable', (color) => {
@@ -1419,6 +1487,20 @@ export default {
         console.log('/fogOfWar failed', err);
       });
     },
+    snowFreeze() {
+      if (this.isIncrementPowerFreq) return;
+      fetch(`/api/snowFreeze`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: this.room,
+        }),
+      }).catch((err) => {
+        console.log('/snowFreeze failed', err);
+      });
+    },
     selectExplosivePawn(rowTemp, colTemp) {
       if (this.isIncrementPowerFreq) return;
       const { row, col } = this.translateIndices(rowTemp, colTemp);
@@ -1455,6 +1537,8 @@ export default {
       const explosivePawnSelectionDarkGreen = '#58B23B';
       const fogOfWarDarkGreen = '#3B4B2B';
       const fogOfWarDarkWhite = '#777769';
+      const snowFreezeWhiteBlue = '#A0E5BE';
+      const snowFreezeDarkBlue = '#3A7777';
       const highlightYellowWhite = '#F4F483';
       const highlightYellowGreen = '#BAC948';
       const isHighlightLastMoveCell =
@@ -1468,13 +1552,10 @@ export default {
       if (this.selectedPiece === row.toString() + col.toString()) {
         return 'yellow';
       }
-      /* const isCorrectPiecesMarked =
-        (!this.black && isExplosivePawnSelection
-          (this.piecePlacement[row][col] === 'P' || this.piecePlacement[row][col] === 'N')) ||
-        (this.black &&
-          (this.piecePlacement[row][col] === 'p' || this.piecePlacement[row][col] === 'n'));
-      const isPieceEligibleForUpgrade = this.isOmegaPieceUpgradeEnabled && isCorrectPiecesMarked;
-      return isPieceEligibleForUpgrade; */
+      /* const isPieceFreezeEligable =
+        this.isSnowFreezeEnabled &&
+        ((!this.black && this.piecePlacement[row][col].match(['rnbqkp'])) ||
+          (this.black && this.piecePlacement[row][col].match(['RNBQKP']))); */
       const isWhiteSquares = (col + row) % 2 === 0;
       const isGreenSquares = !isWhiteSquares;
       if (isWhiteSquares) {
@@ -1485,6 +1566,7 @@ export default {
           return fogOfWarDarkWhite;
         else if (this.displayFogOfWarShadowing && !isOpponentSide) return fogOfWarDarkWhite;
         else if (isHighlightLastMoveCell) return highlightYellowWhite;
+        else if (this.isSnowFreezeEnabled) return snowFreezeWhiteBlue;
         else return this.cellWhiteColor;
       } else if (isGreenSquares) {
         if (this.isPieceSpawnEnabled && row === 5) return omegaUpgradeLightGreen;
@@ -1494,6 +1576,7 @@ export default {
           return fogOfWarDarkGreen;
         else if (this.displayFogOfWarShadowing && !isOpponentSide) return fogOfWarDarkGreen;
         else if (isHighlightLastMoveCell) return highlightYellowGreen;
+        else if (this.isSnowFreezeEnabled) return snowFreezeDarkBlue;
         else return this.cellGreenColor;
       }
     },
@@ -1617,6 +1700,8 @@ export default {
     this.socket.off('omegaPieceUpgrade');
     this.socket.off('fogOfWarEnable');
     this.socket.off('fogOfWarDisable');
+    this.socket.off('snowFreezeEnable');
+    this.socket.off('snowFreezeDisable');
     this.socket.off('updatedPowers');
     this.socket.off('spawnGoldBolt');
     this.socket.off('movePieceResponse');

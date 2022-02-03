@@ -66,6 +66,8 @@ export class LiveGame {
           fogOfWarP1: 0,
           fogOfWarP2: 0,
           explosivePawns: [],
+          snowFreezeP1: 0,
+          snowFreezeP2: 0,
         };
       } else if (crazyChessPowers) {
         this.crazyChessPowers = crazyChessPowers;

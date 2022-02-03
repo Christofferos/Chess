@@ -23,6 +23,8 @@ import {
   getGoldBolt,
   incrementPowerFreq,
   selectExplosivePawn,
+  snowFreeze,
+  getSnowFreeze,
 } from '../model.js';
 import { addLiveGameDB } from '../firestore.js';
 
@@ -185,6 +187,18 @@ gameRouter.post('/fogOfWar', async (req, res) => {
   if (!req.session.userID) return res.status(401).end();
   fogOfWar(req.body.gameId, req.session.userID);
   res.status(200).end();
+});
+
+gameRouter.post('/snowFreeze', async (req, res) => {
+  if (!req.session.userID) return res.status(401).end();
+  snowFreeze(req.body.gameId, req.session.userID);
+  res.status(200).end();
+});
+
+gameRouter.post('/checkSnowFreeze', async (req, res) => {
+  if (!req.session.userID) return res.status(401).end();
+  const isSnowFreeze = getSnowFreeze(req.body.gameId);
+  res.json({ isSnowFreeze });
 });
 
 gameRouter.post('/checkFogOfWar', async (req, res) => {

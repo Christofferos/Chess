@@ -431,6 +431,18 @@ const removePieceFromFenString = (FEN, endRow, endCol) => {
   return newGameFEN;
 };
 
+const oneStepMove = (game, startPos, startRow, startCol, endRow, endCol) => {
+  const piece = game.gameState.get(startPos);
+  const type = piece?.type;
+  if (!type) return true;
+  if (type.match('[rbqpRBQP]')) {
+    const xDistance = Math.abs(startCol - endCol);
+    const yDistance = Math.abs(startRow - endRow);
+    if (xDistance <= 1 && yDistance <= 1) return true;
+    else return false;
+  } else return true;
+};
+
 /**
  * Updates the piece placement
  */
@@ -444,6 +456,7 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
   if (game.gameState.fen() !== game.fen) game.gameState.load(game.fen);
   let move;
   let isCaptureImmunityEnabled = false;
+  const isSnowFreeze = getSnowFreeze(gameId);
   let isOmegaUpgradeActive = false;
   let isGoldBoltMove = false;
   const isCrazyChessGame = games[gameId].isCrazyChess;
@@ -465,7 +478,12 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
     move = randomMove;
   }
   const isNoMoveMadeYet = !move;
-  if (isNoMoveMadeYet) {
+  const { row: startRow, col: startCol } = translateSelectedPiece(startPos);
+  const { row: endRow, col: endCol } = translateSelectedPiece(endPos);
+  let isValidMoveInSnowStorm = true;
+  if (isSnowFreeze)
+    isValidMoveInSnowStorm = oneStepMove(game, startPos, startRow, startCol, endRow, endCol);
+  if (isNoMoveMadeYet && isValidMoveInSnowStorm) {
     move = game.gameState.move({
       from: startPos,
       to: endPos,
@@ -486,8 +504,7 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
   if (isValidMoveInCrazyChess && isOmegaUpgradeActive) upgradePiece(gameId, endPos, username);
   if (isValidMoveInCrazyChess) {
     fogOfWarDurationHandling(game);
-    const { row: startRow, col: startCol } = translateSelectedPiece(startPos);
-    const { row: endRow, col: endCol } = translateSelectedPiece(endPos);
+    snowFreezeDurationHandling(game);
     const explosivePawnIndex = game.crazyChessPowers.explosivePawns.indexOf(
       `${startRow}${startCol}`,
     );
@@ -844,6 +861,40 @@ export const selectExplosivePawn = (gameId, username, row, col) => {
   }
 };
 
+export const snowFreeze = (gameId, username) => {
+  /* ❄️🥶 */
+  const game = games[gameId];
+  if (!game) return;
+  const isPlayer1 = username === game.player1;
+  const isPlayer2 = username === game.player2;
+  if (isPlayer1 && !game.availablePowers.player1.includes(POWER.SNOW_FREEZE)) return;
+  else if (isPlayer2 && !game.availablePowers.player2.includes(POWER.SNOW_FREEZE)) return;
+  if (isPlayer1) {
+    game.crazyChessPowers.snowFreezeP1 = 2;
+    io.in(gameId).emit('snowFreezeEnable', 'b');
+    removeUserPowerOnce(POWER.SNOW_FREEZE, username, game);
+  } else if (isPlayer2) {
+    game.crazyChessPowers.snowFreezeP2 = 2;
+    io.in(gameId).emit('snowFreezeEnable', 'w');
+    removeUserPowerOnce(POWER.SNOW_FREEZE, username, game);
+  }
+};
+
+export const getSnowFreeze = gameId => {
+  const game = games[gameId];
+  if (!game) return;
+  if (game.crazyChessPowers.snowFreezeP1 > 0) return true;
+  if (game.crazyChessPowers.snowFreezeP2 > 0) return true;
+  return false;
+};
+
+const snowFreezeDurationHandling = game => {
+  if (game.crazyChessPowers.snowFreezeP1 > 0) games[game.id].crazyChessPowers.snowFreezeP1 -= 1;
+  if (game.crazyChessPowers.snowFreezeP2 > 0) games[game.id].crazyChessPowers.snowFreezeP2 -= 1;
+  if (game.crazyChessPowers.snowFreezeP1 <= 0 && game.crazyChessPowers.snowFreezeP2 <= 0)
+    io.in(game.id).emit('snowFreezeDisable');
+};
+
 export const fogOfWar = (gameId, username) => {
   const game = games[gameId];
   if (!game) return;
@@ -928,6 +979,7 @@ const getPower = playerPowers => {
     POWER.UPGRADE,
     POWER.FOG,
     POWER.EXPLOSIVE,
+    POWER.SNOW_FREEZE,
   ];
   const filteredPowers = allPowers.filter(power => !playerPowers.includes(power));
   const uniquePower = filteredPowers[Math.floor(Math.random() * filteredPowers.length)]; // filteredPowers[filteredPowers.length - 1];

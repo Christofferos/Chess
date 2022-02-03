@@ -8,4 +8,5 @@ export const POWER = {
   UPGRADE: 'upgrade',
   FOG: 'fog',
   EXPLOSIVE: 'explosive',
+  SNOW_FREEZE: 'snowfreeze',
 };
