@@ -415,13 +415,16 @@
           v-if="powersAvailable.includes(EXPLOSIVE_KEY)"
           v-on:click="
             () => {
+              if (!isClientTurn) return;
               isPieceSelectionDisabled = true;
               powersAvailable = removeItemOnce(powersAvailable, EXPLOSIVE_KEY);
+              isExplosivePawnSelection = true;
             }
           "
           class="well btn btn-default button gameCodeBtn"
           v-bind:style="{
             backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
+            boxShadow: isClientTurn ? null : `inset 0px 0px 0px 1px #8E000B`,
           }"
         >
           💣
@@ -544,6 +547,7 @@ export default {
       isIncrementPowerFreq: false,
       disabledCells: [],
       explosivePawns: [],
+      isExplosivePawnSelection: false,
       rows: [0, 1, 2, 3, 4, 5, 6, 7],
       columns: [0, 1, 2, 3, 4, 5, 6, 7],
       letters: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
@@ -970,6 +974,7 @@ export default {
       });
 
       this.$store.state.socket.on('selectExplosivePawn', (rowMsg, colMsg) => {
+        this.isExplosivePawnSelection = false;
         this.isPieceSelectionDisabled = false;
         const { row, col } = this.translateIndices(rowMsg, colMsg);
         this.explosivePawns.push(`${row}${col}`);
@@ -1415,8 +1420,8 @@ export default {
       });
     },
     selectExplosivePawn(rowTemp, colTemp) {
-      const { row, col } = this.translateIndices(rowTemp, colTemp);
       if (this.isIncrementPowerFreq) return;
+      const { row, col } = this.translateIndices(rowTemp, colTemp);
       fetch(`/api/explosivePawn`, {
         method: 'POST',
         headers: {
@@ -1446,6 +1451,8 @@ export default {
     cellBackgroundColor(row, col) {
       const omegaUpgradeWhiteGreen = '#A6E5A0';
       const omegaUpgradeLightGreen = '#58B23B';
+      const explosivePawnSelectionWhiteGreen = '#A6E5A0';
+      const explosivePawnSelectionDarkGreen = '#58B23B';
       const fogOfWarDarkGreen = '#3B4B2B';
       const fogOfWarDarkWhite = '#777769';
       const highlightYellowWhite = '#F4F483';
@@ -1454,21 +1461,35 @@ export default {
         this.highlightLastMove.from === row.toString() + col.toString() ||
         this.highlightLastMove.to === row.toString() + col.toString();
       const isOpponentSide = row <= 3;
+      const isPawn = this.piecePlacement[row][col].match('[pP]');
       const isOwnerOfPiece =
         (this.black && this.piecePlacement[row][col].match('[rnbqkp]')) ||
         (!this.black && this.piecePlacement[row][col].match('[RNBQKP]'));
       if (this.selectedPiece === row.toString() + col.toString()) {
         return 'yellow';
       }
-      if ((col + row) % 2 === 0) {
+      /* const isCorrectPiecesMarked =
+        (!this.black && isExplosivePawnSelection
+          (this.piecePlacement[row][col] === 'P' || this.piecePlacement[row][col] === 'N')) ||
+        (this.black &&
+          (this.piecePlacement[row][col] === 'p' || this.piecePlacement[row][col] === 'n'));
+      const isPieceEligibleForUpgrade = this.isOmegaPieceUpgradeEnabled && isCorrectPiecesMarked;
+      return isPieceEligibleForUpgrade; */
+      const isWhiteSquares = (col + row) % 2 === 0;
+      const isGreenSquares = !isWhiteSquares;
+      if (isWhiteSquares) {
         if (this.isPieceSpawnEnabled && row === 5) return omegaUpgradeWhiteGreen;
+        else if (this.isExplosivePawnSelection && isOwnerOfPiece && isPawn)
+          return explosivePawnSelectionWhiteGreen;
         else if (this.isFogOfWarEnabled && !isOwnerOfPiece && isOpponentSide)
           return fogOfWarDarkWhite;
         else if (this.displayFogOfWarShadowing && !isOpponentSide) return fogOfWarDarkWhite;
         else if (isHighlightLastMoveCell) return highlightYellowWhite;
         else return this.cellWhiteColor;
-      } else {
+      } else if (isGreenSquares) {
         if (this.isPieceSpawnEnabled && row === 5) return omegaUpgradeLightGreen;
+        else if (this.isExplosivePawnSelection && isOwnerOfPiece && isPawn)
+          return explosivePawnSelectionDarkGreen;
         else if (this.isFogOfWarEnabled && !isOwnerOfPiece && isOpponentSide)
           return fogOfWarDarkGreen;
         else if (this.displayFogOfWarShadowing && !isOpponentSide) return fogOfWarDarkGreen;

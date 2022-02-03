@@ -392,16 +392,13 @@ const removePieceFromFenString = (FEN, endRow, endCol) => {
   let newFenPieceLocation = '';
   const pieces = FEN.slice(0, FEN.indexOf(' '));
   const fenMetaData = FEN.slice(FEN.indexOf(' ') + 1);
-  console.log('HERE: ', fenMetaData);
-  console.log('HERE2: ', FEN);
   for (let i = 0; i < pieces.length; i += 1) {
     if (pieces.charAt(i) === '/') {
       newFenPieceLocation = `${newFenPieceLocation}/`;
       rowTemp += 1;
       colTemp = 0;
-    } else if (pieces.charAt(i).match('[rnbqkpRNBQKP]')) {
+    } else if (pieces.charAt(i).match('[rnbqpRNBQP]')) {
       if (endRow === rowTemp && endCol === colTemp) {
-        console.log('STATUS:', endRow, endCol, rowTemp, colTemp, pieces);
         const signBefore = pieces.charAt(i - 1);
         const signAfter = pieces.charAt(i + 1);
         if (!isNaN(signBefore) && !isNaN(signAfter)) {
@@ -430,9 +427,7 @@ const removePieceFromFenString = (FEN, endRow, endCol) => {
       colTemp += Number(pieces.charAt(i));
     }
   }
-  console.log('FEN BEFORE ', FEN);
   const newGameFEN = `${newFenPieceLocation} ${fenMetaData}`;
-  console.log('FEN AFTER ', newGameFEN);
   return newGameFEN;
 };
 
@@ -815,6 +810,10 @@ export const selectExplosivePawn = (gameId, username, row, col) => {
   const isPlayer2 = username === game.player2;
   if (isPlayer1 && !game.availablePowers.player1.includes(POWER.EXPLOSIVE)) return;
   else if (isPlayer2 && !game.availablePowers.player2.includes(POWER.EXPLOSIVE)) return;
+  const isPlayer1Turn = game.gameState.turn() === 'w';
+  const isPlayer2Turn = game.gameState.turn() === 'b';
+  if (isPlayer1 && !isPlayer1Turn) return;
+  else if (isPlayer2 && !isPlayer2Turn) return;
   const pieces = game.fen.split(' ')[0];
   let rowIter = 0;
   let colIter = 0;
@@ -844,8 +843,6 @@ export const selectExplosivePawn = (gameId, username, row, col) => {
     }
   }
 };
-
-export const pawnExplode = () => {};
 
 export const fogOfWar = (gameId, username) => {
   const game = games[gameId];
