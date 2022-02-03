@@ -107,6 +107,10 @@ Sound effect for doing En Passant
 
 <img src="assets/ExplosivePawn2.png" alt="explosivePawn2" style="width: 200px">
 
+## Snow Storm
+
+❄️
+
 ## Time Attack
 
 <img src="assets/CutDownTime.png" alt="CutDownTime" style="width: 200px">
