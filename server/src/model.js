@@ -930,7 +930,7 @@ const getPower = playerPowers => {
     POWER.EXPLOSIVE,
   ];
   const filteredPowers = allPowers.filter(power => !playerPowers.includes(power));
-  const uniquePower = filteredPowers[filteredPowers.length - 1]; // filteredPowers[Math.floor(Math.random() * filteredPowers.length)];
+  const uniquePower = filteredPowers[Math.floor(Math.random() * filteredPowers.length)]; // filteredPowers[filteredPowers.length - 1];
   return uniquePower;
 };
 
