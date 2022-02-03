@@ -191,6 +191,15 @@ Easter egg: Powers that were planned to be included in the game
 * 🏎️ Racecar Pawn - Permanent 2 step ability on one pawn, cannot move past enemy pieces
 * 🚀 Missle Launch - Select target square for explosion in 3 turns, can only select unoccupied squares
 * 🪞 Mirror Move - Y-axis mirror the steps you just did with the piece
+* 🚀 Missle Launch
+* 🏗️ Great Wall
+* 🕹️ Opponent Puzzle
+* ⚔️ Double Edged Sword - One Piece of Each Die
+* ☠️ Kill Enemy Pawn
+* 👾 Swap Piece Appearance
+* 🧭 Swap Orientation
+* ⚡ Play Twice
+* 🚁 Looks Cool!
 
 [9]. (Squares fall off the board, disco board, rotating board, have to solve puzzles before you can
 move - Mario Cart mechanics if ahead it gets more difficult, if you are behind you get one square
