@@ -103,9 +103,9 @@ Sound effect for doing En Passant
 
 ## Explosive Pawn
 
-<img src="assets/explosivePawn.png" alt="explosivePawn" style="width: 200px">
+<img src="assets/ExplosivePawn.png" alt="explosivePawn" style="width: 200px">
 
-<img src="assets/explosivePawn2.png" alt="explosivePawn2" style="width: 200px">
+<img src="assets/ExplosivePawn2.png" alt="explosivePawn2" style="width: 200px">
 
 ## Time Attack
 
