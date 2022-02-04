@@ -85,9 +85,9 @@ Sound effect for doing En Passant
 
 ## Snow Storm
 
-<img src="assets/SnowStorm.png" alt="SnowStorm" style="width: 200px">
-
 <img src="assets/SnowStorm2.png" alt="SnowStorm2" style="width: 200px">
+
+<img src="assets/SnowStorm.png" alt="SnowStorm" style="width: 200px">
 
 ## Roadblock
 
