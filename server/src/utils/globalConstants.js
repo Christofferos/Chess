@@ -9,4 +9,5 @@ export const POWER = {
   FOG: 'fog',
   EXPLOSIVE: 'explosive',
   SNOW_FREEZE: 'snowfreeze',
+  KING_TELEPORT: 'kingteleport',
 };

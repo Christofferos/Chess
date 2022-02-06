@@ -178,8 +178,10 @@ Deployed with Public Cloud provider (hyperscaler) GCP via App Engine on this lin
 
 **_---------------_**
 
-* 🥶 Piece Freeze - Freeze pawn for 2 turns, which is invincible until unfrozen
-* ❄️ Snow Storm - All pieces can move a maximum of 1 square except horses & king- duration is 2 turns
+- 🥶 Piece Freeze - Freeze pawn for 2 turns, which is invincible until unfrozen
+- ❄️ Snow Storm - All pieces can move a maximum of 1 square except horses & king- duration is 2 turns
+- 🌌 King Teleportation - Teleport two steps in any direction
+- 🏎️ Racecar Pawn - Permanent 2 step ability on one pawn, cannot move past enemy pieces
 
 <details>
 <summary>
@@ -187,11 +189,8 @@ Deployed with Public Cloud provider (hyperscaler) GCP via App Engine on this lin
 </summary>
   
 Easter egg: Powers that were planned to be included in the game
-* 🌌 King Teleportation - Teleport two steps in any direction
-* 🏎️ Racecar Pawn - Permanent 2 step ability on one pawn, cannot move past enemy pieces
 * 🚀 Missle Launch - Select target square for explosion in 3 turns, can only select unoccupied squares
 * 🪞 Mirror Move - Y-axis mirror the steps you just did with the piece
-* 🚀 Missle Launch
 * 🏗️ Great Wall
 * 🕹️ Opponent Puzzle
 * ⚔️ Double Edged Sword - One Piece of Each Die

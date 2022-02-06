@@ -191,7 +191,7 @@
                 >🥶</span
               >
               <span
-                v-else-if="false"
+                v-else-if="isKingTeleportEnabled && clientKing(row, col)"
                 v-bind:style="{
                   fontSize: '12px',
                 }"
@@ -454,14 +454,29 @@
             >Snow Freeze ({{ powersAvailable.filter((x) => x === SNOW_FREEZE_KEY).length }})</span
           >
         </button>
-        <!-- 
-          <button v-if="powersAvailable.includes(...)" 
-        v-on:click="kingTeleportation()" class="well btn btn-default button gameCodeBtn" v-bind:style="{
+        <button
+          v-if="powersAvailable.includes(KING_TELEPORT_KEY)"
+          v-on:click="
+            () => {
+              if (isIncrementPowerFreq) return;
+              kingTeleport();
+            }
+          "
+          class="well btn btn-default button gameCodeBtn"
+          v-bind:style="{
             backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
-          }" v-bind:id="...">
-          🌌 <span class="powerText">King Teleportation</span> (Teleport two steps in any direction)
-        </button> 
-        -->
+          }"
+          v-bind:id="KING_TELEPORT_KEY"
+        >
+          <!-- (Teleport two steps in any direction) -->
+          🌌
+          <span class="powerText"
+            >King Teleport ({{
+              powersAvailable.filter((x) => x === KING_TELEPORT_KEY).length
+            }})</span
+          >
+        </button>
+
         <!-- 
         <button v-if="powersAvailable.includes(...)" 
         v-on:click="racecarPawn()" class="well btn btn-default button gameCodeBtn" v-bind:style="{
@@ -536,6 +551,7 @@ export default {
       isSnowFreezeEnabled: false,
       isSnowFreezeIconDisplayed: false,
       isPieceFreezeSelection: false,
+      isKingTeleportEnabled: false,
       displayFogOfWarShadowing: false,
       isIncrementPowerFreq: false,
       disabledCells: [],
@@ -631,6 +647,7 @@ export default {
       FOG_KEY: 'fog',
       EXPLOSIVE_KEY: 'explosive',
       SNOW_FREEZE_KEY: 'snowfreeze',
+      KING_TELEPORT_KEY: 'kingteleport',
     };
   },
   methods: {
@@ -803,6 +820,11 @@ export default {
     },
     backToMenu() {
       this.$store.state.socket.emit('backToMenu', this.room);
+    },
+    clientKing(row, col) {
+      if (!this.black && this.piecePlacement[row][col] === 'K') return true;
+      else if (this.black && this.piecePlacement[row][col] === 'k') return true;
+      else return false;
     },
     throttle(delay, fn) {
       let lastCall = 0;
@@ -1003,6 +1025,23 @@ export default {
           );
           return `${row}${col}`;
         });
+      });
+
+      this.$store.state.socket.on('kingTeleport', (color) => {
+        if (color === 'w' && this.black) this.isKingTeleportEnabled = true;
+        else if (color === 'b' && !this.black) this.isKingTeleportEnabled = true;
+        const isPlayer1Initiated = color === 'b' && !this.black;
+        const isPlayer2Initiated = color === 'w' && this.black;
+        if (isPlayer1Initiated) {
+          this.powersAvailable = this.removeItemOnce(this.powersAvailable, this.KING_TELEPORT_KEY);
+        } else if (isPlayer2Initiated) {
+          this.powersAvailable = this.removeItemOnce(this.powersAvailable, this.KING_TELEPORT_KEY);
+        }
+      });
+
+      this.$store.state.socket.on('kingTeleportDisable', (color) => {
+        if (color === 'w' && !this.black) this.isKingTeleportEnabled = false;
+        else if (color === 'b' && this.black) this.isKingTeleportEnabled = false;
       });
 
       this.$store.state.socket.on('captureImmune', (isPlayer1) => {
@@ -1316,8 +1355,6 @@ export default {
     },
     undoMove() {
       if (this.isIncrementPowerFreq) return;
-
-      this.powersAvailable = this.removeItemOnce(this.powersAvailable, this.UNDO_KEY);
       fetch(`/api/undoMove`, {
         method: 'POST',
         headers: {
@@ -1326,9 +1363,16 @@ export default {
         body: JSON.stringify({
           gameId: this.room,
         }),
-      }).catch((err) => {
-        console.log('/undoMove failed', err);
-      });
+      })
+        .then((resp) => {
+          if (resp.ok) {
+            this.powersAvailable = this.removeItemOnce(this.powersAvailable, this.UNDO_KEY);
+          }
+          return resp;
+        })
+        .catch((err) => {
+          console.log('/undoMove failed', err);
+        });
     },
     disableSelectedCell(rowTemp, colTemp) {
       const { row, col } = this.translateIndices(rowTemp, colTemp);
@@ -1465,6 +1509,19 @@ export default {
         }),
       }).catch((err) => {
         console.log('/snowFreeze failed', err);
+      });
+    },
+    kingTeleport() {
+      fetch(`/api/kingTeleport`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: this.room,
+        }),
+      }).catch((err) => {
+        console.log('/kingTeleport failed', err);
       });
     },
     selectExplosivePawn(rowTemp, colTemp) {
@@ -1662,6 +1719,8 @@ export default {
     this.socket.off('selectExplosivePawn');
     this.socket.off('captureImmune');
     this.socket.off('captureImmunityRemoved');
+    this.socket.off('kingTeleport');
+    this.socket.off('kingTeleportDisable');
     this.socket.off('pieceSpawn');
     this.socket.off('omegaPieceUpgrade');
     this.socket.off('fogOfWarEnable');

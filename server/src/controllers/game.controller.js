@@ -25,6 +25,7 @@ import {
   selectExplosivePawn,
   snowFreeze,
   getSnowFreeze,
+  kingTeleport,
 } from '../model.js';
 import { addLiveGameDB } from '../firestore.js';
 
@@ -137,8 +138,9 @@ gameRouter.post('/randomMoveOpponent', async (req, res) => {
 
 gameRouter.post('/undoMove', async (req, res) => {
   if (!req.session.userID) return res.status(401).end();
-  undoMove(req.body.gameId, req.session.userID);
-  res.status(200).end();
+  const isUndoMade = undoMove(req.body.gameId, req.session.userID);
+  if (isUndoMade) res.status(200).end();
+  else res.status(502).end();
 });
 
 gameRouter.post('/disabledCells', async (req, res) => {
@@ -192,6 +194,12 @@ gameRouter.post('/fogOfWar', async (req, res) => {
 gameRouter.post('/snowFreeze', async (req, res) => {
   if (!req.session.userID) return res.status(401).end();
   snowFreeze(req.body.gameId, req.session.userID);
+  res.status(200).end();
+});
+
+gameRouter.post('/kingTeleport', async (req, res) => {
+  if (!req.session.userID) return res.status(401).end();
+  kingTeleport(req.body.gameId, req.session.userID);
   res.status(200).end();
 });
 

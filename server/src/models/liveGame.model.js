@@ -68,6 +68,8 @@ export class LiveGame {
           explosivePawns: [],
           snowFreezeP1: 0,
           snowFreezeP2: 0,
+          kingTeleportP1: false,
+          kingTeleportP2: false,
         };
       } else if (crazyChessPowers) {
         this.crazyChessPowers = crazyChessPowers;
