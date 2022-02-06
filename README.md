@@ -113,6 +113,15 @@ Sound effect for doing En Passant
 
 <img src="assets/ExplosivePawn2.png" alt="explosivePawn2" style="width: 200px">
 
+## King Teleport
+
+<img src="assets/KingTeleport.png" alt="kingTeleport" style="width: 200px">
+
+<img src="assets/KingTeleport2.png" alt="kingTeleport2" style="width: 200px">
+
+<img src="assets/KingTeleport3.png" alt="kingTeleport3" style="width: 200px">
+
+
 ## Time Attack
 
 <img src="assets/CutDownTime.png" alt="CutDownTime" style="width: 200px">
