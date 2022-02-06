@@ -115,11 +115,11 @@ Sound effect for doing En Passant
 
 ## King Teleport
 
+<img src="assets/KingTeleport3.png" alt="kingTeleport3" style="width: 200px">
+
 <img src="assets/KingTeleport.png" alt="kingTeleport" style="width: 200px">
 
 <img src="assets/KingTeleport2.png" alt="kingTeleport2" style="width: 200px">
-
-<img src="assets/KingTeleport3.png" alt="kingTeleport3" style="width: 200px">
 
 
 ## Time Attack
