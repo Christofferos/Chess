@@ -7,4 +7,7 @@ export const POWER = {
   SPAWN: 'spawn',
   UPGRADE: 'upgrade',
   FOG: 'fog',
+  EXPLOSIVE: 'explosive',
+  SNOW_FREEZE: 'snowfreeze',
+  KING_TELEPORT: 'kingteleport',
 };

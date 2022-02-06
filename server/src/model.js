@@ -386,6 +386,104 @@ const gameOver = async game => {
   removeLiveGame(game.id);
 };
 
+const removePieceFromFenString = (FEN, rowTarget, colTarget, pieceMatch) => {
+  let rowTemp = 0;
+  let colTemp = 0;
+  let newFenPieceLocation = '';
+  const pieces = FEN.slice(0, FEN.indexOf(' '));
+  const fenMetaData = FEN.slice(FEN.indexOf(' ') + 1);
+  for (let i = 0; i < pieces.length; i += 1) {
+    if (pieces.charAt(i) === '/') {
+      newFenPieceLocation = `${newFenPieceLocation}/`;
+      rowTemp += 1;
+      colTemp = 0;
+    } else if (pieces.charAt(i).match(`[${pieceMatch}]`)) {
+      if (rowTarget === rowTemp && colTarget === colTemp) {
+        const signBefore = pieces.charAt(i - 1);
+        const signAfter = pieces.charAt(i + 1);
+        if (!isNaN(signBefore) && !isNaN(signAfter)) {
+          newFenPieceLocation = `${newFenPieceLocation.slice(
+            0,
+            newFenPieceLocation.length - 1,
+          )}${Number(signBefore) + Number(signAfter) + 1}`;
+          i += 1;
+        } else if (isNaN(signBefore) && !isNaN(signAfter)) {
+          newFenPieceLocation = `${newFenPieceLocation}${Number(signAfter) + 1}`;
+          i += 1;
+        } else if (!isNaN(signBefore) && isNaN(signAfter)) {
+          newFenPieceLocation = `${newFenPieceLocation.slice(
+            0,
+            newFenPieceLocation.length - 1,
+          )}${Number(signBefore) + 1}`;
+        } else if (isNaN(signBefore) && isNaN(signAfter)) {
+          newFenPieceLocation = `${newFenPieceLocation}1`;
+        }
+      } else {
+        newFenPieceLocation = `${newFenPieceLocation}${pieces.charAt(i)}`;
+      }
+      colTemp += 1;
+    } else {
+      newFenPieceLocation = `${newFenPieceLocation}${pieces.charAt(i)}`;
+      colTemp += Number(pieces.charAt(i));
+    }
+  }
+  const newGameFEN = `${newFenPieceLocation} ${fenMetaData}`;
+  return newGameFEN;
+};
+
+const oneStepMove = (game, startPos, startRow, startCol, endRow, endCol) => {
+  const piece = game.gameState.get(startPos);
+  const type = piece?.type;
+  if (!type) return true;
+  if (type.match('[rbqpRBQP]')) {
+    const xDistance = Math.abs(startCol - endCol);
+    const yDistance = Math.abs(startRow - endRow);
+    if (xDistance <= 1 && yDistance <= 1) return true;
+    else return false;
+  } else return true;
+};
+
+const isKingTeleportCheck = (game, startPos, endPos, startRow, startCol, endRow, endCol) => {
+  const piece = game.gameState.get(startPos);
+  const type = piece?.type;
+  if (!type) return false;
+  const isSelectedPieceKing = type.match('[kK]');
+  if (!isSelectedPieceKing) return false;
+  const xDistance = Math.abs(startCol - endCol);
+  const yDistance = Math.abs(startRow - endRow);
+  const isEndPosOccupied = game.gameState.get(endPos) !== null;
+  if (isEndPosOccupied) return false;
+  if (xDistance <= 2 && yDistance == 0) return true;
+  else if (xDistance == 0 && yDistance <= 2) return true;
+  else return false;
+};
+
+const kingTeleportMove = (game, startPos, endPos, isPlayer1) => {
+  game.gameState.remove(startPos);
+  if (isPlayer1 && game.crazyChessPowers.kingTeleportP1) {
+    game.crazyChessPowers.kingTeleportP1 = false;
+    io.in(game.id).emit('kingTeleportDisable', 'w');
+    game.gameState.put({ type: 'k', color: 'w' }, endPos);
+  } else if (!isPlayer1 && game.crazyChessPowers.kingTeleportP2) {
+    game.crazyChessPowers.kingTeleportP2 = false;
+    io.in(game.id).emit('kingTeleportDisable', 'b');
+    game.gameState.put({ type: 'K', color: 'b' }, endPos);
+  }
+  return game.gameState.fen();
+};
+
+const changeFenTurn = game => {
+  const FEN = game.fen;
+  const pieces = FEN.slice(0, FEN.indexOf(' '));
+  const fenMetaData = FEN.slice(FEN.indexOf(' ') + 1);
+  let newColorTurn = 'w';
+  if (game.gameState.turn() === 'w') newColorTurn = 'b';
+  else if (game.gameState.turn() === 'b') newColorTurn = 'w';
+  const newFenMetaData = `${newColorTurn}${fenMetaData.slice(1)}`;
+  const newGameFEN = `${pieces} ${newFenMetaData}`;
+  return newGameFEN;
+};
+
 /**
  * Updates the piece placement
  */
@@ -396,51 +494,110 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
   if (!isUserAllowedToMove) return;
   const game = games[gameId];
   if (!game) return;
+  const OLD_GAME_HISTORY_LEN = game.gameState.history().length;
   if (game.gameState.fen() !== game.fen) game.gameState.load(game.fen);
   let move;
-  let isCaptureImmunity = false;
+  let isCaptureImmunityEnabled = false;
+  const isSnowFreeze = getSnowFreeze(gameId);
   let isOmegaUpgradeActive = false;
   let isGoldBoltMove = false;
   const isCrazyChessGame = games[gameId].isCrazyChess;
   if (isCrazyChessGame) {
     const {
-      randomMove,
+      isRandomMove,
       isRoadblock,
       isCaptureImmune,
       isOmegaUpgrade,
       isEndPosOnGoldBolt,
     } = crazyChessPower(game, username, endPos);
-    isCaptureImmunity = isCaptureImmune;
+    isCaptureImmunityEnabled = isCaptureImmune;
     isOmegaUpgradeActive = isOmegaUpgrade;
     isGoldBoltMove = isEndPosOnGoldBolt;
     if (isRoadblock) {
       emitMovePiece(game, null, isPlayer1, moveFromTo);
       return;
     }
-    move = randomMove;
+    if (isRandomMove) {
+      const moves = game.gameState.moves();
+      const randomMove = moves[Math.floor(Math.random() * moves.length)];
+      move = game.gameState.move(randomMove);
+      game.fen = game.gameState.fen();
+    }
   }
-  const isNoMoveMadeYet = !move;
+  const { row: startRow, col: startCol } = translateSelectedPiece(startPos);
+  const { row: endRow, col: endCol } = translateSelectedPiece(endPos);
+  let isValidMoveInSnowStorm = true;
+  if (isSnowFreeze)
+    isValidMoveInSnowStorm = oneStepMove(game, startPos, startRow, startCol, endRow, endCol);
+  let isKingTeleportMove = false;
+  const isKingTeleportActivated =
+    game.crazyChessPowers.kingTeleportP1 || game.crazyChessPowers.kingTeleportP2;
+  if (isKingTeleportActivated) {
+    isKingTeleportMove = isKingTeleportCheck(
+      game,
+      startPos,
+      endPos,
+      startRow,
+      startCol,
+      endRow,
+      endCol,
+      isPlayer1,
+    );
+    if (isKingTeleportMove) {
+      game.fen = kingTeleportMove(game, startPos, endPos, isPlayer1);
+      game.fen = changeFenTurn(game);
+      game.gameState.load(game.fen);
+    }
+  }
+  const isNoMoveMadeYet = !move && isValidMoveInSnowStorm && !isKingTeleportMove;
   if (isNoMoveMadeYet) {
     move = game.gameState.move({
       from: startPos,
       to: endPos,
       promotion: promotionPiece?.toLowerCase(),
     });
+    game.fen = game.gameState.fen();
   }
-  const isValidMove = move;
-  const isValidMoveInCrazyChess = move && isCrazyChessGame;
-  const flags = isValidMove ? move.flags : null;
-  if (isCaptureImmunity && isMoveCapture(flags)) {
-    return captureImmunityHandling(game, isPlayer1);
-  } else if (isValidMoveInCrazyChess && isCaptureImmunity) {
-    game.crazyChessPowers.captureImmunity = '';
-    captureImmunityRemoved(game);
-  }
+  const isValidMove = move || isKingTeleportMove;
   if (isValidMove) startOpposingTimer(game);
-  game.fen = game.gameState.fen();
-  if (isValidMoveInCrazyChess && isOmegaUpgradeActive) upgradePiece(gameId, endPos, username);
-  if (isValidMoveInCrazyChess) fogOfWarDurationHandling(game);
-  const gameHistoryLength = game.gameState.history().length;
+  const flags = isValidMove ? move?.flags : null;
+  const isValidMoveInCrazyChess = move && isCrazyChessGame;
+  if (isCaptureImmunityEnabled && isMoveCapture(flags)) {
+    game.gameState.undo();
+    game.fen = game.gameState.fen();
+    io.in(game.id).emit('captureImmune', isPlayer1);
+    return;
+  } else if (isCaptureImmunityEnabled && isValidMoveInCrazyChess) {
+    game.crazyChessPowers.captureImmunity = '';
+    io.in(game.id).emit('captureImmunityRemoved');
+  }
+  if (isValidMoveInCrazyChess) {
+    if (isOmegaUpgradeActive) upgradePiece(gameId, endPos, username);
+    fogOfWarDurationHandling(game);
+    snowFreezeDurationHandling(game);
+    const explosivePawnIndex = game.crazyChessPowers.explosivePawns.indexOf(
+      `${startRow}${startCol}`,
+    );
+    const isExplosivePawnFound = explosivePawnIndex !== -1;
+    const killExplosivePawnIndex = game.crazyChessPowers.explosivePawns.indexOf(
+      `${endRow}${endCol}`,
+    );
+    const isExplosivePawnKilled = killExplosivePawnIndex !== -1;
+    if (isMoveCapture(flags) && isExplosivePawnKilled) {
+      const possiblePieceRemovals = 'rnbqpRNBQP';
+      game.fen = removePieceFromFenString(game.fen, endRow, endCol, possiblePieceRemovals);
+      game.crazyChessPowers.explosivePawns.splice(explosivePawnIndex, 1);
+      io.in(gameId).emit('explosivePawnPosition', game.crazyChessPowers.explosivePawns);
+    } else if (isExplosivePawnFound) {
+      game.crazyChessPowers.explosivePawns[explosivePawnIndex] = `${endRow}${endCol}`;
+      io.in(gameId).emit('explosivePawnPosition', game.crazyChessPowers.explosivePawns);
+    }
+  }
+  console.log('HIT HIT ? ', game.gameState.history());
+  const gameHistoryLength =
+    game.gameState.history() !== undefined
+      ? game.gameState.history().length
+      : OLD_GAME_HISTORY_LEN;
   if (isValidMoveInCrazyChess && gameHistoryLength % 7 === 0) generateNewPower(gameId);
   if (isValidMoveInCrazyChess && gameHistoryLength % 15 === 0) spawnGoldBolt(gameId);
   if (isValidMoveInCrazyChess && isGoldBoltMove) consumeGoldBolt(gameId, username);
@@ -497,7 +654,7 @@ export const stockfishGetHistory = (gameId, username) => {
 };
 
 export const crazyChessPower = (game, username, endPos) => {
-  let randomMove;
+  let isRandomMove = false;
   let isRoadblock = false;
   let isCaptureImmune = false;
   let isOmegaUpgrade = false;
@@ -509,9 +666,7 @@ export const crazyChessPower = (game, username, endPos) => {
     (game.gameState.turn() === 'w' && isPlayer1) || (game.gameState.turn() === 'b' && !isPlayer1);
   if (isUserMatchRandomMove && isPlayerTurn) {
     game.crazyChessPowers.randomMove = '';
-    const moves = game.gameState.moves();
-    const move = moves[Math.floor(Math.random() * moves.length)];
-    randomMove = game.gameState.move(move);
+    isRandomMove = true;
   } else if (isUserMatchImmunity && isPlayerTurn) {
     isCaptureImmune = true;
   } else if (isUserMatchUpgrade) {
@@ -524,7 +679,7 @@ export const crazyChessPower = (game, username, endPos) => {
   if (isCellBlocked) {
     isRoadblock = true;
   }
-  return { randomMove, isRoadblock, isCaptureImmune, isOmegaUpgrade, isEndPosOnGoldBolt };
+  return { isRandomMove, isRoadblock, isCaptureImmune, isOmegaUpgrade, isEndPosOnGoldBolt };
 };
 
 export const nextOpponentMoveRandom = (gameId, username) => {
@@ -548,8 +703,9 @@ export const undoMove = (gameId, username) => {
   const isPlayer2 = username === games[gameId].player2;
   if (isPlayer1 && !game.availablePowers.player1.includes(POWER.UNDO)) return;
   else if (isPlayer2 && !game.availablePowers.player2.includes(POWER.UNDO)) return;
+  else if (game.gameState.history() === 0) return false;
   const undoData = game.gameState.undo();
-  if (!undoData) return;
+  if (!undoData) return false;
   const flags = undoData.flags;
   startOpposingTimer(game);
   game.fen = game.gameState.fen();
@@ -648,15 +804,6 @@ const isMoveCapture = flags => {
   return isCapture;
 };
 
-const captureImmunityHandling = (game, isPlayer1) => {
-  game.gameState.undo();
-  io.in(game.id).emit('captureImmune', isPlayer1);
-};
-
-const captureImmunityRemoved = game => {
-  io.in(game.id).emit('captureImmunityRemoved');
-};
-
 export const cutDownOpponentTime = (gameId, username) => {
   const game = games[gameId];
   if (!game) return;
@@ -738,6 +885,99 @@ const upgradePiece = (gameId, upgradeCell, username) => {
   }
 };
 
+export const selectExplosivePawn = (gameId, username, row, col) => {
+  const game = games[gameId];
+  if (!game) return;
+  const isPlayer1 = username === game.player1;
+  const isPlayer2 = username === game.player2;
+  if (isPlayer1 && !game.availablePowers.player1.includes(POWER.EXPLOSIVE)) return;
+  else if (isPlayer2 && !game.availablePowers.player2.includes(POWER.EXPLOSIVE)) return;
+  const isPlayer1Turn = game.gameState.turn() === 'w';
+  const isPlayer2Turn = game.gameState.turn() === 'b';
+  if (isPlayer1 && !isPlayer1Turn) return;
+  else if (isPlayer2 && !isPlayer2Turn) return;
+  const pieces = game.fen.split(' ')[0];
+  let rowIter = 0;
+  let colIter = 0;
+  for (let i = 0; i < pieces.length; i += 1) {
+    const isSelectedCell = row === rowIter && col === colIter;
+    const rowColId = `${row}${col}`;
+    const isUnique = game.crazyChessPowers.explosivePawns.indexOf(rowColId) === -1;
+    if (pieces.charAt(i) === '/') {
+      rowIter += 1;
+      colIter = 0;
+    } else if (isSelectedCell && isUnique && isPlayer1 && pieces.charAt(i).match('[P]')) {
+      removeUserPowerOnce(POWER.EXPLOSIVE, username, game);
+      io.in(gameId).emit('selectExplosivePawn', row, col);
+      game.crazyChessPowers.explosivePawns.push(`${row}${col}`);
+      return;
+    } else if (isSelectedCell && isUnique && isPlayer2 && pieces.charAt(i).match('[p]')) {
+      removeUserPowerOnce(POWER.EXPLOSIVE, username, game);
+      io.in(gameId).emit('selectExplosivePawn', row, col);
+      game.crazyChessPowers.explosivePawns.push(`${row}${col}`);
+      return;
+    } else if (pieces.charAt(i).match('[rnbqkpRNBQKP]')) {
+      colIter += 1;
+    } else {
+      for (let j = 0; j < Number(pieces.charAt(i)); j += 1) {
+        colIter += 1;
+      }
+    }
+  }
+};
+
+export const snowFreeze = (gameId, username) => {
+  /* ❄️🥶 */
+  const game = games[gameId];
+  if (!game) return;
+  const isPlayer1 = username === game.player1;
+  const isPlayer2 = username === game.player2;
+  if (isPlayer1 && !game.availablePowers.player1.includes(POWER.SNOW_FREEZE)) return;
+  else if (isPlayer2 && !game.availablePowers.player2.includes(POWER.SNOW_FREEZE)) return;
+  if (isPlayer1) {
+    game.crazyChessPowers.snowFreezeP1 = 2;
+    io.in(gameId).emit('snowFreezeEnable', 'b');
+    removeUserPowerOnce(POWER.SNOW_FREEZE, username, game);
+  } else if (isPlayer2) {
+    game.crazyChessPowers.snowFreezeP2 = 2;
+    io.in(gameId).emit('snowFreezeEnable', 'w');
+    removeUserPowerOnce(POWER.SNOW_FREEZE, username, game);
+  }
+};
+
+export const getSnowFreeze = gameId => {
+  const game = games[gameId];
+  if (!game) return;
+  if (game.crazyChessPowers.snowFreezeP1 > 0) return true;
+  if (game.crazyChessPowers.snowFreezeP2 > 0) return true;
+  return false;
+};
+
+const snowFreezeDurationHandling = game => {
+  if (game.crazyChessPowers.snowFreezeP1 > 0) games[game.id].crazyChessPowers.snowFreezeP1 -= 1;
+  if (game.crazyChessPowers.snowFreezeP2 > 0) games[game.id].crazyChessPowers.snowFreezeP2 -= 1;
+  if (game.crazyChessPowers.snowFreezeP1 <= 0 && game.crazyChessPowers.snowFreezeP2 <= 0)
+    io.in(game.id).emit('snowFreezeDisable');
+};
+
+export const kingTeleport = (gameId, username) => {
+  const game = games[gameId];
+  if (!game) return;
+  const isPlayer1 = username === game.player1;
+  const isPlayer2 = username === game.player2;
+  if (isPlayer1 && !game.availablePowers.player1.includes(POWER.KING_TELEPORT)) return;
+  else if (isPlayer2 && !game.availablePowers.player2.includes(POWER.KING_TELEPORT)) return;
+  if (isPlayer1) {
+    game.crazyChessPowers.kingTeleportP1 = true;
+    io.in(gameId).emit('kingTeleport', 'b');
+    removeUserPowerOnce(POWER.KING_TELEPORT, username, game);
+  } else if (isPlayer2) {
+    game.crazyChessPowers.kingTeleportP2 = true;
+    io.in(gameId).emit('kingTeleport', 'w');
+    removeUserPowerOnce(POWER.KING_TELEPORT, username, game);
+  }
+};
+
 export const fogOfWar = (gameId, username) => {
   const game = games[gameId];
   if (!game) return;
@@ -814,16 +1054,19 @@ export const randomizeNStartPowers = nActivePowers => {
 const getPower = playerPowers => {
   const allPowers = [
     POWER.RANDOM,
-    POWER.UNDO,
     POWER.DISABLE,
     POWER.IMMUNE,
     POWER.CUTDOWN_TIME,
     POWER.SPAWN,
     POWER.UPGRADE,
     POWER.FOG,
+    POWER.EXPLOSIVE,
+    POWER.SNOW_FREEZE,
+    POWER.UNDO,
+    POWER.KING_TELEPORT,
   ];
   const filteredPowers = allPowers.filter(power => !playerPowers.includes(power));
-  const uniquePower = filteredPowers[Math.floor(Math.random() * filteredPowers.length)];
+  const uniquePower = filteredPowers[Math.floor(Math.random() * filteredPowers.length)]; // filteredPowers[filteredPowers.length - 1]; // //
   return uniquePower;
 };
 

@@ -11,9 +11,9 @@ resources:
   disk_size_gb: 10
 
 # eitcbmdemotest-63867
-network:
-  instance_tag: scott2vpc
-  name: scott2vpc
+# network:
+#  instance_tag: scott2vpc
+#  name: scott2vpc
 
 env_variables:
   test: "test"

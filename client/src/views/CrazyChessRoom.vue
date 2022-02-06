@@ -97,13 +97,14 @@
               columnId = event.target.parentElement.id;
             }
             if (isPieceSpawnEnabled && selectedPiece === '') spawnFriendlyPiece(rowId, columnId);
-            if (!isDisableSelectEnabled) return;
+            if (!isPieceSelectionDisabled) return;
             disableSelectedCell(rowId, columnId);
+            selectExplosivePawn(rowId, columnId);
           }
         "
       >
-        <div class="snowStormContainer" v-if="false">
-          <div class="snowStorm" type="text"><span>❄️</span></div>
+        <div class="snowStormContainer" v-if="isSnowFreezeIconDisplayed">
+          <div class="snowStorm" type="text"><span>❄️🥶</span></div>
         </div>
         <div
           class="row"
@@ -170,14 +171,8 @@
             <span
               v-bind:style="{
                 display: 'flex',
-                alignItems:
-                  isOmegaPieceUpgradeEnabled || whiteCaptureImmune || blackCaptureImmune
-                    ? 'space-between'
-                    : 'flex-end',
-                justifyContent:
-                  isOmegaPieceUpgradeEnabled || whiteCaptureImmune || blackCaptureImmune
-                    ? 'space-between'
-                    : 'flex-end',
+                alignItems: 'space-between',
+                justifyContent: 'space-between',
                 flexDirection: 'column',
               }"
             >
@@ -196,7 +191,7 @@
                 >🥶</span
               >
               <span
-                v-else-if="false"
+                v-else-if="isKingTeleportEnabled && clientKing(row, col)"
                 v-bind:style="{
                   fontSize: '12px',
                 }"
@@ -210,7 +205,7 @@
                 >💎</span
               >
               <span
-                v-else-if="false"
+                v-else-if="explosivePawns.includes(`${row}${col}`)"
                 v-bind:style="{
                   fontSize: '13px',
                 }"
@@ -309,7 +304,7 @@
           v-on:click="
             () => {
               if (isIncrementPowerFreq) return;
-              isDisableSelectEnabled = true;
+              isPieceSelectionDisabled = true;
               powersAvailable = removeItemOnce(powersAvailable, DISABLE_KEY);
             }
           "
@@ -416,55 +411,80 @@
             >Fog of War ({{ powersAvailable.filter((x) => x === FOG_KEY).length }})</span
           >
         </button>
-        <!-- <button v-on:click="fogOfWar()" class="well btn btn-default button gameCodeBtn">
-          💣 <span class="powerText">Explosive Pawn</span> (Explodes on death - kills capturing
-          piece - except king)
+        <button
+          v-if="powersAvailable.includes(EXPLOSIVE_KEY)"
+          v-on:click="
+            () => {
+              if (isIncrementPowerFreq) return;
+              if (!isClientTurn) return;
+              isPieceSelectionDisabled = true;
+              powersAvailable = removeItemOnce(powersAvailable, EXPLOSIVE_KEY);
+              isExplosivePawnSelection = true;
+            }
+          "
+          class="well btn btn-default button gameCodeBtn"
+          v-bind:style="{
+            backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
+            boxShadow: isClientTurn ? null : `inset 0px 0px 0px 1px #8E000B`,
+          }"
+          v-bind:id="EXPLOSIVE_KEY"
+        >
+          <!-- (Explodes on death - kills capturing piece - except king) -->
+          💣
+          <span class="powerText"
+            >Explosive Pawn ({{ powersAvailable.filter((x) => x === EXPLOSIVE_KEY).length }})</span
+          >
         </button>
-        <button v-on:click="fogOfWar()" class="well btn btn-default button gameCodeBtn">
-          🌌 <span class="powerText">Teleport King</span> (Teleport two steps in any direction)
-        </button> -->
+        <button
+          v-if="powersAvailable.includes(SNOW_FREEZE_KEY)"
+          v-on:click="
+            () => {
+              snowFreeze();
+            }
+          "
+          class="well btn btn-default button gameCodeBtn"
+          v-bind:style="{
+            backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
+          }"
+          v-bind:id="SNOW_FREEZE_KEY"
+        >
+          <!-- All pieces can move max one step, except horses. Freeze one pawn for 2 turns (invincible until unfrozen). -->
+          ❄️🥶
+          <span class="powerText"
+            >Snow Freeze ({{ powersAvailable.filter((x) => x === SNOW_FREEZE_KEY).length }})</span
+          >
+        </button>
+        <button
+          v-if="powersAvailable.includes(KING_TELEPORT_KEY)"
+          v-on:click="
+            () => {
+              if (isIncrementPowerFreq) return;
+              kingTeleport();
+            }
+          "
+          class="well btn btn-default button gameCodeBtn"
+          v-bind:style="{
+            backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
+          }"
+          v-bind:id="KING_TELEPORT_KEY"
+        >
+          <!-- (Teleport two steps in any direction) -->
+          🌌
+          <span class="powerText"
+            >King Teleport ({{
+              powersAvailable.filter((x) => x === KING_TELEPORT_KEY).length
+            }})</span
+          >
+        </button>
 
         <!-- 
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          🏎️ <span class="powerText">Fast Pawn</span> (Cannot move past enemy pieces - with this)
-        </button>
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          🚀 <span class="powerText">Missle Launch</span>
-          (.load(fen))
-        </button>
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          🥶 <span class="powerText">Freeze Piece</span> (enemy piece invincible until unfrozen)
-        </button>
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          ❄️ <span class="powerText">Snow Storm</span> (all pieces can move max one step - except horses)
-        </button>
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          🏗️ <span class="powerText">Put up a giant wall</span> (no one can move past it)
-        </button>
-        ---
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          🕹️ <span class="powerText">Opponent Puzzle</span>
-        </button>
-        <button v-clipboard="() => chooseOnePawnOnEachSideToDie" class="well btn btn-default button gameCodeBtn">
-          ⚔️ <span class="powerText">One Piece of Each Die</span>
-        </button>
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          ☠️ <span class="powerText">Kill Enemy Pawn</span>
-        </button>
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          👾 <span class="powerText">Swap Piece Appearance</span>
-        </button>
-        <button v-clipboard="() => room" class="well btn btn-default button gameCodeBtn">
-          🧭 <span class="powerText">Swap Orientation</span>
-        </button>
-        <button v-on:click="playTwice()" class="well btn btn-default button gameCodeBtn">
-          ⚡ <span class="powerText">Play Twice</span>
-        </button> 
-        <button v-on:click="" class="well btn btn-default button gameCodeBtn">
-          🚁 <span class="powerText">---</span>
+        <button v-if="powersAvailable.includes(...)" 
+        v-on:click="racecarPawn()" class="well btn btn-default button gameCodeBtn" v-bind:style="{
+            backgroundColor: this.isIncrementPowerFreq ? this.cellGreenColor : '#353432',
+          }" v-bind:id="...">
+          🏎️ <span class="powerText">Racecar Pawn</span> (2 step pawn. Cannot move past enemy pieces)
         </button> 
         -->
-
         <div v-for="id in [3, 2, 1]" :key="id">
           <button
             v-if="powersAvailable.length < id"
@@ -525,12 +545,18 @@ export default {
       whiteCaptureImmune: false,
       blackCaptureImmune: false,
       isPieceSpawnEnabled: false,
-      isDisableSelectEnabled: false,
+      isPieceSelectionDisabled: false,
       isOmegaPieceUpgradeEnabled: false,
       isFogOfWarEnabled: false,
+      isSnowFreezeEnabled: false,
+      isSnowFreezeIconDisplayed: false,
+      isPieceFreezeSelection: false,
+      isKingTeleportEnabled: false,
       displayFogOfWarShadowing: false,
       isIncrementPowerFreq: false,
       disabledCells: [],
+      explosivePawns: [],
+      isExplosivePawnSelection: false,
       rows: [0, 1, 2, 3, 4, 5, 6, 7],
       columns: [0, 1, 2, 3, 4, 5, 6, 7],
       letters: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'],
@@ -619,6 +645,9 @@ export default {
       SPAWN_KEY: 'spawn',
       UPGRADE_KEY: 'upgrade',
       FOG_KEY: 'fog',
+      EXPLOSIVE_KEY: 'explosive',
+      SNOW_FREEZE_KEY: 'snowfreeze',
+      KING_TELEPORT_KEY: 'kingteleport',
     };
   },
   methods: {
@@ -792,6 +821,11 @@ export default {
     backToMenu() {
       this.$store.state.socket.emit('backToMenu', this.room);
     },
+    clientKing(row, col) {
+      if (!this.black && this.piecePlacement[row][col] === 'K') return true;
+      else if (this.black && this.piecePlacement[row][col] === 'k') return true;
+      else return false;
+    },
     throttle(delay, fn) {
       let lastCall = 0;
       const saveMsg = (msg) => {
@@ -861,6 +895,27 @@ export default {
         })
         .catch((err) => {
           console.log('/checkFogOfWar failed', err);
+          return;
+        });
+
+      fetch(`/api/checkSnowFreeze`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: this.room,
+        }),
+      })
+        .then((resp) => {
+          return resp.json();
+        })
+        .then(({ isSnowFreeze }) => {
+          this.isSnowFreezeEnabled = isSnowFreeze;
+          this.isReadyToRenderPieces = true;
+        })
+        .catch((err) => {
+          console.log('/checkSnowFreeze failed', err);
           return;
         });
 
@@ -950,9 +1005,43 @@ export default {
       );
 
       this.$store.state.socket.on('disableSelectedCell', (rowMsg, colMsg) => {
-        this.isDisableSelectEnabled = false;
+        this.isPieceSelectionDisabled = false;
         const { row, col } = this.translateIndices(rowMsg, colMsg);
         this.addDisabledCells(row, col);
+      });
+
+      this.$store.state.socket.on('selectExplosivePawn', (rowMsg, colMsg) => {
+        this.isExplosivePawnSelection = false;
+        this.isPieceSelectionDisabled = false;
+        const { row, col } = this.translateIndices(rowMsg, colMsg);
+        this.explosivePawns.push(`${row}${col}`);
+      });
+
+      this.$store.state.socket.on('explosivePawnPosition', (explosivePawnPositions) => {
+        this.explosivePawns = explosivePawnPositions.map((explosivePawn) => {
+          const { row, col } = this.translateIndices(
+            explosivePawn.charAt(0),
+            explosivePawn.charAt(1),
+          );
+          return `${row}${col}`;
+        });
+      });
+
+      this.$store.state.socket.on('kingTeleport', (color) => {
+        if (color === 'w' && this.black) this.isKingTeleportEnabled = true;
+        else if (color === 'b' && !this.black) this.isKingTeleportEnabled = true;
+        const isPlayer1Initiated = color === 'b' && !this.black;
+        const isPlayer2Initiated = color === 'w' && this.black;
+        if (isPlayer1Initiated) {
+          this.powersAvailable = this.removeItemOnce(this.powersAvailable, this.KING_TELEPORT_KEY);
+        } else if (isPlayer2Initiated) {
+          this.powersAvailable = this.removeItemOnce(this.powersAvailable, this.KING_TELEPORT_KEY);
+        }
+      });
+
+      this.$store.state.socket.on('kingTeleportDisable', (color) => {
+        if (color === 'w' && !this.black) this.isKingTeleportEnabled = false;
+        else if (color === 'b' && this.black) this.isKingTeleportEnabled = false;
       });
 
       this.$store.state.socket.on('captureImmune', (isPlayer1) => {
@@ -992,6 +1081,25 @@ export default {
           if (this.black) this.displayFogOfWarShadowing = true;
           this.powersAvailable = this.removeItemOnce(this.powersAvailable, this.FOG_KEY);
         }
+      });
+
+      this.$store.state.socket.on('snowFreezeEnable', (color) => {
+        this.isSnowFreezeEnabled = true;
+        const isPlayer1Initiated = color === 'b' && !this.black;
+        const isPlayer2Initiated = color === 'w' && this.black;
+        if (isPlayer1Initiated) {
+          this.isPieceFreezeSelection = true;
+          this.powersAvailable = this.removeItemOnce(this.powersAvailable, this.SNOW_FREEZE_KEY);
+        } else if (isPlayer2Initiated) {
+          this.isPieceFreezeSelection = true;
+          this.powersAvailable = this.removeItemOnce(this.powersAvailable, this.SNOW_FREEZE_KEY);
+        }
+        this.isSnowFreezeIconDisplayed = true;
+        setTimeout(() => (this.isSnowFreezeIconDisplayed = false), 2000);
+      });
+
+      this.$store.state.socket.on('snowFreezeDisable', () => {
+        this.isSnowFreezeEnabled = false;
       });
 
       this.$store.state.socket.on('fogOfWarDisable', (color) => {
@@ -1247,8 +1355,6 @@ export default {
     },
     undoMove() {
       if (this.isIncrementPowerFreq) return;
-
-      this.powersAvailable = this.removeItemOnce(this.powersAvailable, this.UNDO_KEY);
       fetch(`/api/undoMove`, {
         method: 'POST',
         headers: {
@@ -1257,9 +1363,16 @@ export default {
         body: JSON.stringify({
           gameId: this.room,
         }),
-      }).catch((err) => {
-        console.log('/undoMove failed', err);
-      });
+      })
+        .then((resp) => {
+          if (resp.ok) {
+            this.powersAvailable = this.removeItemOnce(this.powersAvailable, this.UNDO_KEY);
+          }
+          return resp;
+        })
+        .catch((err) => {
+          console.log('/undoMove failed', err);
+        });
     },
     disableSelectedCell(rowTemp, colTemp) {
       const { row, col } = this.translateIndices(rowTemp, colTemp);
@@ -1384,6 +1497,50 @@ export default {
         console.log('/fogOfWar failed', err);
       });
     },
+    snowFreeze() {
+      if (this.isIncrementPowerFreq) return;
+      fetch(`/api/snowFreeze`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: this.room,
+        }),
+      }).catch((err) => {
+        console.log('/snowFreeze failed', err);
+      });
+    },
+    kingTeleport() {
+      fetch(`/api/kingTeleport`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: this.room,
+        }),
+      }).catch((err) => {
+        console.log('/kingTeleport failed', err);
+      });
+    },
+    selectExplosivePawn(rowTemp, colTemp) {
+      if (this.isIncrementPowerFreq) return;
+      const { row, col } = this.translateIndices(rowTemp, colTemp);
+      fetch(`/api/explosivePawn`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: this.room,
+          row,
+          col,
+        }),
+      }).catch((err) => {
+        console.log('/explosivePawn failed', err);
+      });
+    },
     conditionallyRenderPiece(row, col) {
       const isPieceOnCell = this.piecePlacement[row][col] !== '';
       const isOwnerOfPiece =
@@ -1399,33 +1556,50 @@ export default {
     cellBackgroundColor(row, col) {
       const omegaUpgradeWhiteGreen = '#A6E5A0';
       const omegaUpgradeLightGreen = '#58B23B';
+      const explosivePawnSelectionWhiteGreen = '#A6E5A0';
+      const explosivePawnSelectionDarkGreen = '#58B23B';
       const fogOfWarDarkGreen = '#3B4B2B';
       const fogOfWarDarkWhite = '#777769';
+      const snowFreezeWhiteBlue = '#A0E5BE';
+      const snowFreezeDarkBlue = '#3A7777';
       const highlightYellowWhite = '#F4F483';
       const highlightYellowGreen = '#BAC948';
       const isHighlightLastMoveCell =
         this.highlightLastMove.from === row.toString() + col.toString() ||
         this.highlightLastMove.to === row.toString() + col.toString();
       const isOpponentSide = row <= 3;
+      const isPawn = this.piecePlacement[row][col].match('[pP]');
       const isOwnerOfPiece =
         (this.black && this.piecePlacement[row][col].match('[rnbqkp]')) ||
         (!this.black && this.piecePlacement[row][col].match('[RNBQKP]'));
       if (this.selectedPiece === row.toString() + col.toString()) {
         return 'yellow';
       }
-      if ((col + row) % 2 === 0) {
+      /* const isPieceFreezeEligable =
+        this.isSnowFreezeEnabled &&
+        ((!this.black && this.piecePlacement[row][col].match(['rnbqkp'])) ||
+          (this.black && this.piecePlacement[row][col].match(['RNBQKP']))); */
+      const isWhiteSquares = (col + row) % 2 === 0;
+      const isGreenSquares = !isWhiteSquares;
+      if (isWhiteSquares) {
         if (this.isPieceSpawnEnabled && row === 5) return omegaUpgradeWhiteGreen;
+        else if (this.isExplosivePawnSelection && isOwnerOfPiece && isPawn)
+          return explosivePawnSelectionWhiteGreen;
         else if (this.isFogOfWarEnabled && !isOwnerOfPiece && isOpponentSide)
           return fogOfWarDarkWhite;
         else if (this.displayFogOfWarShadowing && !isOpponentSide) return fogOfWarDarkWhite;
         else if (isHighlightLastMoveCell) return highlightYellowWhite;
+        else if (this.isSnowFreezeEnabled) return snowFreezeWhiteBlue;
         else return this.cellWhiteColor;
-      } else {
+      } else if (isGreenSquares) {
         if (this.isPieceSpawnEnabled && row === 5) return omegaUpgradeLightGreen;
+        else if (this.isExplosivePawnSelection && isOwnerOfPiece && isPawn)
+          return explosivePawnSelectionDarkGreen;
         else if (this.isFogOfWarEnabled && !isOwnerOfPiece && isOpponentSide)
           return fogOfWarDarkGreen;
         else if (this.displayFogOfWarShadowing && !isOpponentSide) return fogOfWarDarkGreen;
         else if (isHighlightLastMoveCell) return highlightYellowGreen;
+        else if (this.isSnowFreezeEnabled) return snowFreezeDarkBlue;
         else return this.cellGreenColor;
       }
     },
@@ -1542,12 +1716,17 @@ export default {
     this.socket.off('surrenderGameOver');
     this.socket.off('undoMove');
     this.socket.off('disableSelectedCell');
+    this.socket.off('selectExplosivePawn');
     this.socket.off('captureImmune');
     this.socket.off('captureImmunityRemoved');
+    this.socket.off('kingTeleport');
+    this.socket.off('kingTeleportDisable');
     this.socket.off('pieceSpawn');
     this.socket.off('omegaPieceUpgrade');
     this.socket.off('fogOfWarEnable');
     this.socket.off('fogOfWarDisable');
+    this.socket.off('snowFreezeEnable');
+    this.socket.off('snowFreezeDisable');
     this.socket.off('updatedPowers');
     this.socket.off('spawnGoldBolt');
     this.socket.off('movePieceResponse');

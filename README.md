@@ -25,18 +25,16 @@ Platforms: Mobile, Desktop, Projector
 
 <img src="assets/LocalPlay.png" alt="LocalPlay" style="width: 200px">
 
-
 ## AI Challenger - Stockfish
 
 Platforms: Desktop, Projector
 
 <img src="assets/StockfishPlay.png" alt="StockfishPlay" style="width: 200px">
 
-
 ## Game Variants
 
 - **Crazy Chess** (normal chess + powerups)
-- Regular Chess 
+- Regular Chess
 
 ## In Game Status Bar
 
@@ -55,8 +53,8 @@ Top 10 players. Scores = Victories
 
 ## Match History
 
- View 20+ games
- 
+View 20+ games
+
 <img src="assets/MatchHistory.png" alt="MatchHistory" style="width: 200px">
 
 ## Extra Sound Effects
@@ -75,8 +73,7 @@ Sound effect for doing En Passant
 
 ## Pawn Promotion
 
-<img src="https://user-images.githubusercontent.com/42782387/134975449-b8f8cd94-a71d-4b41-8454-29e3197b6ab7.png" width="200" /> 
-
+<img src="https://user-images.githubusercontent.com/42782387/134975449-b8f8cd94-a71d-4b41-8454-29e3197b6ab7.png" width="200" />
 
 # Powerups
 
@@ -85,6 +82,12 @@ Sound effect for doing En Passant
 <img src="assets/FogOfWar.png" alt="FogOfWar" style="width: 200px">
 
 <img src="assets/FogOfWar2.png" alt="FogOfWar2" style="width: 200px">
+
+## Snow Storm
+
+<img src="assets/SnowStorm2.png" alt="SnowStorm2" style="width: 200px">
+
+<img src="assets/SnowStorm.png" alt="SnowStorm" style="width: 200px">
 
 ## Roadblock
 
@@ -104,6 +107,21 @@ Sound effect for doing En Passant
 
 <img src="assets/Evolve2.png" alt="Evolve2" style="width: 200px">
 
+## Explosive Pawn
+
+<img src="assets/ExplosivePawn.png" alt="explosivePawn" style="width: 200px">
+
+<img src="assets/ExplosivePawn2.png" alt="explosivePawn2" style="width: 200px">
+
+## King Teleport
+
+<img src="assets/KingTeleport3.png" alt="kingTeleport3" style="width: 200px">
+
+<img src="assets/KingTeleport.png" alt="kingTeleport" style="width: 200px">
+
+<img src="assets/KingTeleport2.png" alt="kingTeleport2" style="width: 200px">
+
+
 ## Time Attack
 
 <img src="assets/CutDownTime.png" alt="CutDownTime" style="width: 200px">
@@ -119,6 +137,7 @@ Sound effect for doing En Passant
 # Technical Details
 
 Deployed with Public Cloud provider (hyperscaler) GCP via App Engine on this link
+
 - https://eitcbmdemotest-63867.ew.r.appspot.com/ (Posted 25th Jan)
 
 ## TODO-LIST (TRACE PROGRESS):
@@ -139,7 +158,7 @@ Deployed with Public Cloud provider (hyperscaler) GCP via App Engine on this lin
 | 12. Add surrender button                                                      | ✔️   |
 | 13. Sort out all the confusion about multiple sessions/sockets from same user | ✔️   |
 | 14. Signing out should result in being removed from the Online Users list     | ✔️   |
-| 15. Add a create game time limit selection & invite player                    | ✔️    |
+| 15. Add a create game time limit selection & invite player                    | ✔️   |
 | 16. Delete liveGames older than 1 day - to maintain database data quality     | ✔️   |
 | 17. -                                                                         | -    |
 | 18. Throttle audio                                                            | ✔️   |
@@ -157,7 +176,7 @@ Deployed with Public Cloud provider (hyperscaler) GCP via App Engine on this lin
 | 30. Pre-moving                                                                | -    |
 | 31. Move animation                                                            | -    |
 | 32. Add an invite opponent/player process after creating game                 | ✔️   |
-| 33. Color the last move piece from and to squares                             | ✔️    |
+| 33. Color the last move piece from and to squares                             | ✔️   |
 | 34. Local 2 player chess                                                      | ✔️   |
 | 35. Roadblock powerup (Crazy Chess)                                           | ✔️   |
 | 36. Time cut off powerup (Crazy Chess)                                        | ✔️   |
@@ -168,21 +187,28 @@ Deployed with Public Cloud provider (hyperscaler) GCP via App Engine on this lin
 
 **_---------------_**
 
+- 🥶 Piece Freeze - Freeze pawn for 2 turns, which is invincible until unfrozen
+- ❄️ Snow Storm - All pieces can move a maximum of 1 square except horses & king- duration is 2 turns
+- 🌌 King Teleportation - Teleport two steps in any direction
+- 🏎️ Racecar Pawn - Permanent 2 step ability on one pawn, cannot move past enemy pieces
+
 <details>
 <summary>
 <strong>Extra Notes: (Click here)</strong>
 </summary>
   
 Easter egg: Powers that were planned to be included in the game
-* 💣 Explosive Pawn - Explodes on death, kills capturing piece, except king
-* 🌌 King Teleportation - Teleport two steps in any direction
-* 🏎️ Racecar Pawn - Permanent 2 step ability on one pawn, cannot move past enemy pieces
 * 🚀 Missle Launch - Select target square for explosion in 3 turns, can only select unoccupied squares
-* 🥶 Piece Freeze - Freeze piece for 2 turns, selected piece is invincible until unfrozen
-* ❄️ Snow Storm - All pieces can move a maximum of 1 square except horses - duration is 3 turns
 * 🪞 Mirror Move - Y-axis mirror the steps you just did with the piece
+* 🏗️ Great Wall
+* 🕹️ Opponent Puzzle
+* ⚔️ Double Edged Sword - One Piece of Each Die
+* ☠️ Kill Enemy Pawn
+* 👾 Swap Piece Appearance
+* 🧭 Swap Orientation
+* ⚡ Play Twice
+* 🚁 Looks Cool!
 
-  
 [9]. (Squares fall off the board, disco board, rotating board, have to solve puzzles before you can
 move - Mario Cart mechanics if ahead it gets more difficult, if you are behind you get one square
 where you can upgrade the horse to Bishop/Rook)

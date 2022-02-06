@@ -22,6 +22,10 @@ import {
   getStartingPowers,
   getGoldBolt,
   incrementPowerFreq,
+  selectExplosivePawn,
+  snowFreeze,
+  getSnowFreeze,
+  kingTeleport,
 } from '../model.js';
 import { addLiveGameDB } from '../firestore.js';
 
@@ -134,8 +138,9 @@ gameRouter.post('/randomMoveOpponent', async (req, res) => {
 
 gameRouter.post('/undoMove', async (req, res) => {
   if (!req.session.userID) return res.status(401).end();
-  undoMove(req.body.gameId, req.session.userID);
-  res.status(200).end();
+  const isUndoMade = undoMove(req.body.gameId, req.session.userID);
+  if (isUndoMade) res.status(200).end();
+  else res.status(502).end();
 });
 
 gameRouter.post('/disabledCells', async (req, res) => {
@@ -174,10 +179,34 @@ gameRouter.post('/omegaPieceUpgrade', async (req, res) => {
   res.status(200).end();
 });
 
+gameRouter.post('/explosivePawn', async (req, res) => {
+  if (!req.session.userID) return res.status(401).end();
+  selectExplosivePawn(req.body.gameId, req.session.userID, req.body.row, req.body.col);
+  res.status(200).end();
+});
+
 gameRouter.post('/fogOfWar', async (req, res) => {
   if (!req.session.userID) return res.status(401).end();
   fogOfWar(req.body.gameId, req.session.userID);
   res.status(200).end();
+});
+
+gameRouter.post('/snowFreeze', async (req, res) => {
+  if (!req.session.userID) return res.status(401).end();
+  snowFreeze(req.body.gameId, req.session.userID);
+  res.status(200).end();
+});
+
+gameRouter.post('/kingTeleport', async (req, res) => {
+  if (!req.session.userID) return res.status(401).end();
+  kingTeleport(req.body.gameId, req.session.userID);
+  res.status(200).end();
+});
+
+gameRouter.post('/checkSnowFreeze', async (req, res) => {
+  if (!req.session.userID) return res.status(401).end();
+  const isSnowFreeze = getSnowFreeze(req.body.gameId);
+  res.json({ isSnowFreeze });
 });
 
 gameRouter.post('/checkFogOfWar', async (req, res) => {

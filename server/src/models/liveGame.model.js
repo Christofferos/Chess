@@ -65,6 +65,11 @@ export class LiveGame {
           omegaUpgrade: '',
           fogOfWarP1: 0,
           fogOfWarP2: 0,
+          explosivePawns: [],
+          snowFreezeP1: 0,
+          snowFreezeP2: 0,
+          kingTeleportP1: false,
+          kingTeleportP2: false,
         };
       } else if (crazyChessPowers) {
         this.crazyChessPowers = crazyChessPowers;

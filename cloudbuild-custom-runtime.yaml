@@ -1,0 +1,24 @@
+steps:
+  - name: gcr.io/cloud-builders/yarn
+    args: [install]
+  - name: gcr.io/cloud-builders/yarn
+    args: [heroku-postbuild]
+  # - name: gcr.io/cloud-builders/gcloud
+  #  args: [app, deploy]
+  #- name: "gcr.io/cloud-builders/docker"
+  #  args: ["build", "-t", "gcr.io/${PROJECT_ID}/chess-gcp-image", "."]
+  #- name: "gcr.io/cloud-builders/docker"
+  #  args: ["push", "gcr.io/${PROJECT_ID}/chess-gcp-image"]
+#  - name: gcr.io/cloud-builders/yarn
+#    args: [start]
+
+# images: ["gcr.io/${PROJECT_ID}/chess-gcp-image"]
+# timeout: "1600s"
+#- name: "gcr.io/cloud-builders/gcloud"
+#  args: [
+#      "app",
+#      "deploy",
+#      "--image-url=gcr.io/${PROJECT_ID}/chess-gcp-image:16a652cdd060",
+#    ]
+# TAG: 16a652cdd060
+# "--image-url=europe-west-docker.pkg.dev/${PROJECT_ID}/chess-gcp-image",
