@@ -25,4 +25,5 @@ readiness_check:
   failure_threshold: 2
   success_threshold: 2
   app_start_timeout_sec: 300
-service_account: eitcbmdemotest-63867@appspot.gserviceaccount.com
+service_account: gcpchessonlinedev01-def5@appspot.gserviceaccount.com
+# eitcbmdemotest-63867@appspot.gserviceaccount.com
