@@ -1,4 +1,4 @@
-# https://cloud.google.com/appengine/docs/flexible/nodejs/configuring-your-app-with-app-yaml
+# GcpChessOnlineDev01
 runtime: nodejs
 api_version: "1.0"
 env: flexible
