@@ -10,7 +10,8 @@
   "type": "module",
   "scripts": {
     "start": "cd ./server && yarn start",
-    "heroku-postbuild": "cd client && yarn build:prod"
+    "heroku-postbuild": "cd client && yarn build:prod",
+    "gcp-build": "cd ./client && npm run build:prod"
   },
   "dependencies": {
     "concurrently": "^5.3.0",

@@ -1,19 +1,28 @@
 # https://cloud.google.com/appengine/docs/flexible/nodejs/configuring-your-app-with-app-yaml
 runtime: nodejs
-env: flex
-entrypoint: yarn start
-
+api_version: "1.0"
+env: flexible
+threadsafe: true
+env_variables:
+  test: test
 manual_scaling:
   instances: 1
+network:
+  name: scott2vpc
 resources:
   cpu: 1
   memory_gb: 0.5
   disk_size_gb: 10
-
-# eitcbmdemotest-63867
-# network:
-#  instance_tag: scott2vpc
-#  name: scott2vpc
-
-env_variables:
-  test: "test"
+liveness_check:
+  initial_delay_sec: 300
+  check_interval_sec: 30
+  timeout_sec: 4
+  failure_threshold: 4
+  success_threshold: 2
+readiness_check:
+  check_interval_sec: 5
+  timeout_sec: 4
+  failure_threshold: 2
+  success_threshold: 2
+  app_start_timeout_sec: 300
+service_account: eitcbmdemotest-63867@appspot.gserviceaccount.com

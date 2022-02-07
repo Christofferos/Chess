@@ -139,8 +139,8 @@ gameRouter.post('/randomMoveOpponent', async (req, res) => {
 gameRouter.post('/undoMove', async (req, res) => {
   if (!req.session.userID) return res.status(401).end();
   const isUndoMade = undoMove(req.body.gameId, req.session.userID);
-  if (isUndoMade) res.status(200).end();
-  else res.status(502).end();
+  if (isUndoMade === false) res.status(502).end();
+  res.status(200).end();
 });
 
 gameRouter.post('/disabledCells', async (req, res) => {

@@ -443,7 +443,19 @@ const oneStepMove = (game, startPos, startRow, startCol, endRow, endCol) => {
   } else return true;
 };
 
-const isKingTeleportCheck = (game, startPos, endPos, startRow, startCol, endRow, endCol) => {
+const isKingTeleportCheck = (
+  game,
+  startPos,
+  endPos,
+  startRow,
+  startCol,
+  endRow,
+  endCol,
+  isPlayer1,
+) => {
+  const isPlayerTurn =
+    (game.gameState.turn() === 'w' && isPlayer1) || (game.gameState.turn() === 'b' && !isPlayer1);
+  if (!isPlayerTurn) return false;
   const piece = game.gameState.get(startPos);
   const type = piece?.type;
   if (!type) return false;
@@ -593,7 +605,6 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
       io.in(gameId).emit('explosivePawnPosition', game.crazyChessPowers.explosivePawns);
     }
   }
-  console.log('HIT HIT ? ', game.gameState.history());
   const gameHistoryLength =
     game.gameState.history() !== undefined
       ? game.gameState.history().length
@@ -667,9 +678,11 @@ export const crazyChessPower = (game, username, endPos) => {
   if (isUserMatchRandomMove && isPlayerTurn) {
     game.crazyChessPowers.randomMove = '';
     isRandomMove = true;
-  } else if (isUserMatchImmunity && isPlayerTurn) {
+  }
+  if (isUserMatchImmunity && isPlayerTurn) {
     isCaptureImmune = true;
-  } else if (isUserMatchUpgrade) {
+  }
+  if (isUserMatchUpgrade) {
     isOmegaUpgrade = true;
   }
   const { row, col } = translateSelectedPiece(endPos);
@@ -863,6 +876,7 @@ const upgradePiece = (gameId, upgradeCell, username) => {
   if (!game) return;
   const color = game.gameState.turn() === 'w' ? game.gameState.BLACK : game.gameState.WHITE;
   const piecePreUpgrade = game.gameState.get(upgradeCell);
+  if (!piecePreUpgrade) return;
   const isKnightOrPawn =
     piecePreUpgrade.type === 'n' ||
     piecePreUpgrade.type === 'N' ||
@@ -877,7 +891,6 @@ const upgradePiece = (gameId, upgradeCell, username) => {
     { type: piecePostUpgrade, color: color },
     upgradeCell,
   );
-  console.log('POST UPGRADE ', isPieceRemoved, isPiecePlaced, piecePreUpgrade.type);
   if (isPieceRemoved && isPiecePlaced) {
     io.in(gameId).emit('omegaPieceUpgrade', username);
     games[gameId].crazyChessPowers.omegaUpgrade = '';
@@ -1053,16 +1066,16 @@ export const randomizeNStartPowers = nActivePowers => {
 
 const getPower = playerPowers => {
   const allPowers = [
-    POWER.RANDOM,
-    POWER.DISABLE,
+    POWER.SNOW_FREEZE,
     POWER.IMMUNE,
+    POWER.DISABLE,
     POWER.CUTDOWN_TIME,
     POWER.SPAWN,
     POWER.UPGRADE,
-    POWER.FOG,
-    POWER.EXPLOSIVE,
-    POWER.SNOW_FREEZE,
+    POWER.RANDOM,
     POWER.UNDO,
+    POWER.EXPLOSIVE,
+    POWER.FOG,
     POWER.KING_TELEPORT,
   ];
   const filteredPowers = allPowers.filter(power => !playerPowers.includes(power));

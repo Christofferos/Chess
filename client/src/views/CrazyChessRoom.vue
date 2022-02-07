@@ -1553,7 +1553,26 @@ export default {
       else if (this.isFogOfWarEnabled && !isFriendlySide && isOwnerOfPiece) return true;
       return false;
     },
+    enableKingTeleportMarker(row, col) {
+      const kingFenType = this.black ? 'k' : 'K';
+      let cell1;
+      let cell2;
+      let cell3;
+      let cell4;
+      if (col - 2 >= 0) cell1 = this.piecePlacement[row][col - 2];
+      if (col + 2 < this.piecePlacement[row].length) cell2 = this.piecePlacement[row][col + 2];
+      if (row - 2 >= 0) cell3 = this.piecePlacement[row - 2][col];
+      if (row + 2 < this.piecePlacement.length) cell4 = this.piecePlacement[row + 2][col];
+      return (
+        cell1 === kingFenType ||
+        cell2 === kingFenType ||
+        cell3 === kingFenType ||
+        cell4 === kingFenType
+      );
+    },
     cellBackgroundColor(row, col) {
+      const kingTeleportWhiteGreen = '#A6E5A0';
+      const kingTeleportLightGreen = '#58B23B';
       const omegaUpgradeWhiteGreen = '#A6E5A0';
       const omegaUpgradeLightGreen = '#58B23B';
       const explosivePawnSelectionWhiteGreen = '#A6E5A0';
@@ -1575,14 +1594,16 @@ export default {
       if (this.selectedPiece === row.toString() + col.toString()) {
         return 'yellow';
       }
-      /* const isPieceFreezeEligable =
-        this.isSnowFreezeEnabled &&
-        ((!this.black && this.piecePlacement[row][col].match(['rnbqkp'])) ||
-          (this.black && this.piecePlacement[row][col].match(['RNBQKP']))); */
+      const isCellIsUnoccupied = this.piecePlacement[row][col] === '';
+      const isKingTeleportMarkerEnabled = this.isKingTeleportEnabled
+        ? this.enableKingTeleportMarker(row, col)
+        : false;
       const isWhiteSquares = (col + row) % 2 === 0;
       const isGreenSquares = !isWhiteSquares;
       if (isWhiteSquares) {
-        if (this.isPieceSpawnEnabled && row === 5) return omegaUpgradeWhiteGreen;
+        if (isKingTeleportMarkerEnabled && isCellIsUnoccupied) return kingTeleportWhiteGreen;
+        if (this.isPieceSpawnEnabled && row === 5 && isCellIsUnoccupied)
+          return omegaUpgradeWhiteGreen;
         else if (this.isExplosivePawnSelection && isOwnerOfPiece && isPawn)
           return explosivePawnSelectionWhiteGreen;
         else if (this.isFogOfWarEnabled && !isOwnerOfPiece && isOpponentSide)
@@ -1592,7 +1613,9 @@ export default {
         else if (this.isSnowFreezeEnabled) return snowFreezeWhiteBlue;
         else return this.cellWhiteColor;
       } else if (isGreenSquares) {
-        if (this.isPieceSpawnEnabled && row === 5) return omegaUpgradeLightGreen;
+        if (isKingTeleportMarkerEnabled && isCellIsUnoccupied) return kingTeleportLightGreen;
+        if (this.isPieceSpawnEnabled && row === 5 && isCellIsUnoccupied)
+          return omegaUpgradeLightGreen;
         else if (this.isExplosivePawnSelection && isOwnerOfPiece && isPawn)
           return explosivePawnSelectionDarkGreen;
         else if (this.isFogOfWarEnabled && !isOwnerOfPiece && isOpponentSide)
