@@ -15,8 +15,8 @@
           />
         </div>
         <div class="row" style="text-align: center;">
+          <!-- :disabled="matchHistoryLen < 5" -->
           <input
-            :disabled="matchHistoryLen < 5"
             class="well btn btn-warning button"
             v-on:click="newGameCrazyChess()"
             type="button"
