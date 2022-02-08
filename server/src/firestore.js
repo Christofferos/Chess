@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import dotenv from 'dotenv';
 dotenv.config();
 
-/* let serviceAccount;
+let serviceAccount;
 let privateFirestoreKey;
 try {
   privateFirestoreKey = fs.readFileSync('./privateFirestoreKey.json', 'utf-8');
@@ -31,12 +31,12 @@ if (!serviceAccount) {
 initializeApp({
   credential: cert(serviceAccount),
 });
-const firestore = getFirestore(); */
+const firestore = getFirestore();
 
 import firebase from '@firebase/app';
 import '@firebase/firestore';
 
-const firebaseConfig = {
+/* const firebaseConfig = {
   apiKey: process.env.FIREBASE_API_KEY,
   authDomain: 'chessonlinepro.firebaseapp.com',
   databaseURL: 'https://chessonlinepro-default-rtdb.europe-west1.firebasedatabase.app',
@@ -47,7 +47,7 @@ const firebaseConfig = {
   measurementId: 'G-DTBVHHB8X8',
 };
 export const firebaseApp = firebase.default.initializeApp(firebaseConfig);
-export const firestore = firebaseApp.firestore();
+export const firestore = firebaseApp.firestore(); */
 
 const usersCollection = firestore.collection('users');
 const liveGamesCollection = firestore.collection('liveGames');
