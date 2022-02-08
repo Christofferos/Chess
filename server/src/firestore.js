@@ -1,21 +1,33 @@
-import firebase from '@firebase/app';
-import '@firebase/firestore';
-import v4 from 'uuid';
+/* https://firebase.google.com/docs/firestore/quickstart#node.js */
+import { initializeApp, applicationDefault, cert } from 'firebase-admin/app';
+import { getFirestore, Timestamp, FieldValue } from 'firebase-admin/firestore';
+import * as fs from 'fs';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY,
-  authDomain: 'chessonlinepro.firebaseapp.com',
-  databaseURL: 'https://chessonlinepro-default-rtdb.europe-west1.firebasedatabase.app',
-  projectId: 'chessonlinepro',
-  storageBucket: 'chessonlinepro.appspot.com',
-  messagingSenderId: '59988433154',
-  appId: '1:59988433154:web:b43f906e670538ee548a1b',
-  measurementId: 'G-DTBVHHB8X8',
-};
-export const firebaseApp = firebase.default.initializeApp(firebaseConfig);
-export const firestore = firebaseApp.firestore();
+const serviceAccount = JSON.parse(fs.readFileSync('./privateFirestoreKey.json', 'utf-8'));
+const serviceAccountEnv = !serviceAccount
+  ? {
+      type: 'service_account',
+      project_id: 'chessonlinepro',
+      private_key_id: process.env.PRIVATE_KEY_ID,
+      private_key: process.env.PRIVATE_KEY,
+      client_email: 'firebase-adminsdk-l8nkl@chessonlinepro.iam.gserviceaccount.com',
+      client_id: process.env.CLIENT_ID,
+      auth_uri: 'https://accounts.google.com/o/oauth2/auth',
+      token_uri: 'https://oauth2.googleapis.com/token',
+      auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
+      client_x509_cert_url:
+        'https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-l8nkl%40chessonlinepro.iam.gserviceaccount.com',
+    }
+  : null;
+initializeApp({
+  credential: cert(serviceAccount ?? serviceAccountEnv),
+});
+const firestore = getFirestore();
+
+import firebase from '@firebase/app';
+import '@firebase/firestore';
 
 const usersCollection = firestore.collection('users');
 const liveGamesCollection = firestore.collection('liveGames');
