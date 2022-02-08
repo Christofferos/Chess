@@ -15,19 +15,19 @@
 
 ## 1-to-1 Online Play
 
-Platforms: Mobile, Desktop, Projector
+Platforms: Mobile, Desktop
 
 <img src="assets/OnlinePlay.png" alt="onlinePlay" style="width: 200px">
 
 ## Local Play
 
-Platforms: Mobile, Desktop, Projector
+Platforms: Mobile, Desktop
 
 <img src="assets/LocalPlay.png" alt="LocalPlay" style="width: 200px">
 
 ## AI Challenger - Stockfish
 
-Platforms: Desktop, Projector
+Platforms: Desktop
 
 <img src="assets/StockfishPlay.png" alt="StockfishPlay" style="width: 200px">
 
