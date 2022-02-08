@@ -28,7 +28,6 @@ if (!serviceAccount) {
       'https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-l8nkl%40chessonlinepro.iam.gserviceaccount.com',
   };
 }
-console.log('Service Account: ', serviceAccount);
 initializeApp({
   credential: cert(serviceAccount),
 });
