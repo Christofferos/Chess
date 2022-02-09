@@ -10,7 +10,7 @@
   "type": "module",
   "scripts": {
     "start-app": "cd ./server && npm start",
-    "start": "cd ./server && chmod +w && npm start",
+    "start": "cd ./server && chmod +w ./sessions && npm start",
     "gcp-build": "cd ./client && npm run build:prod",
     "heroku-postbuild": "cd client && npm run build:prod"
   },
