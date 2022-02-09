@@ -7,8 +7,6 @@ env_variables:
   test: test
 manual_scaling:
   instances: 1
-network:
-  name: scottsvpc
 resources:
   cpu: 1
   memory_gb: 0.5
