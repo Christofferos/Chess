@@ -7,6 +7,9 @@ env_variables:
   test: test
 manual_scaling:
   instances: 1
+network:
+  name: kris-vpc
+  subnetwork_name: kris-subnet
 resources:
   cpu: 1
   memory_gb: 0.5
@@ -24,4 +27,3 @@ readiness_check:
   success_threshold: 2
   app_start_timeout_sec: 300
 service_account: gcpchessonlinedev01-def5@appspot.gserviceaccount.com
-# eitcbmdemotest-63867@appspot.gserviceaccount.com
