@@ -9,13 +9,12 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "start": "cd ./server && npm start",
-    "gcp-start": "cd ./server && chmod +w && npm start",
+    "start-app": "cd ./server && npm start",
+    "start": "cd ./server && chmod +w && npm start",
     "gcp-build": "cd ./client && npm run build:prod",
-    "heroku-postbuild": "cd client && yarn build:prod"
+    "heroku-postbuild": "cd client && npm run build:prod"
   },
   "dependencies": {
-    "yarn": "^1.18",
     "@chrisoakman/chessboardjs": "^1.0.0",
     "@types/express": "^4.16.1",
     "@types/express-session": "^1.15.12",
