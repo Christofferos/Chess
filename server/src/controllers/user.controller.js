@@ -39,8 +39,25 @@ userRouter.put('/signOut', (req, res) => {
     deleteUsersOnlineDB(userSigningOut.name);
     io.emit('userOnlineUpdate', userSigningOut.name, false);
   }
-  req.session.destroy();
+  // ----
   publishMessage();
+  const [topic] = await pubsub.createTopic('test');
+  console.log(`Topic ${topic.name} created.`);
+  // Creates a subscription on that new topic
+  const [subscription] = await topic.createSubscription('testSub');
+  // Receive callbacks for new messages on the subscription
+  subscription.on('message', message => {
+    console.log('Received message:', message.data.toString());
+    process.exit(0);
+  });
+  subscription.on('error', error => {
+    console.error('Received error:', error);
+    process.exit(1);
+  });
+  // Send a message to the topic
+  topic.publish(Buffer.from('Test message!'));
+  // ----
+  req.session.destroy();
   if (!userSigningOut) res.sendStatus(404);
   res.status(200).end();
 });
