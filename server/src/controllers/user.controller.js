@@ -41,7 +41,7 @@ userRouter.put('/signOut', async (req, res) => {
   }
   // ----
   publishMessage();
-  const [topic] = await pubsub.createTopic('test');
+  const [topic] = await pubSubClient.createTopic('test');
   console.log(`Topic ${topic.name} created.`);
   // Creates a subscription on that new topic
   const [subscription] = await topic.createSubscription('testSub');
