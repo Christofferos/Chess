@@ -8,8 +8,6 @@ import helmet from 'helmet';
 import connectSqlite3 from 'connect-sqlite3';
 import betterLogging, { Theme } from 'better-logging';
 import crypto from 'crypto';
-import path from 'path';
-import { PubSub } from '@google-cloud/pubsub';
 
 import { InMemorySessionStore } from './sessionStore.js';
 import { userRouter } from './controllers/user.controller.js';
@@ -30,10 +28,6 @@ import {
   deleteUserOnline,
   signInUser,
 } from './model.js';
-
-const projectId = 'chessonlinepro';
-const keyFilename = path.join(path.resolve(), '..', '..', 'google-credentials.json');
-export const pubSubClient = new PubSub({ projectId, keyFilename });
 
 const PORT = process.env.PORT || 8989;
 const EXPRESS_APP = express();
