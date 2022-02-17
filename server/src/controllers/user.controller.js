@@ -3,7 +3,8 @@ import bcrypt from 'bcrypt';
 
 import { addUser, findUser, getMatchHistory, io } from '../model.js';
 import { addUserDB, deleteUsersOnlineDB, getUsersDB, getUsersOnlineDB } from '../firestore.js';
-import { pubSubClient, TOPIC_NAME } from './pubsub.js';
+import { TOPIC_NAME } from './pubsub.js';
+import { pubSubClient } from '../index.js';
 
 export const userRouter = express.Router();
 const SALT_ROUNDS = 10;

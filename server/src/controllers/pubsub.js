@@ -32,5 +32,3 @@ if (!serviceAccount) {
       'https://www.googleapis.com/robot/v1/metadata/x509/pubsubserviceacc%40chessonlinepro.iam.gserviceaccount.com',
   };
 } */
-
-export const pubSubClient = new PubSub({ projectId, keyFilename });
