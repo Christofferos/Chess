@@ -3,9 +3,21 @@ import bcrypt from 'bcrypt';
 
 import { addUser, findUser, getMatchHistory, io } from '../model.js';
 import { addUserDB, deleteUsersOnlineDB, getUsersDB, getUsersOnlineDB } from '../firestore.js';
+import { pubSubClient, TOPIC_NAME } from '../pubsub.js';
 
 export const userRouter = express.Router();
 const SALT_ROUNDS = 10;
+
+const publishMessage = async () => {
+  const json = { foo: 'bar' };
+  try {
+    console.log('ID: ', pubSubClient.projectId);
+    pubSubClient.topic(TOPIC_NAME).publishMessage({ json }, () => console.log('DONE'));
+  } catch (error) {
+    console.error(`Received error while publishing: ${error.message}`);
+    process.exitCode = 1;
+  }
+};
 
 userRouter.post('/signUp', (req, res) => {
   const success = addUser(req.body.username);
@@ -28,6 +40,7 @@ userRouter.put('/signOut', (req, res) => {
     io.emit('userOnlineUpdate', userSigningOut.name, false);
   }
   req.session.destroy();
+  publishMessage();
   if (!userSigningOut) res.sendStatus(404);
   res.status(200).end();
 });

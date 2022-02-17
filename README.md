@@ -121,7 +121,6 @@ Sound effect for doing En Passant
 
 <img src="assets/KingTeleport2.png" alt="kingTeleport2" style="width: 200px">
 
-
 ## Time Attack
 
 <img src="assets/CutDownTime.png" alt="CutDownTime" style="width: 200px">
@@ -134,11 +133,17 @@ Sound effect for doing En Passant
 
 <img src="assets/UndoMove.png" alt="UndoMove" style="width: 200px">
 
-# Technical Details
+# GCP & Github & CI/CD
 
-Deployed with Public Cloud provider (hyperscaler) GCP via App Engine on this link
+Deployed via GCP (Public Cloud provider - hyperscaler) with the **App Engine** service on this link
 
 - https://eitcbmdemotest-63867.ew.r.appspot.com/ (Posted 25th Jan)
+
+Deployed app to **Cloud Run** an alternative to App Engine with better down-scaling with low traffic.
+
+Created CI/CD pipeline with **Cloud Build** and Build Triggers connected to Github branches.
+
+Developed **Pub/Sub** and **Cloud Functions** to notify an email address when a user signs up to the application.
 
 ## TODO-LIST (TRACE PROGRESS):
 
