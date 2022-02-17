@@ -32,7 +32,7 @@ userRouter.post('/signUp', (req, res) => {
   });
 });
 
-userRouter.put('/signOut', (req, res) => {
+userRouter.put('/signOut', async (req, res) => {
   const userSigningOut = findUser(req.session.userID);
   if (userSigningOut) {
     userSigningOut.socket.conn.close();
