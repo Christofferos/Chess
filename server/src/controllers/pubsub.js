@@ -1,8 +1,9 @@
 import * as fs from 'fs';
+import path from 'path';
 import { PubSub } from '@google-cloud/pubsub';
 
 const projectId = 'chessonlinepro';
-const keyFilename = './../../google-credentials.json';
+const keyFilename = path.join(path.resolve(), '..', '..', '..', 'google-credentials.json');
 export const TOPIC_NAME = 'projects/chessonlinepro/topics/signup';
 
 /* privatePubSubKey = fs.readFileSync('./../../google-credentials.json', 'utf-8');
