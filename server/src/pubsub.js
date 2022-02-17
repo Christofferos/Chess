@@ -5,8 +5,8 @@ const projectId = 'chessonlinepro';
 const keyFilename = './../../google-credentials.json';
 export const TOPIC_NAME = 'projects/chessonlinepro/topics/signup';
 
-privatePubSubKey = fs.readFileSync('./../../google-credentials.json', 'utf-8');
-console.log('FILE EXISTS? ', privatePubSubKey);
+/* privatePubSubKey = fs.readFileSync('./../../google-credentials.json', 'utf-8');
+console.log('FILE EXISTS? ', privatePubSubKey); */
 
 /* export let serviceAccount;
 let privatePubSubKey;
