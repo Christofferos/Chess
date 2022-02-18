@@ -8,6 +8,7 @@ import helmet from 'helmet';
 import connectSqlite3 from 'connect-sqlite3';
 import betterLogging, { Theme } from 'better-logging';
 import crypto from 'crypto';
+import rateLimit from 'express-rate-limit';
 
 import { InMemorySessionStore } from './sessionStore.js';
 import { userRouter } from './controllers/user.controller.js';
@@ -28,6 +29,7 @@ import {
   deleteUserOnline,
   signInUser,
 } from './model.js';
+import { TIMEFRAME_10_MINUTES } from './utils/globalConstants.js';
 
 const PORT = process.env.PORT || 8989;
 const EXPRESS_APP = express();
@@ -38,6 +40,12 @@ initSocketIOServerModel(io);
 
 const SQLiteStore = connectSqlite3(expressSession);
 
+const IP_REQUEST_LIMIT = 1000;
+const limiter = rateLimit({
+  windowMs: TIMEFRAME_10_MINUTES,
+  max: IP_REQUEST_LIMIT,
+});
+EXPRESS_APP.use(limiter);
 EXPRESS_APP.use(helmet());
 EXPRESS_APP.use(express.json());
 EXPRESS_APP.use(express.urlencoded({ extended: true }));

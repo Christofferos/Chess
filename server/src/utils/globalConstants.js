@@ -11,3 +11,5 @@ export const POWER = {
   SNOW_FREEZE: 'snowfreeze',
   KING_TELEPORT: 'kingteleport',
 };
+
+export const TIMEFRAME_10_MINUTES = 10 * 60 * 1000;

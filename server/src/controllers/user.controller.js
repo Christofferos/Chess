@@ -1,30 +1,39 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
+import rateLimit from 'express-rate-limit';
 
 import { addUser, findUser, getMatchHistory, io } from '../model.js';
 import { addUserDB, deleteUsersOnlineDB, getUsersDB, getUsersOnlineDB } from '../firestore.js';
 import { pubSubClient, TOPIC_NAME } from '../../../pubsub.js';
+import { TIMEFRAME_10_MINUTES } from '../utils/globalConstants.js';
+import { currentDate } from '../utils/getCurrentDate.js';
 
 export const userRouter = express.Router();
 const SALT_ROUNDS = 10;
 
-const publishMessage = async () => {
-  const json = { foo: 'bar' };
+export const signUpLimiter = rateLimit({
+  windowMs: TIMEFRAME_10_MINUTES,
+  max: 10,
+});
+
+const publishMessage = async username => {
+  const json = { username: username, timestamp: currentDate() };
   try {
-    console.log('ID: ', pubSubClient.projectId);
-    pubSubClient.topic(TOPIC_NAME).publishMessage({ json }, () => console.log('DONE'));
+    pubSubClient
+      .topic(TOPIC_NAME)
+      .publishMessage({ json }, () => console.log('Message published!'));
   } catch (error) {
     console.error(`Received error while publishing: ${error.message}`);
-    process.exitCode = 1;
   }
 };
 
-userRouter.post('/signUp', (req, res) => {
+userRouter.post('/signUp', signUpLimiter, (req, res) => {
   const success = addUser(req.body.username);
   if (!success) {
     res.sendStatus(404);
     return;
   }
+  // PUSH TO PUB/SUB
   bcrypt.hash(req.body.username, SALT_ROUNDS, (_, hash) => {
     addUserDB(req.body.username, hash);
     req.session.userID = req.body.username;
@@ -39,24 +48,7 @@ userRouter.put('/signOut', async (req, res) => {
     deleteUsersOnlineDB(userSigningOut.name);
     io.emit('userOnlineUpdate', userSigningOut.name, false);
   }
-  // ----
-  publishMessage();
-  const [topic] = await pubSubClient.createTopic('test');
-  console.log(`Topic ${topic.name} created.`);
-  // Creates a subscription on that new topic
-  const [subscription] = await topic.createSubscription('testSub');
-  // Receive callbacks for new messages on the subscription
-  subscription.on('message', message => {
-    console.log('Received message:', message.data.toString());
-    process.exit(0);
-  });
-  subscription.on('error', error => {
-    console.error('Received error:', error);
-    process.exit(1);
-  });
-  // Send a message to the topic
-  topic.publish(Buffer.from('Test message!'));
-  // ----
+  publishMessage(userSigningOut.name);
   req.session.destroy();
   if (!userSigningOut) res.sendStatus(404);
   res.status(200).end();
