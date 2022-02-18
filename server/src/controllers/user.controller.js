@@ -33,7 +33,7 @@ userRouter.post('/signUp', signUpLimiter, (req, res) => {
     res.sendStatus(404);
     return;
   }
-  // PUSH TO PUB/SUB
+  publishMessage(req.body.username);
   bcrypt.hash(req.body.username, SALT_ROUNDS, (_, hash) => {
     addUserDB(req.body.username, hash);
     req.session.userID = req.body.username;
@@ -48,7 +48,6 @@ userRouter.put('/signOut', async (req, res) => {
     deleteUsersOnlineDB(userSigningOut.name);
     io.emit('userOnlineUpdate', userSigningOut.name, false);
   }
-  publishMessage(userSigningOut.name);
   req.session.destroy();
   if (!userSigningOut) res.sendStatus(404);
   res.status(200).end();
