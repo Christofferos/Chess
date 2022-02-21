@@ -27,3 +27,48 @@ readiness_check:
   app_start_timeout_sec: 300
 service_account: gcpchessonlinedev01-def5@appspot.gserviceaccount.com
 # eitcbmdemotest-63867@appspot.gserviceaccount.com
+
+### >>> CLOUD BUILD INSTRUCTIONS <<< ###
+# steps:
+#  - name: gcr.io/k8s-skaffold/pack
+#    args:
+#      - build
+#      - '$_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA'
+#      - '--builder=gcr.io/buildpacks/builder:v1'
+#      - '--path=.'
+#    id: Buildpack
+#    entrypoint: pack
+#  - name: gcr.io/cloud-builders/docker
+#    args:
+#      - push
+#      - '$_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA'
+#    id: Push
+#  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+#    args:
+#      - run
+#      - services
+#      - update
+#      - $_SERVICE_NAME
+#     - '--platform=managed'
+#      - '--image=$_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA'
+#      - >-
+#        --labels=managed-by=gcp-cloud-build-deploy-cloud-run,commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID,gcb-trigger-id=$_TRIGGER_ID,$_LABELS
+#      - '--region=$_DEPLOY_REGION'
+#      - '--quiet'
+#    id: Deploy
+#    entrypoint: gcloud
+#images:
+#  - '$_GCR_HOSTNAME/$PROJECT_ID/$REPO_NAME/$_SERVICE_NAME:$COMMIT_SHA'
+#options:
+#  substitutionOption: ALLOW_LOOSE
+#substitutions:
+#  _PLATFORM: managed
+#  _SERVICE_NAME: chess
+#  _DEPLOY_REGION: europe-north1
+#  _GCR_HOSTNAME: eu.gcr.io
+#  _LABELS: gcb-trigger-id=892ce6c4-0269-41a7-833a-ff6406ba2bae
+#  _TRIGGER_ID: 892ce6c4-0269-41a7-833a-ff6406ba2bae
+#tags:
+#  - gcp-cloud-build-deploy-cloud-run
+#  - gcp-cloud-build-deploy-cloud-run-managed
+#  - chess
