@@ -543,7 +543,7 @@ export const movePiece = async (gameId, startPos, endPos, username, promotionPie
     isValidMoveInSnowStorm = oneStepMove(game, startPos, startRow, startCol, endRow, endCol);
   let isKingTeleportMove = false;
   const isKingTeleportActivated =
-    game.crazyChessPowers.kingTeleportP1 || game.crazyChessPowers.kingTeleportP2;
+    game.crazyChessPowers?.kingTeleportP1 || game.crazyChessPowers?.kingTeleportP2;
   if (isKingTeleportActivated) {
     isKingTeleportMove = isKingTeleportCheck(
       game,
@@ -961,6 +961,7 @@ export const snowFreeze = (gameId, username) => {
 export const getSnowFreeze = gameId => {
   const game = games[gameId];
   if (!game) return;
+  if (!game.isCrazyChess) return;
   if (game.crazyChessPowers.snowFreezeP1 > 0) return true;
   if (game.crazyChessPowers.snowFreezeP2 > 0) return true;
   return false;

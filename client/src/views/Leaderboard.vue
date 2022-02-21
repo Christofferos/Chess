@@ -79,7 +79,7 @@ export default {
     fetch('/api/leaderboard')
       .then((res) => res.json())
       .then(({ sortedLeaderboard }) => {
-        this.playerLeaderboard = sortedLeaderboard?.slice(0, 20);
+        this.playerLeaderboard = sortedLeaderboard?.slice(0, 25);
       })
       .catch(console.error);
     this.$store.state.socket.on('inviteToGame', (userToInvite, gameCode, opponentName) => {

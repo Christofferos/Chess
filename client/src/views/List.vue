@@ -41,6 +41,14 @@
           <div class="row" style="text-align: center;">
             <input class="well btn btn-default button" type="submit" value="Join Game" />
           </div>
+          <div class="row" style="text-align: center;">
+            <input
+              class="well btn btn-default button"
+              v-on:click="newGameLocalGame()"
+              type="button"
+              value="Split Screen"
+            />
+          </div>
         </form>
 
         <!-- <div class="row" style="text-align: center;">
@@ -79,21 +87,10 @@
               </h4>
             </div>
           </div>
-          <div
-            v-on:click="newGameLocalGame()"
-            class="row well button"
-            style="margin: auto auto 5px auto; cursor: pointer"
-          >
-            <div class="row" style="text-align: center;">
-              <h4>
-                <span>Player 2 (Friend)</span>
-              </h4>
-            </div>
-          </div>
         </div>
 
         <div class="row" style="text-align: center; margin-top: 10px;">
-          <h3 style="color: white">Active Games:</h3>
+          <h3 style="color: white">Continue Games:</h3>
         </div>
         <div
           class="row well button"
@@ -109,7 +106,11 @@
         >
           <div class="row" style="text-align: center;">
             <h4>
-              <span>{{ room.id }}</span>
+              <span>{{
+                username === room.player1
+                  ? `${room.player2} (${room.id})`
+                  : `${room.player1} (${room.id})`
+              }}</span>
             </h4>
           </div>
         </div>
@@ -223,6 +224,7 @@ export default {
   data: () => ({
     rooms: [],
     gameCode: '',
+    username: '',
     isInviteModalUp: false,
     isChallengeBtnVisible: false,
     isGameSettingsModal: false,
@@ -243,6 +245,7 @@ export default {
     }),
   },
   mounted() {
+    this.username = this.$store.state.cookie.username;
     this.$store.state.socket.on('inviteToGame', (userToInvite, gameCode, opponentName) => {
       const isInvitedUser = userToInvite === this.$store.state.cookie.username;
       if (isInvitedUser) {
