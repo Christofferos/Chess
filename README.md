@@ -141,7 +141,7 @@ Deployed via GCP (Public Cloud provider - hyperscaler) with the **App Engine** s
 
 Deployed app to **Cloud Run** an alternative to App Engine with better down-scaling with low traffic.
 
-Created CI/CD pipeline with **Cloud Build** and Build Triggers connected to Github branches.
+Created CI/CD pipeline with **Cloud Build**, **Container Registry** and Build Triggers connected to Github branches.
 
 Developed **Pub/Sub** and **Cloud Functions** to notify an email address when a user signs up to the application.
 
