@@ -133,17 +133,24 @@ Sound effect for doing En Passant
 
 <img src="assets/UndoMove.png" alt="UndoMove" style="width: 200px">
 
-# GCP & Github & CI/CD
+# Google Cloud Platform
 
-Deployed via GCP (Public Cloud provider - hyperscaler) with the **App Engine** service on this link
+## CI/CD, Pub/Sub, Cloud Functions, App Engine, Cloud Run, Docker builds
 
-- https://eitcbmdemotest-63867.ew.r.appspot.com/ (Posted 25th Jan)
+Deployed via GCP (Public Cloud provider - hyperscaler) with the **App Engine** service.
 
 Deployed app to **Cloud Run** an alternative to App Engine with better down-scaling with low traffic.
 
-Created CI/CD pipeline with **Cloud Build**, **Container Registry** and Build Triggers connected to Github branches.
+- <p><b><a href="https://chess-noz5udkt7a-lz.a.run.app">Play Game</a></b> via <b>Cloud Run</b> (Posted 22th Feb)</p>
+
+Created CI/CD pipeline with **Cloud Build**, **Container Registry** and **Build Triggers** connected to Github production branch.
 
 Developed **Pub/Sub** and **Cloud Functions** to notify an email address when a user signs up to the application.
+
+**Note**:
+
+- (1) Make sure your repository name is only lower-case. Otherwise, Docker build will fail in GCP Cloud Build.
+- (2) Start in Cloud Run and let it create a configured trigger for you in Cloud Build
 
 ## TODO-LIST (TRACE PROGRESS):
 

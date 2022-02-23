@@ -1,5 +1,8 @@
 const isProdEnv = process.env.NODE_ENV === 'production';
-const PROD_URL = 'https://chessbattle.herokuapp.com';
+const isGcpProdEnv = process.env.IS_GCP_ENV;
+const PROD_URL = isGcpProdEnv
+  ? 'https://chess-noz5udkt7a-lz.a.run.app'
+  : 'https://chessbattle.herokuapp.com';
 const DEV_URL = 'http://localhost:8989';
 
 export const APP_ID = '#app';
