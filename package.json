@@ -12,7 +12,7 @@
     "start": "cd ./server && npm start",
     "gcp-start": "cd ./server && chmod +w && npm start",
     "gcp-build": "cd ./client && npm run build:prod",
-    "heroku-postbuild": "cd client && yarn build:prod"
+    "heroku-postbuild": "cd client && yarn build"
   },
   "dependencies": {
     "yarn": "^1.18",
