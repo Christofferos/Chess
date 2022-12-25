@@ -1,11 +1,11 @@
-import path from 'path';
+/* import path from 'path';
 import connectSqlite3 from 'sqlite3';
 const { Database } = connectSqlite3.verbose();
 
 const databasePath = path.join(path.resolve(), 'src', 'db.sqlite');
-export const db = new Database(databasePath);
+export const db = new Database(databasePath); */
 
-db.serialize(async () => {
+//db.serialize(async () => {
   /* 
     db.run('DROP TABLE IF EXISTS liveGames');
     db.run(
@@ -24,4 +24,4 @@ db.serialize(async () => {
     db.run('DROP TABLE IF EXISTS users');
     db.run('CREATE TABLE users (username TEXT, password TEXT)'); 
   */
-});
+//});

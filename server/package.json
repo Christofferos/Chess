@@ -21,7 +21,6 @@
     "chess.js": "^0.11.0",
     "connect-mongo": "^4.4.0",
     "connect-redis": "^5.1.0",
-    "connect-sqlite3": "^0.9.12",
     "core-js": "^3.9.1",
     "crypto": "^1.0.1",
     "crypto-js": "^4.0.0",
@@ -40,7 +39,6 @@
     "nodemon": "^2.0.7",
     "redis": "^3.0.2",
     "socket.io": "^1.7.4",
-    "sqlite3": "^5.0.2",
     "uuid": "^3.4.0",
     "vue": "^2.6.12",
     "vue-router": "^3.5.1"
