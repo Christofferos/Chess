@@ -5,7 +5,7 @@ import socketIOSession from 'express-socket.io-session';
 import path from 'path';
 import http from 'http';
 import helmet from 'helmet';
-import connectSqlite3 from 'connect-sqlite3';
+/* import connectSqlite3 from 'connect-sqlite3'; */
 import betterLogging, { Theme } from 'better-logging';
 import crypto from 'crypto';
 import rateLimit from 'express-rate-limit';
@@ -38,7 +38,7 @@ const httpServer = http.createServer(EXPRESS_APP);
 const io = SocketIO.listen(httpServer);
 initSocketIOServerModel(io);
 
-const SQLiteStore = connectSqlite3(expressSession);
+/* const SQLiteStore = connectSqlite3(expressSession); */
 
 const IP_REQUEST_LIMIT = 1000;
 const limiter = rateLimit({
@@ -62,7 +62,7 @@ const session = expressSession({
   saveUninitialized: true,
   rolling: true,
   cookie: { maxAge: TEN_MINUTES_IN_MILLIS },
-  store: new SQLiteStore(),
+  /* store: new SQLiteStore(), */
 });
 EXPRESS_APP.use(session);
 io.use(
